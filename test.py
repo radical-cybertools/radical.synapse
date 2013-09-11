@@ -1,8 +1,6 @@
 
 import synapse.atoms as sa
 
-print 1
 sac = sa.Compute ()
-sac.work ()
-print 2
+sac.work (info={'n_malloc':1000, 'n_flops':1000})
 

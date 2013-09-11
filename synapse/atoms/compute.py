@@ -8,7 +8,7 @@ FLOPS  = "Flops"
 
 
 import os
-import textwrap
+import multiprocessing
 import subprocess
 
 import saga.utils.signatures   as sus
@@ -81,37 +81,79 @@ class Compute (AtomBase) :
                 raise Exception("Couldn't create malloc: %s : %s" % (pout, perr))
 
 
+    # --------------------------------------------------------------------------
+    #
+    @sus.takes   ('Compute', 
+                  sus.optional (dict))
+    @sus.returns (sus.nothing)
+    def work (self, info={}) : 
+
+        n_malloc = 1
+        n_flops  = 1
+
+        if  'n_malloc' in info : n_malloc = info['n_malloc']
+        if  'n_flops'  in info : n_flops  = info['n_flops']
+
+
+        p_malloc = multiprocessing.Process (target=self.work_malloc, args=(n_malloc,))
+        p_flops  = multiprocessing.Process (target=self.work_flops , args=(n_flops, ))
+
+        p_malloc.start ()
+        p_flops .start ()
+
+        p_malloc.join ()
+        p_flops .join ()
+
 
     # --------------------------------------------------------------------------
     #
     @sus.takes   ('Compute')
     @sus.returns (sus.nothing)
-    def work (self) :
-
-
-        # allocate requested amount of memory, and run requested number of flops
+    def work_malloc (self, n_malloc) :
+        """
+        allocate requested amount of memory
+        """
 
         print "start malloc"
-        p = subprocess.Popen ("%s %d" % (self._malloc_exe, self.load_malloc), 
+
+        p = subprocess.Popen ("%s %d" % (self._malloc_exe, n_malloc), 
                               shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
                               stderr=subprocess.PIPE)
         (pout, perr) = p.communicate ()
+
         if  pout: print pout
         if  perr: print perr
+
         print "stop  malloc"
 
+
+    # --------------------------------------------------------------------------
+    #
+    @sus.takes   ('Compute')
+    @sus.returns (sus.nothing)
+    def work_flops (self, n_flops) :
+        """
+        run requested number of flops
+        """
+
         print "start flops"
-        p = subprocess.Popen ("%s %d" % (self._flops_exe, self.load_flops), 
+
+        p = subprocess.Popen ("%s %d" % (self._flops_exe, n_flops), 
                               shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
                               stderr=subprocess.PIPE)
         (pout, perr) = p.communicate ()
+
         if  pout: print pout
         if  perr: print perr
+
         print "stop  flops"
+
+#
+#-------------------------------------------------------------------------------
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
