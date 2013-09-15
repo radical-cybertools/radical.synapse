@@ -11,88 +11,90 @@ import subprocess
 import saga.utils.signatures   as sus
 
 from   base      import AtomBase
-from   constants import COMPUTE
+from   constants import MEMORY
 
 # ------------------------------------------------------------------------------
 #
-class Compute (AtomBase) :
+class Memory (AtomBase) :
     """
-    This Compute Synapse emulates a compute workload, i.e. it allocates
-    a specified memory size, and consumes a specified number of compute.  It does
-    not create nor consume any I/O.
+    This Memory Synapse emulates a memory workload, i.e. it allocates
+    a specified memory size.  It does not create nor consume any I/O to the
+    allocated memory -- instead, it quits right after allocation.
     """
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute', 
+    @sus.takes   ('Memory', 
                   sus.optional (dict))
     @sus.returns (sus.nothing)
     def __init__ (self, info={}) : 
 
-        AtomBase.__init__ (self, COMPUTE, info)
+        AtomBase.__init__ (self, MEMORY, info)
 
         # workload property for this atom
-        self.load_compute  = 1000
+        self.load_memory = 1000
 
         # create our C-based workload script in tmp space
-        self._compute_exe  = "%s/synapse_compute"  % self._tmpdir
+        self._memory_exe = "%s/synapse_memory" % self._tmpdir
 
-        # already have the compute tool?
-        if  not os.path.isfile (self._compute_exe) :
+        # already have the memory tool?
+        if  not os.path.isfile (self._memory_exe) :
 
             # if not, we compile it on the fly...
             # Note that the program below will actually, for each flop, also create
             # 3 INTEGER OPs and 1 Branching instruction.
-            compute_code = open (os.path.dirname(__file__) + '/synapse_compute.c').read ()
+            memory_code = open (os.path.dirname(__file__) + '/synapse_memory.c').read ()
 
-            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._compute_exe,
+            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._memory_exe,
                                   shell=True,
                                   stdin=subprocess.PIPE, 
                                   stdout=subprocess.PIPE, 
                                   stderr=subprocess.PIPE)
-            (pout, perr) = p.communicate (compute_code)
+            (pout, perr) = p.communicate (memory_code)
 
             if  p.returncode :
-                raise Exception("Couldn't create compute: %s : %s" % (pout, perr))
+                raise Exception("Couldn't create memory: %s : %s" % (pout, perr))
 
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute', 
+    @sus.takes   ('Memory', 
                   sus.optional (dict))
     @sus.returns (sus.nothing)
     def run (self, info={}) : 
 
-        n_compute  = 1
+        n_memory = 1
 
-        if 'n_compute'  in info : n_compute  = info['n_compute']
+        if  'n_memory' in info : n_memory = info['n_memory']
 
-        self._proc  = multiprocessing.Process (target=self.work_compute , args=(n_compute, ))
+
+        self._proc = multiprocessing.Process (target=self.work_memory, args=(n_memory,))
 
         self._proc.start ()
 
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute')
+    @sus.takes   ('Memory')
     @sus.returns (sus.nothing)
     def wait (self) :
 
         self._proc.join ()
 
 
+
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute')
+    @sus.takes   ('Memory')
     @sus.returns (sus.nothing)
-    def work_compute (self, n_compute) :
+    def work_memory (self, n_memory) :
         """
-        run requested number of compute
+        allocate requested amount of memory
         """
 
-        print "start compute"
+        print "start memory"
 
-        p = subprocess.Popen ("%s %d" % (self._compute_exe, n_compute), 
+        p = subprocess.Popen ("%s %d" % (self._memory_exe, n_memory), 
                               shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
@@ -102,7 +104,7 @@ class Compute (AtomBase) :
         if  pout: print pout
         if  perr: print perr
 
-        print "stop  compute"
+        print "stop  memory"
 
 #
 #-------------------------------------------------------------------------------

@@ -11,88 +11,91 @@ import subprocess
 import saga.utils.signatures   as sus
 
 from   base      import AtomBase
-from   constants import COMPUTE
+from   constants import STORAGE
 
 # ------------------------------------------------------------------------------
 #
-class Compute (AtomBase) :
+class Storage (AtomBase) :
     """
-    This Compute Synapse emulates a compute workload, i.e. it allocates
-    a specified memory size, and consumes a specified number of compute.  It does
-    not create nor consume any I/O.
+    This Storage Synapse emulates a storage workload, i.e. it allocates
+    a specified storage size on disk.  It creates only minimal I/O to the
+    allocated storage, to ensure that the full amount has been allocated.
     """
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute', 
+    @sus.takes   ('Storage', 
                   sus.optional (dict))
     @sus.returns (sus.nothing)
     def __init__ (self, info={}) : 
 
-        AtomBase.__init__ (self, COMPUTE, info)
+        AtomBase.__init__ (self, STORAGE, info)
 
         # workload property for this atom
-        self.load_compute  = 1000
+        self.load_storage = 1000
 
         # create our C-based workload script in tmp space
-        self._compute_exe  = "%s/synapse_compute"  % self._tmpdir
+        self._storage_exe = "%s/synapse_storage" % self._tmpdir
 
-        # already have the compute tool?
-        if  not os.path.isfile (self._compute_exe) :
+        # already have the storage tool?
+        if  not os.path.isfile (self._storage_exe) :
 
             # if not, we compile it on the fly...
             # Note that the program below will actually, for each flop, also create
             # 3 INTEGER OPs and 1 Branching instruction.
-            compute_code = open (os.path.dirname(__file__) + '/synapse_compute.c').read ()
+            storage_code = open (os.path.dirname(__file__) + '/synapse_storage.c').read ()
 
-            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._compute_exe,
+            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._storage_exe,
                                   shell=True,
                                   stdin=subprocess.PIPE, 
                                   stdout=subprocess.PIPE, 
                                   stderr=subprocess.PIPE)
-            (pout, perr) = p.communicate (compute_code)
+            (pout, perr) = p.communicate (storage_code)
 
             if  p.returncode :
-                raise Exception("Couldn't create compute: %s : %s" % (pout, perr))
+                raise Exception("Couldn't create storage: %s : %s" % (pout, perr))
 
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute', 
+    @sus.takes   ('Storage', 
                   sus.optional (dict))
     @sus.returns (sus.nothing)
     def run (self, info={}) : 
 
-        n_compute  = 1
+        n_storage = 1
 
-        if 'n_compute'  in info : n_compute  = info['n_compute']
+        if  'n_storage' in info : n_storage = info['n_storage']
 
-        self._proc  = multiprocessing.Process (target=self.work_compute , args=(n_compute, ))
+
+        self._proc = multiprocessing.Process (target=self.work_storage,
+            args=(n_storage,))
 
         self._proc.start ()
 
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute')
+    @sus.takes   ('Storage')
     @sus.returns (sus.nothing)
     def wait (self) :
 
         self._proc.join ()
 
 
+
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('Compute')
+    @sus.takes   ('Storage')
     @sus.returns (sus.nothing)
-    def work_compute (self, n_compute) :
+    def work_storage (self, n_storage) :
         """
-        run requested number of compute
+        allocate requested amount of storage
         """
 
-        print "start compute"
+        print "start storage"
 
-        p = subprocess.Popen ("%s %d" % (self._compute_exe, n_compute), 
+        p = subprocess.Popen ("%s %d" % (self._storage_exe, n_storage), 
                               shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
@@ -102,7 +105,7 @@ class Compute (AtomBase) :
         if  pout: print pout
         if  perr: print perr
 
-        print "stop  compute"
+        print "stop  storage"
 
 #
 #-------------------------------------------------------------------------------

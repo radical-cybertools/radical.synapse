@@ -2,5 +2,14 @@
 import synapse.atoms as sa
 
 sac = sa.Compute ()
-sac.work (info={'n_malloc':1000, 'n_flops':1000})
+sam = sa.Memory  ()
+sas = sa.Storage ()
+
+sac.run (info={'n_compute' : 1000})
+sam.run (info={'n_memory'  : 1000})
+sas.run (info={'n_storage' : 1000})
+
+sac.wait ()
+sam.wait ()
+sas.wait ()
 
