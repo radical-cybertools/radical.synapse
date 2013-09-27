@@ -31,21 +31,18 @@ class Compute (AtomBase) :
 
         AtomBase.__init__ (self, COMPUTE, info)
 
-        # workload property for this atom
-        self.load_compute  = 1000
-
         # create our C-based workload script in tmp space
-        self._compute_exe  = "%s/synapse_compute"  % self._tmpdir
+        self._exe  = "%s/synapse_compute"  % self._tmpdir
 
         # already have the compute tool?
-        if  not os.path.isfile (self._compute_exe) :
+        if  not os.path.isfile (self._exe) :
 
             # if not, we compile it on the fly...
             # Note that the program below will actually, for each flop, also create
             # 3 INTEGER OPs and 1 Branching instruction.
             compute_code = open (os.path.dirname(__file__) + '/synapse_compute.c').read ()
 
-            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._compute_exe,
+            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._exe,
                                   shell=True,
                                   stdin=subprocess.PIPE, 
                                   stdout=subprocess.PIPE, 
@@ -63,12 +60,11 @@ class Compute (AtomBase) :
     @sus.returns (sus.nothing)
     def run (self, info={}) : 
 
-        n_compute  = 1
+        n = 1
 
-        if 'n_compute'  in info : n_compute  = info['n_compute']
+        if 'n' in info : n = info['n']
 
-        self._proc  = multiprocessing.Process (target=self.work_compute , args=(n_compute, ))
-
+        self._proc = multiprocessing.Process (target=self.work, args=(n,))
         self._proc.start ()
 
 
@@ -85,14 +81,14 @@ class Compute (AtomBase) :
     #
     @sus.takes   ('Compute')
     @sus.returns (sus.nothing)
-    def work_compute (self, n_compute) :
+    def work (self, n) :
         """
         run requested number of compute
         """
 
-        print "start compute"
+        print "start compute %d" % n
 
-        p = subprocess.Popen ("%s %d" % (self._compute_exe, n_compute), 
+        p = subprocess.Popen ("%s %d" % (self._exe, n), 
                               shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 

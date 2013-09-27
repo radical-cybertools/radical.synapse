@@ -3,6 +3,7 @@
 
 int main (int argc, char** argv)
 {
+  /* size */
   if ( argc < 2 )
   {
     return -1;

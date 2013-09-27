@@ -17,6 +17,7 @@ int main (int argc, char** argv)
   /* storage target */
   char*  tgt  =        argv[1];
   off_t  n    = atol  (argv[2]) * 1024 * 1024;  /* 2^20 (MByte) */
+
   int    fd   = open  (tgt, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
   if ( fd < 0 )
   {

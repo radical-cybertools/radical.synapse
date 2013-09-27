@@ -31,21 +31,18 @@ class Storage (AtomBase) :
 
         AtomBase.__init__ (self, STORAGE, info)
 
-        # workload property for this atom
-        self.load_storage = 1000
-
         # create our C-based workload script in tmp space
-        self._storage_exe = "%s/synapse_storage" % self._tmpdir
+        self._exe = "%s/synapse_storage" % self._tmpdir
 
         # already have the storage tool?
-        if  not os.path.isfile (self._storage_exe) :
+        if  not os.path.isfile (self._exe) :
 
             # if not, we compile it on the fly...
             # Note that the program below will actually, for each flop, also create
             # 3 INTEGER OPs and 1 Branching instruction.
             storage_code = open (os.path.dirname(__file__) + '/synapse_storage.c').read ()
 
-            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._storage_exe,
+            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._exe,
                                   shell=True,
                                   stdin=subprocess.PIPE, 
                                   stdout=subprocess.PIPE, 
@@ -63,14 +60,16 @@ class Storage (AtomBase) :
     @sus.returns (sus.nothing)
     def run (self, info={}) : 
 
-        n_storage = 1
+        t = "/tmp/synapse.%p.storage"
+        n = 1
 
-        if  'n_storage' in info : n_storage = info['n_storage']
+        if  'tgt' in info : t = info['tgt']
+        if  'n'   in info : n = info['n']
+
+        tgt = t % { 'tmp' : self._tmpdir, 'pid' : self._pid }
 
 
-        self._proc = multiprocessing.Process (target=self.work_storage,
-            args=(n_storage,))
-
+        self._proc = multiprocessing.Process (target=self.work, args=(tgt,n))
         self._proc.start ()
 
 
@@ -88,14 +87,14 @@ class Storage (AtomBase) :
     #
     @sus.takes   ('Storage')
     @sus.returns (sus.nothing)
-    def work_storage (self, n_storage) :
+    def work (self, tgt, n) :
         """
         allocate requested amount of storage
         """
 
-        print "start storage"
+        print "start storage %s %d" % (tgt, n)
 
-        p = subprocess.Popen ("%s %d" % (self._storage_exe, n_storage), 
+        p = subprocess.Popen ("%s %s %d" % (self._exe, tgt, n), 
                               shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
@@ -105,7 +104,7 @@ class Storage (AtomBase) :
         if  pout: print pout
         if  perr: print perr
 
-        print "stop  storage"
+        print "stop  storage %s" % p.returncode
 
 #
 #-------------------------------------------------------------------------------
