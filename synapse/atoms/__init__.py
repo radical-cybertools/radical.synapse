@@ -5,5 +5,5 @@ from base      import AtomBase
 from compute   import Compute
 from memory    import Memory
 from storage   import Storage
-# from network   import Network
+from network   import Network
 
