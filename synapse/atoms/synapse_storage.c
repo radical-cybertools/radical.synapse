@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#define CHUNKSIZE  (1024 * 1024)  /* 2^20 */
+
 int main (int argc, char** argv)
 {
   if ( argc < 3 )
@@ -16,16 +18,16 @@ int main (int argc, char** argv)
 
   /* storage target */
   char*  tgt  =        argv[1];
-  off_t  n    = atol  (argv[2]) * 1024 * 1024;  /* 2^20 (MByte) */
-
+  off_t  n    = atol  (argv[2]) * CHUNKSIZE;
   int    fd   = open  (tgt, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
+
   if ( fd < 0 )
   {
     perror ("open failed");
     return -2;
   }
 
-  off_t off = 1024;
+  off_t off = CHUNKSIZE;
   off_t cnt = 0;
 
   while ( off < (n+1) )
@@ -46,22 +48,9 @@ int main (int argc, char** argv)
       return -4;
     }
 
-
-    off += 1024;
+    off += CHUNKSIZE;
     cnt += 1;
-
-    /*
-    if ( 0 == (cnt % 1024) )
-    {
-      fprintf (stdout, ".");
-      fflush  (stdout);
-    }
-    */
   }
-
-  /*
-  fprintf (stdout, "\n");
-  */
 
   close (fd);
 

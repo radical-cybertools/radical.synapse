@@ -1,6 +1,8 @@
 
 #include <stdlib.h>
 
+#define CHUNKSIZE  (1024 * 1024)  /* 2^20 */
+
 int main (int argc, char** argv)
 {
   /* size */
@@ -9,8 +11,7 @@ int main (int argc, char** argv)
     return -1;
   }
 
-  /* SYNAPSE_MEMORY * 2^20 (MByte) */
-  size_t n = atol   (argv[1]) * 1024 * 1024;
+  size_t n = atol   (argv[1]) * CHUNKSIZE;
   char*  c = malloc (n * sizeof(char));
 
   /* make sure the memory actually got allocated */

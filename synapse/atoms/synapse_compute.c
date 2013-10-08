@@ -1,6 +1,8 @@
 
 #include <stdlib.h>
 
+#define CHUNKSIZE  (1000 * 1000)  /* 10^6 */
+
 int main (int argc, char** argv)
 {
   /* size */
@@ -9,8 +11,7 @@ int main (int argc, char** argv)
     return -1;
   }
 
-  /* SYNAPSE_COMPUTE * 10^6 (MFLOPs)*/
-  size_t n = atol (argv[1]) * 1000 * 1000;
+  size_t n = atol (argv[1]) * CHUNKSIZE;
   double f = 1.0;
 
   /* consume the given number of FLOPs, and some IOPS, too */
