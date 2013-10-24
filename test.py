@@ -45,5 +45,5 @@ with open('%s/synapses.log' % os.environ['HOME'], 'a') as f :
     # burn some more cyles, for the fun of it
     sac.run (info={'n' : 1}) # consume  1 GFlop CPY Cycles
     
-    f.write ('%s : %s : %4.2f : %s\n' % (os.getpid(), host, time.time() - start, times))
+    f.write ('%5s : %s : %4.2f : %s\n' % (os.getpid(), host, time.time() - start, times))
 
