@@ -28,7 +28,8 @@ int main (int argc, char** argv)
     }
 
     /* clear disk cache */
-    (void) syncfs (fd); 
+  //(void) syncfs (fd); 
+    (void) sync ();
 
     off_t tot = 0;
     char* buf = malloc (CHUNKSIZE);
@@ -47,7 +48,8 @@ int main (int argc, char** argv)
     }
   
     /* clear disk cache */
-    (void) syncfs (fd); 
+  //(void) syncfs (fd); 
+    (void) sync ();
 
     free  (buf);
     close (fd);
