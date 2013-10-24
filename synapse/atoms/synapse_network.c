@@ -55,8 +55,8 @@ int main (int argc, char** argv)
     {
       while ( ret <= 0 )
       {
-        fprintf (stdout, ".");
-        fflush  (stdout);
+     // fprintf (stdout, ".");
+     // fflush  (stdout);
 
         ret = recv (sock, c, CHUNKSIZE, MSG_WAITALL);
 
@@ -77,12 +77,12 @@ int main (int argc, char** argv)
     {
       while ( ret <= 0 )
       {
-        fprintf (stdout, ":");
-        fflush  (stdout);
+     // fprintf (stdout, ":");
+     // fflush  (stdout);
         
         ret = send (sock, c, CHUNKSIZE, MSG_NOSIGNAL);
 
-        if ( ret != CHUNKSIZE )
+        if ( ret != CHUNKSIZE ) 
         {
           perror ("send failed");
           exit (-1);
@@ -92,7 +92,18 @@ int main (int argc, char** argv)
     }
   }
 
-  close (sock);
+  /* client closes the connection, and server waits until that is done.  This
+   * way, the socket will not end up in TIME_WAIT, so we'll avoid the dreaded
+   * 'Address already in use' error... */
+  if ( strcmp ("server", t) ) 
+  {
+    close (sock);
+  } 
+  else 
+  {
+    ssize_t ret = recv (sock, c, CHUNKSIZE, MSG_WAITALL);
+    /* ignore error */
+  }
 
   return 0;
 
@@ -106,6 +117,8 @@ int server (int port)
   struct sockaddr_in dest;
   struct sockaddr_in serv;
   int    ssock;
+  int    ret;
+  int    opt = 1;
 
   memset (&serv, 0, sizeof (serv));
   serv.sin_family      = AF_INET;
@@ -113,12 +126,35 @@ int server (int port)
   serv.sin_port        = htons (port);
 
   ssock = socket (AF_INET, SOCK_STREAM, 0);
+  if ( ssock < 0 ) 
+  {
+    perror ("socket failed");
+    exit (-1);
+  }  
 
   /* bind serv information to ssock */
-  bind (ssock, (struct sockaddr *)&serv, sizeof (struct sockaddr));
+  ret = bind (ssock, (struct sockaddr *)&serv, sizeof (struct sockaddr));
+  if ( ret < 0 ) 
+  {
+    perror ("bind failed");
+    exit (-1);
+  }  
+
+  /* make sure socket closes quickly on failure */
+  ret = setsockopt (ssock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof (int));
+  if ( ret < 0 ) 
+  {
+    perror ("setsockopt failed");
+    exit (-1);
+  }  
 
   /* start listening, allowing a queue of up to 1 pending connection */
-  listen (ssock, 5);
+  ret = listen (ssock, 100);
+  if ( ret < 0 ) 
+  {
+    perror ("listen failed");
+    exit (-1);
+  }  
 
   return server_accept (ssock);
 }
@@ -130,6 +166,11 @@ int server_accept (int ssock)
   socklen_t socksize = sizeof (struct sockaddr_in);
 
   int sock = accept (ssock, (struct sockaddr *)&dest, &socksize);
+  if ( sock < 0 ) 
+  {
+    perror ("accept failed");
+    exit (-1);
+  }  
 
   // printf ("Incoming connection from %s\n", inet_ntoa (dest.sin_addr));
 
@@ -141,12 +182,12 @@ int server_accept (int ssock)
 int client (char* host, int port)
 {
   // printf ("creating client: %s %d\n", host, port);
-  int                  sock;
   struct sockaddr_in   addr_server;
   struct hostent     * he_server;
+  int                  sock;
+  int                  ret;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-
   if ( sock < 0 ) 
   {
     perror ("cannot open socket");
@@ -167,7 +208,8 @@ int client (char* host, int port)
   addr_server.sin_family = AF_INET;
   addr_server.sin_port   = htons (port);
 
-  if ( connect (sock, (struct sockaddr *) &addr_server, sizeof(addr_server)) < 0 )
+  ret = connect (sock, (struct sockaddr *) &addr_server, sizeof(addr_server));
+  if ( ret < 0 )
   {
     perror ("connect failed");
     exit (-1);

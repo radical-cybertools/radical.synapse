@@ -27,6 +27,9 @@ int main (int argc, char** argv)
     return -2;
   }
 
+  /* clear disk cache */
+  (void) syncfs (fd); 
+
   off_t off = CHUNKSIZE;
   off_t cnt = 0;
 
@@ -51,6 +54,9 @@ int main (int argc, char** argv)
     off += CHUNKSIZE;
     cnt += 1;
   }
+
+  /* clear disk cache */
+  (void) syncfs (fd); 
 
   close (fd);
 

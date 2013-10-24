@@ -1,34 +1,22 @@
 
+
 __author__    = "Andre Merzky"
 __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
 import os
+import time
 import errno
 import threading
+import subprocess
+import multiprocessing
 
-import saga.utils.logger       as sul
-import saga.utils.signatures   as sus
+import radical.utils              as ru
+import radical.utils.logger       as rul
+import radical.utils.signatures   as rus
 
-from constants import UNKNOWN, COMPUTE, STORAGE, NETWORK, ANY
-
-# ------------------------------------------------------------------------------
-#
-# use module level counter for unique IDs
-#
-idx = {}
-idx[COMPUTE] = 0
-idx[STORAGE] = 0
-idx[NETWORK] = 0
-idx[UNKNOWN] = 0
-
-def _get_aid (atype) :
-
-    if atype == COMPUTE : return ("compute_%06d" % idx[atype])
-    if atype == STORAGE : return ("storage_%06d" % idx[atype])
-    if atype == NETWORK : return ("network_%06d" % idx[atype])
-    else                : return ("unknown_%06d" % idx[UNKNOWN])
+from constants import UNKNOWN, COMPUTE, STORAGE, NETWORK
 
 
 # ------------------------------------------------------------------------------
@@ -37,19 +25,21 @@ class AtomBase (object) :
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('AtomBase', 
-                  int, 
-                  sus.optional(dict))
-    @sus.returns (sus.nothing)
-    def __init__  (self, atype, info=None) :
+    @rus.takes   ('AtomBase', 
+                  basestring, 
+                  dict)
+    @rus.returns (rus.nothing)
+    def __init__  (self, atype) :
 
 
         self.atype  = atype
-        self.aid    = _get_aid (atype)
-        self.logger = sul.getLogger (self.aid)
+        self.aid    = ru.generate_id ("%-10s" % atype)
+        self.logger = rul.getLogger (self.aid)
 
 
         # storage for temporary data and statistics
+        self.delay   = 0
+        self._proc   = None
         self._uid    = os.getuid ()
         self._pid    = os.getpid ()
         self._tmpdir = "/tmp/synapse_%d_%d" % (self._uid, self._pid)
@@ -63,19 +53,91 @@ class AtomBase (object) :
                 pass
             else: raise
 
+        # create our C-based workload script in tmp space
+        self._exe = "%s/synapse_%s"  %  (self._tmpdir, atype)
 
+        # already have the tool?
+        if  not os.path.isfile (self._exe) :
 
+            # if not, we compile it on the fly...
+            # Note that the program below will actually, for each flop, also create
+            # 3 INTEGER OPs and 1 Branching instruction.
+            code = open (os.path.dirname(__file__) + '/synapse_%s.c' % atype).read ()
+
+            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._exe,
+                                  shell=True,
+                                  stdin=subprocess.PIPE, 
+                                  stdout=subprocess.PIPE, 
+                                  stderr=subprocess.PIPE)
+            (pout, perr) = p.communicate (code)
+
+            if  p.returncode :
+                raise Exception("Couldn't create %s: %s : %s" % (atype, pout, perr))
 
 
     # --------------------------------------------------------------------------
     #
-    @sus.takes   ('AtomBase')
-    @sus.returns (basestring)
+    @rus.takes   ('AtomBase')
+    @rus.returns (rus.nothing)
+    def work (self, *args) :
+
+        cmd = self._exe
+        for arg in args :
+            cmd += ' %s' % str(arg)
+
+        print "start %-10s (%s) (%s)" % (self.atype, self.aid, cmd)
+
+        t_start = time.time ()
+
+        p = subprocess.Popen (cmd, shell=True,
+                              stdin=subprocess.PIPE, 
+                              stdout=subprocess.PIPE, 
+                              stderr=subprocess.PIPE)
+        (pout, perr) = p.communicate ()
+
+        delay = "%3.2f" % (time.time () - t_start)
+        self._queue.put (delay)
+
+        if  pout: print pout
+        if  perr: print perr
+
+        print "stop  %-10s (%s)" % (self.atype, self.aid)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('AtomBase')
+    @rus.returns (rus.nothing)
+    def _run (self, *args) : 
+
+        self._queue = multiprocessing.Queue ()
+        self._proc  = multiprocessing.Process (target=self.work, args=args)
+        self._proc.start ()
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('AtomBase')
+    @rus.returns (basestring)
     def __str__  (self) :
 
         return self.aid
 
 
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('AtomBase')
+    @rus.returns (float)
+    def wait (self) :
 
-# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
+        if  self._proc :
+            self._proc.join ()
+
+        if  not self.delay :
+            self.delay = self._queue.get ()
+
+        return self.delay
+
+
+
 
