@@ -8,7 +8,7 @@ import synapse.atoms as sa
 
 with open('%s/synapses.log' % os.environ['HOME'], 'a') as f :
 
-    host  = os.popen('hostname | cut -f 1 -d . | xargs echo -n').read()
+    host  = os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ()
     stamp = time.ctime()
     start = time.time()
 
@@ -19,9 +19,9 @@ with open('%s/synapses.log' % os.environ['HOME'], 'a') as f :
     san = sa.Network ()
     
     # the atoms below are executed concurrently (in their own threads)
-    sac.run (info={'n' : 100}) # consume  10 GFlop CPY Cycles
-    sam.run (info={'n' : 10})  # allocate  1 GByte memory
-    sas.run (info={'n' : 100,  # write    10 GByte to disk
+    sac.run (info={'n' : 10000}) # consume  10 GFlop CPY Cycles
+    sam.run (info={'n' : 1000})  # allocate  1 GByte memory
+    sas.run (info={'n' : 10000,  # write    10 GByte to disk
                    'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
     
     san.run (info={'type'   : 'server', # communicate a 1 MByte message
