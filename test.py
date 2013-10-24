@@ -21,7 +21,7 @@ with open('%s/synapses.log' % os.environ['HOME'], 'a') as f :
     # the atoms below are executed concurrently (in their own threads)
     sac.run (info={'n' : 10000}) # consume  10 GFlop CPY Cycles
     sam.run (info={'n' : 1000})  # allocate  1 GByte memory
-    sas.run (info={'n' : 10000,  # write    10 GByte to disk
+    sas.run (info={'n' : 2000,   # write     2 GByte to disk
                    'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
     
     san.run (info={'type'   : 'server', # communicate a 1 MByte message
