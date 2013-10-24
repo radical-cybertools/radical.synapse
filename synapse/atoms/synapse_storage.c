@@ -30,29 +30,20 @@ int main (int argc, char** argv)
   /* clear disk cache */
   (void) syncfs (fd); 
 
-  off_t off = CHUNKSIZE;
-  off_t cnt = 0;
+  off_t tot = 0;
+  char* buf[CHUNKSIZE];
 
-  while ( off < (n+1) )
+  while ( tot < (n+1) )
   {
-    off_t  sret = lseek (fd, off-2, SEEK_SET);
+    size_t wret = write (fd, buf, CHUNKSIZE);
 
-    if ( sret != off-2 )
-    {
-      perror ("lseek failed");
-      return -3;
-    }
-
-    size_t wret = write (fd, "x\n", 2);
-
-    if ( wret != 2 )
+    if ( wret != CHUNKSIZE )
     {
       perror ("write failed");
       return -4;
     }
 
-    off += CHUNKSIZE;
-    cnt += 1;
+    tot += CHUNKSIZE;
   }
 
   /* clear disk cache */
