@@ -16,7 +16,7 @@ with open('%s/synapses.log' % os.environ['HOME'], 'a') as f :
     sac = sa.Compute ()
     sam = sa.Memory  ()
     sas = sa.Storage ()
-    san = sa.Network ()
+  # san = sa.Network ()
     
     # the atoms below are executed concurrently (in their own threads)
     sac.run (info={'n' : 10000}) # consume  10 GFlop CPY Cycles
@@ -24,23 +24,23 @@ with open('%s/synapses.log' % os.environ['HOME'], 'a') as f :
     sas.run (info={'n' : 2000,   # write     2 GByte to disk
                    'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
     
-    san.run (info={'type'   : 'server', # communicate a 1 MByte message
-                   'mode'   : 'read',
-                   'port'   : 10000,
-                   'n'      : 100})
-    time.sleep (1)
-    san.run (info={'type'   : 'client',
-                   'mode'   : 'write',
-                   'host'   : 'localhost',
-                   'port'   : 10000,
-                   'n'      : 100})
+  # san.run (info={'type'   : 'server', # communicate a 1 MByte message
+  #                'mode'   : 'read',
+  #                'port'   : 10000,
+  #                'n'      : 100})
+  # time.sleep (1)
+  # san.run (info={'type'   : 'client',
+  #                'mode'   : 'write',
+  #                'host'   : 'localhost',
+  #                'port'   : 10000,
+  #                'n'      : 100})
     
     # wait 'til all atoms are done
     times = {}
     times['c'] = sac.wait ()
     times['m'] = sam.wait ()
     times['s'] = sas.wait ()
-    times['n'] = san.wait ()
+  # times['n'] = san.wait ()
     
     # burn some more cyles, for the fun of it
     sac.run (info={'n' : 1}) # consume  1 GFlop CPY Cycles
