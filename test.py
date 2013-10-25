@@ -72,7 +72,7 @@ with open('%s/synapse.log' % os.environ['HOME'], 'a') as f :
         times['s'] += t_s
       # times['n'] += t_n
         
-        output = '%-10s %10s ------- %7.2f %7.2f %7.2f %3d %3d %3d %3d' % \
+        output = '%-10s %10s ------- %7.2f %7.2f %7.2f %5d %5d %5d %5d' % \
                 (host, "%s.%002d" % (load_id, cid), t_c, t_m, t_s,
                  load_instances, load_compute, load_memory, load_storage)
 
@@ -81,7 +81,7 @@ with open('%s/synapse.log' % os.environ['HOME'], 'a') as f :
 
 
     # also print summary
-    output = '%-10s %7s    %7.2f ------- ------- ------- %3d %3d %3d %3d' % \
+    output = '%-10s %7s    %7.2f ------- ------- ------- %5d %5d %5d %5d' % \
              (host, load_id, time.time() - start, 
              load_instances, load_compute, load_memory, load_storage)
 
