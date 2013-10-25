@@ -86,7 +86,7 @@ class AtomBase (object) :
         for arg in args :
             cmd += ' %s' % str(arg)
 
-        print "start %-10s (%s) (%s)" % (self.atype, self.aid, cmd)
+      # print "start %-10s (%s) (%s)" % (self.atype, self.aid, cmd)
 
         t_start = time.time ()
 
@@ -99,10 +99,10 @@ class AtomBase (object) :
         delay = "%3.2f" % (time.time () - t_start)
         self._queue.put (delay)
 
-        if  pout: print pout
-        if  perr: print perr
+      # if  pout: print pout
+      # if  perr: print perr
 
-        print "stop  %-10s (%s)" % (self.atype, self.aid)
+      # print "stop  %-10s (%s)" % (self.atype, self.aid)
 
 
     # --------------------------------------------------------------------------
