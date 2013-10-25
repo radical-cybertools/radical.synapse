@@ -1,4 +1,3 @@
-#!/bin/sh
 
 python $HOME/synapse/test.py
 
