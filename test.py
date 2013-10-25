@@ -47,5 +47,10 @@ with open('%s/synapse.log' % os.environ['HOME'], 'a') as f :
     # burn some more cyles, for the fun of it
     sac.run (info={'n' : 1}) # consume  1 GFlop CPY Cycles
     
-    f.write ('%-10s : %7.2f : %7.2f : % 7.2f : % 7.2f\n' % (host, float(time.time() - start), float(times['c']), float(times['m']), float(times['s'])))
+    ouput = '%-10s : %7.2f : %7.2f : % 7.2f : % 7.2f\n' % (host, \
+            float(time.time() - start), float(times['c']), 
+            float(times['m']),          float(times['s']))
+
+    print output
+    f.write (output)
 
