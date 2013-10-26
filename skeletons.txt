@@ -1,0 +1,57 @@
+
+Chicago:
+--------
+
+  - Skeletons -- reduced applications, that capture the primary
+    compute and data flows and intereactions
+
+  - The skeleton/framework will never be filled in with real code
+
+  - Skeletons do not execute. They are static descriptions expressed
+    in multiple formats.
+
+  - Skeletons are produced by a parser and the application of some
+    rule/logic to define and relate tasks (looking at the code I still
+    think they are 99% a parser but I happy to be proven wrong). (MT)
+
+  - Skeleton are not meant to be a scaled-down, trimmed version of any
+    real-life application. They describe a predefined subset of
+    parameters that have been observed to be common to multiple
+    real-life distributed application. (MT)
+
+  - Skeletons will never run a real-life workload. Skeleton tasks will
+    never use a real-life program, just commands as 'wait' and 'dd'.
+    (MT)
+
+  - The output of a skeleton is either a DAG/DAX that describes the
+    tasks and dependencies of an application, or perhaps the actual
+    skeleton application, ready to run.
+
+  - Jon/Dan: application monitoring traces could provide parameters to
+    construct skeletons for insufficiently understood / modeled
+    applications.
+
+  - My thought is to not go too deep into MPI task description.
+    Otherwise, the MPI task configuration would be another skeleton
+    framework. On the other hand, I am not sure how coarse the MPI
+    task description should be. (ZZ)
+
+
+Rutgers:
+--------
+
+  - it is a real application, albeit reduced to remove any "execution
+    interference". we will likely make assumptions about what is being
+    reduced. Therefore there can be multiple skeletons for one given
+    application
+
+  - it may still have multiple patterns,  coordination patterns,
+    communication patterns, but it isn't defined by the composition of
+    the patterns
+
+  - the previous point said differently, a skeleton is a top-down
+    decomposition of an application not a bottom-up construction to
+    mimic an application.
+
+  - "skeleton-based application framework" (SJ) ?
+

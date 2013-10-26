@@ -11,7 +11,7 @@ __license__   = "LGPL.v3"
 # Atom Types
 #
 UNKNOWN = 'unknown'
-COMPUTE = 'compute'
+COMPUTE = 'compute_asm'
 MEMORY  = 'memory' 
 STORAGE = 'storage'
 NETWORK = 'network'
