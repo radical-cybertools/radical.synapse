@@ -30,13 +30,19 @@ with open('%s/synapse.log' % os.environ['HOME'], 'a') as f :
         app['m'] = sa.Memory  ()
         app['s'] = sa.Storage ()
       # app['n'] = sa.Network ()
-        
+
+        apps.append (app)
+
+
+    # run load (this spawns threads as quickly as possible)
+    for app in apps :
+
         # the atoms below are executed concurrently (in their own threads)
         app['c'].run (info={'n'   : load_compute})  # consume  10 GFlop CPY Cycles
         app['m'].run (info={'n'   : load_memory})   # allocate  5 GByte memory
         app['s'].run (info={'n'   : load_storage,   # write     2 GByte to disk
                             'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
-        
+
       # app['n'].run (info={'type'   : 'server', # communicate a 1 MByte message
       #                     'mode'   : 'read',
       #                     'port'   : 10000,
@@ -48,8 +54,6 @@ with open('%s/synapse.log' % os.environ['HOME'], 'a') as f :
       #                     'port'   : 10000,
       #                     'n'      : 100})
 
-        apps.append (app)
-        
 
     # all are started -- now wait for completion and collect times
     times = {}
@@ -71,7 +75,7 @@ with open('%s/synapse.log' % os.environ['HOME'], 'a') as f :
         times['m'] += t_m
         times['s'] += t_s
       # times['n'] += t_n
-        
+
         output = '%-10s %10s ------- %7.2f %7.2f %7.2f %5d %5d %5d %5d' % \
                 (host, "%s.%002d" % (load_id, cid), t_c, t_m, t_s,
                  load_instances, load_compute, load_memory, load_storage)
