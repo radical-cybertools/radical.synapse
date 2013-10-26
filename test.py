@@ -6,9 +6,9 @@ import time
 import synapse.atoms as sa
 
 
-with open('%s/synapse.log' % os.environ['HOME'], 'a') as f :
+with open ('./test.dat', 'a') as f :
 
-#   sync  = os.popen ('rm -rf /tmp/synapse/')
+    sync  = os.popen ('rm -rf /tmp/synapse/')
     sync  = os.popen ('sync')
     host  = os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ()
     stamp = time.ctime()
