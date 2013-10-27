@@ -92,3 +92,5 @@ with open ('./test.dat', 'a') as f :
     print output
     f.write ("%s\n" % output)
 
+    time.sleep (10)
+
