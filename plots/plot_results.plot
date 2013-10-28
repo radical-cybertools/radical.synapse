@@ -73,7 +73,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C1\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C1\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_1.pdf'
+set output    'scaling_compute_1.png'
 replot
 print "C1"
 
@@ -87,7 +87,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C2\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C2\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_2.pdf'
+set output    'scaling_compute_2.png'
 replot
 print "C2"
 
@@ -101,7 +101,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C3\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C3\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_3.pdf'
+set output    'scaling_compute_3.png'
 replot
 print "C3"
 
@@ -115,7 +115,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C4\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C4\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_4.pdf'
+set output    'scaling_compute_4.png'
 replot
 print "C4"
 
@@ -129,7 +129,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C5\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C5\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_5.pdf'
+set output    'scaling_compute_5.png'
 replot
 print "C5"
 
@@ -143,7 +143,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C6\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C6\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_6.pdf'
+set output    'scaling_compute_6.png'
 replot
 print "C6"
 
@@ -157,7 +157,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C7\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C7\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_7.pdf'
+set output    'scaling_compute_7.png'
 replot
 print "C7"
 
@@ -171,7 +171,7 @@ plot[1:8][0:40] \
     "<(grep -e ' C8\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' C8\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_compute_8.pdf'
+set output    'scaling_compute_8.png'
 replot
 print "C8"
 
@@ -190,7 +190,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M1\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M1\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_1.pdf'
+set output    'scaling_memory_1.png'
 replot
 print "M1"
 
@@ -204,7 +204,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M2\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M2\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_2.pdf'
+set output    'scaling_memory_2.png'
 replot
 print "M2"
 
@@ -218,7 +218,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M3\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M3\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_3.pdf'
+set output    'scaling_memory_3.png'
 replot
 print "M3"
 
@@ -232,7 +232,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M4\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M4\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_4.pdf'
+set output    'scaling_memory_4.png'
 replot
 print "M4"
 
@@ -246,7 +246,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M5\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M5\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_5.pdf'
+set output    'scaling_memory_5.png'
 replot
 print "M5"
 
@@ -260,7 +260,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M6\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M6\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_6.pdf'
+set output    'scaling_memory_6.png'
 replot
 print "M6"
 
@@ -274,7 +274,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M7\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M7\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_7.pdf'
+set output    'scaling_memory_7.png'
 replot
 print "M7"
 
@@ -288,7 +288,7 @@ plot[1:8][0:25] \
     "<(grep -e ' M8\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' M8\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_memory_8.pdf'
+set output    'scaling_memory_8.png'
 replot
 print "M8"
 
@@ -307,7 +307,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S1\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S1\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_1.pdf'
+set output    'scaling_storage_1.png'
 replot
 print "S1"
 
@@ -321,7 +321,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S2\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S2\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_2.pdf'
+set output    'scaling_storage_2.png'
 replot
 print "S2"
 
@@ -335,7 +335,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S3\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S3\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_3.pdf'
+set output    'scaling_storage_3.png'
 replot
 print "S3"
 
@@ -349,7 +349,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S4\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S4\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_4.pdf'
+set output    'scaling_storage_4.png'
 replot
 print "S4"
 
@@ -363,7 +363,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S5\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S5\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_5.pdf'
+set output    'scaling_storage_5.png'
 replot
 print "S5"
 
@@ -377,7 +377,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S6\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S6\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_6.pdf'
+set output    'scaling_storage_6.png'
 replot
 print "S6"
 
@@ -391,7 +391,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S7\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S7\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_7.pdf'
+set output    'scaling_storage_7.png'
 replot
 print "S7"
 
@@ -405,7 +405,7 @@ plot[1:8][0:500] \
     "<(grep -e ' S8\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
     "<(grep -e ' S8\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
 set term pngcairo enhanced color font "Arial,12"
-set output    'scaling_storage_8.pdf'
+set output    'scaling_storage_8.png'
 replot
 print "S8"
 
