@@ -8,9 +8,11 @@ import synapse.atoms as sa
 
 with open ('./test.dat', 'a') as f :
 
-    sync  = os.popen ('rm -rf /tmp/synapse/')
-    sync  = os.popen ('sync')
     host  = os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ()
+    _     = os.popen ('sync')
+    _     = os.popen ('rm -rf /tmp/synapse/')
+    _     = os.popen ('sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"')
+
     stamp = time.ctime()
     start = time.time()
 
