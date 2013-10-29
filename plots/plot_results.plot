@@ -4,7 +4,7 @@
 # base parameters
 #
 set key       Left left
-set pointsize 0.2
+set pointsize  0.2
 #set ytic      0,5
 
 # --------------------------------------------------------------------------------------------------
@@ -18,10 +18,14 @@ set output    'weak_scaling_compute.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:64][0:200] \
-    "<(grep -e WS.C total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    './WS.C.partial.dat'        using 7:4 title 'Compute'  with points      pt 6, \
-    './WS.C.partial.dat'        using 7:5 title 'Memory'   with points      pt 6, \
-    './WS.C.partial.dat'        using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e 'WS.C\... '  mod.dat)" using ($7+0.2):3 title 'Total   mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e 'WS.C\...\.' mod.dat)" using ($7-0.2):4 title 'Compute mod' with points      lc 2 pt 6, \
+    "<(grep -e 'WS.C\...\.' mod.dat)" using ($7-0.2):5 title 'Memory  mod' with points      lc 3 pt 6, \
+    "<(grep -e 'WS.C\...\.' mod.dat)" using ($7-0.2):6 title 'Storage mod' with points      lc 4 pt 6, \
+    "<(grep -e 'WS.C\... '  exp.dat)" using ($7-0.2):3 title 'Total   exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e 'WS.C\...\.' exp.dat)" using ($7-0.2):4 title 'Compute exp' with points      lc 2 pt 6, \
+    "<(grep -e 'WS.C\...\.' exp.dat)" using ($7-0.2):5 title 'Memory  exp' with points      lc 3 pt 6, \
+    "<(grep -e 'WS.C\...\.' exp.dat)" using ($7-0.2):6 title 'Storage exp' with points      lc 4 pt 6
 set output 'weak_scaling_compute.png'
 set term   pngcairo enhanced color font "Arial,12"
 replot
@@ -32,10 +36,14 @@ set output    'weak_scaling_memory.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:64][0:20] \
-    "<(grep -e WS.M total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    './WS.M.partial.dat'        using 7:4 title 'Compute'  with points      pt 6, \
-    './WS.M.partial.dat'        using 7:5 title 'Memory'   with points      pt 6, \
-    './WS.M.partial.dat'        using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e 'WS.M\... '  mod.dat)" using ($7+0.2):3 title 'Total   mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e 'WS.M\...\.' mod.dat)" using ($7-0.2):4 title 'Compute mod' with points      lc 2 pt 6, \
+    "<(grep -e 'WS.M\...\.' mod.dat)" using ($7-0.2):5 title 'Memory  mod' with points      lc 3 pt 6, \
+    "<(grep -e 'WS.M\...\.' mod.dat)" using ($7-0.2):6 title 'Storage mod' with points      lc 4 pt 6, \
+    "<(grep -e 'WS.M\... '  exp.dat)" using ($7-0.2):3 title 'Total   exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e 'WS.M\...\.' exp.dat)" using ($7-0.2):4 title 'Compute exp' with points      lc 2 pt 6, \
+    "<(grep -e 'WS.M\...\.' exp.dat)" using ($7-0.2):5 title 'Memory  exp' with points      lc 3 pt 6, \
+    "<(grep -e 'WS.M\...\.' exp.dat)" using ($7-0.2):6 title 'Storage exp' with points      lc 4 pt 6
 set output 'weak_scaling_memory.png'
 set term   pngcairo enhanced color font "Arial,12"
 replot
@@ -47,10 +55,14 @@ set output    'weak_scaling_storage.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot [1:64][0:500] \
-    "<(grep -e WS.S total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    './WS.S.partial.dat'        using 7:4 title 'Compute'  with points      pt 6, \
-    './WS.S.partial.dat'        using 7:5 title 'Memory'   with points      pt 6, \
-    './WS.S.partial.dat'        using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e 'WS.S\... '  mod.dat)" using ($7+0.2):3 title 'Total   mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e 'WS.S\...\.' mod.dat)" using ($7-0.2):4 title 'Compute mod' with points      lc 2 pt 6, \
+    "<(grep -e 'WS.S\...\.' mod.dat)" using ($7-0.2):5 title 'Memory  mod' with points      lc 3 pt 6, \
+    "<(grep -e 'WS.S\...\.' mod.dat)" using ($7-0.2):6 title 'Storage mod' with points      lc 4 pt 6, \
+    "<(grep -e 'WS.S\... '  exp.dat)" using ($7-0.2):3 title 'Total   exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e 'WS.S\...\.' exp.dat)" using ($7-0.2):4 title 'Compute exp' with points      lc 2 pt 6, \
+    "<(grep -e 'WS.S\...\.' exp.dat)" using ($7-0.2):5 title 'Memory  exp' with points      lc 3 pt 6, \
+    "<(grep -e 'WS.S\...\.' exp.dat)" using ($7-0.2):6 title 'Storage exp' with points      lc 4 pt 6
 set output 'weak_scaling_storage.png'
 set term   pngcairo enhanced color font "Arial,12"
 replot
@@ -61,17 +73,22 @@ print "WS.S"
 #
 # Scaling Compute load + background
 #
-set xtic      1,1
+set pointsize  1.2
+set xtic       1,1
 
 set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_1.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C1\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C1\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C1\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C1\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C1\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 3 lw 3, \
+    "<(grep -e ' C1\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C1\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C1\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C1\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C1\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C1\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C1\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_1.png'
 replot
@@ -82,10 +99,14 @@ set output    'scaling_compute_2.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C2\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C2\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C2\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C2\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C2\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 3 lw 3, \
+    "<(grep -e ' C2\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C2\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C2\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C2\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C2\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C2\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C2\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_2.png'
 replot
@@ -96,10 +117,14 @@ set output    'scaling_compute_3.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C3\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C3\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C3\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C3\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C3\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C3\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C3\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C3\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C3\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C3\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C3\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C3\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_3.png'
 replot
@@ -110,10 +135,14 @@ set output    'scaling_compute_4.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C4\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C4\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C4\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C4\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C4\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C4\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C4\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C4\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C4\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C4\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C4\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C4\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_4.png'
 replot
@@ -124,10 +153,14 @@ set output    'scaling_compute_5.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C5\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C5\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C5\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C5\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C5\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C5\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C5\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C5\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C5\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C5\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C5\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C5\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_5.png'
 replot
@@ -138,10 +171,14 @@ set output    'scaling_compute_6.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C6\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C6\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C6\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C6\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C6\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C6\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C6\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C6\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C6\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C6\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C6\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C6\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_6.png'
 replot
@@ -152,10 +189,14 @@ set output    'scaling_compute_7.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C7\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C7\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C7\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C7\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C7\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C7\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C7\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C7\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C7\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C7\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C7\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C7\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_7.png'
 replot
@@ -166,10 +207,14 @@ set output    'scaling_compute_8.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:40] \
-    "<(grep -e ' C8\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' C8\...' C.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' C8\...' C.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' C8\...' C.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' C8\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C8\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' C8\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' C8\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' C8\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' C8\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' C8\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' C8\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_compute_8.png'
 replot
@@ -185,10 +230,14 @@ set output    'scaling_memory_1.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M1\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M1\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M1\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M1\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M1\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M1\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M1\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M1\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M1\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M1\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M1\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M1\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_1.png'
 replot
@@ -199,10 +248,14 @@ set output    'scaling_memory_2.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M2\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M2\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M2\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M2\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M2\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M2\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M2\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M2\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M2\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M2\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M2\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M2\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_2.png'
 replot
@@ -213,10 +266,14 @@ set output    'scaling_memory_3.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M3\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M3\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M3\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M3\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M3\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M3\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M3\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M3\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M3\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M3\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M3\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M3\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_3.png'
 replot
@@ -227,10 +284,15 @@ set output    'scaling_memory_4.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M4\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M4\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M4\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M4\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M4\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M4\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M4\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M4\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M4\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M4\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M4\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M4\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
+set term pngcairo enhanced color font "Arial,12"
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_4.png'
 replot
@@ -241,10 +303,14 @@ set output    'scaling_memory_5.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M5\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M5\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M5\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M5\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M5\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M5\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M5\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M5\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M5\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M5\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M5\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M5\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_5.png'
 replot
@@ -255,10 +321,14 @@ set output    'scaling_memory_6.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M6\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M6\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M6\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M6\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M6\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M6\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M6\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M6\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M6\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M6\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M6\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M6\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_6.png'
 replot
@@ -269,10 +339,14 @@ set output    'scaling_memory_7.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M7\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M7\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M7\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M7\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M7\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M7\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M7\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M7\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M7\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M7\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M7\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M7\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_7.png'
 replot
@@ -283,10 +357,14 @@ set output    'scaling_memory_8.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:25] \
-    "<(grep -e ' M8\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' M8\...' M.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' M8\...' M.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' M8\...' M.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' M8\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M8\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' M8\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' M8\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' M8\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' M8\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' M8\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' M8\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_memory_8.png'
 replot
@@ -302,10 +380,14 @@ set output    'scaling_storage_1.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S1\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S1\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S1\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S1\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S1\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S1\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S1\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S1\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S1\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S1\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S1\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S1\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_1.png'
 replot
@@ -316,10 +398,14 @@ set output    'scaling_storage_2.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S2\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S2\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S2\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S2\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S2\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S2\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S2\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S2\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S2\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S2\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S2\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S2\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_2.png'
 replot
@@ -330,10 +416,14 @@ set output    'scaling_storage_3.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S3\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S3\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S3\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S3\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S3\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S3\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S3\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S3\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S3\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S3\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S3\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S3\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_3.png'
 replot
@@ -344,10 +434,14 @@ set output    'scaling_storage_4.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S4\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S4\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S4\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S4\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S4\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S4\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S4\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S4\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S4\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S4\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S4\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S4\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_4.png'
 replot
@@ -358,10 +452,14 @@ set output    'scaling_storage_5.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S5\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S5\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S5\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S5\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S5\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S5\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S5\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S5\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S5\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S5\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S5\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S5\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_5.png'
 replot
@@ -372,10 +470,14 @@ set output    'scaling_storage_6.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S6\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S6\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S6\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S6\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S6\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S6\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S6\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S6\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S6\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S6\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S6\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S6\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_6.png'
 replot
@@ -386,10 +488,14 @@ set output    'scaling_storage_7.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S7\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S7\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S7\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S7\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S7\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S7\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S7\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S7\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S7\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S7\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S7\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S7\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_7.png'
 replot
@@ -400,10 +506,14 @@ set output    'scaling_storage_8.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
 plot[1:8][0:500] \
-    "<(grep -e ' S8\...'     total.dat)" using 7:3 title 'Total'    with linespoints pt 6 lw 3, \
-    "<(grep -e ' S8\...' S.partial.dat)" using 7:4 title 'Compute'  with points      pt 6, \
-    "<(grep -e ' S8\...' S.partial.dat)" using 7:5 title 'Memory'   with points      pt 6, \
-    "<(grep -e ' S8\...' S.partial.dat)" using 7:6 title 'Storage'  with points      pt 6 
+    "<(grep -e ' S8\... '  mod.dat)" using ($7+0.1):3 title 'Total mod' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S8\...\.' mod.dat)" using ($7+0.1):4 title 'Compute'   with points      lc 2 pt 3, \
+    "<(grep -e ' S8\...\.' mod.dat)" using ($7+0.1):5 title 'Memory'    with points      lc 3 pt 3, \
+    "<(grep -e ' S8\...\.' mod.dat)" using ($7+0.1):6 title 'Storage'   with points      lc 4 pt 3, \
+    "<(grep -e ' S8\... '  exp.dat)" using ($7-0.1):3 title 'Total exp' with linespoints lc 1 pt 6 lw 3, \
+    "<(grep -e ' S8\...\.' exp.dat)" using ($7-0.1):4 title 'Compute'   with points      lc 2 pt 6, \
+    "<(grep -e ' S8\...\.' exp.dat)" using ($7-0.1):5 title 'Memory'    with points      lc 3 pt 6, \
+    "<(grep -e ' S8\...\.' exp.dat)" using ($7-0.1):6 title 'Storage'   with points      lc 4 pt 6 
 set term pngcairo enhanced color font "Arial,12"
 set output    'scaling_storage_8.png'
 replot
