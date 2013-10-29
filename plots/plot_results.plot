@@ -100,7 +100,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_1.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C1\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 2, \
     "<(grep -e ' C1\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C1\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -118,7 +118,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_2.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C2\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' C2\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C2\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -136,7 +136,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_3.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C3\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' C3\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C3\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -154,7 +154,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_4.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C4\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' C4\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C4\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -172,7 +172,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_5.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C5\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' C5\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C5\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -190,7 +190,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_6.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C6\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' C6\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C6\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -208,7 +208,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_7.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C7\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' C7\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C7\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -226,7 +226,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_compute_8.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' C8\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' C8\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' C8\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -249,7 +249,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_1.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M1\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M1\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M1\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -267,7 +267,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_2.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M2\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M2\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M2\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -285,7 +285,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_3.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M3\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M3\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M3\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -303,7 +303,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_4.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M4\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M4\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M4\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -322,7 +322,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_5.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M5\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M5\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M5\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -340,7 +340,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_6.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M6\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M6\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M6\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -358,7 +358,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_7.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M7\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M7\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M7\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -376,7 +376,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_memory_8.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:100] \
+plot[0:17][0:100] \
     "<(grep -e ' M8\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' M8\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' M8\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -399,7 +399,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_1.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S1\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S1\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S1\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -417,7 +417,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_2.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S2\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S2\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S2\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -435,7 +435,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_3.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S3\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S3\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S3\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -453,7 +453,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_4.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S4\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S4\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S4\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -471,7 +471,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_5.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S5\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S5\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S5\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -489,7 +489,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_6.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S6\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S6\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S6\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -507,7 +507,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_7.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S7\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S7\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S7\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
@@ -525,7 +525,7 @@ set term pdfcairo enhanced color font "Arial,12"
 set output    'scaling_storage_8.pdf'
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot[0:16][0:1000] \
+plot[0:17][0:1000] \
     "<(grep -e ' S8\... '  mod.dat)" using ($7+0.1):3 title 'Model total'    with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e ' S8\...\.' mod.dat)" using ($7+0.1):4 title 'Model compute'  with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e ' S8\...\.' mod.dat)" using ($7+0.1):5 title 'Model memory'   with points      lc rgb '#0077BB' pt 7, \
