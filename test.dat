@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # host         exp-id     ttc     ttc     ttc     ttc     # comp.   mem  disk
 #                       total    comp     mem    disk  apps  load  load  load
-#                         sec     sec     sec     sec       GFLOP GByte GByte
+#                         sec     sec     sec     sec       MFLOP MByte MByte
 # ------------------------------------------------------------------------------
 boskop       XXXXX.01 -------    6.57    4.38   11.19     1  4000  1000  1000
 boskop       XXXXX      11.38 ------- ------- -------     1  4000  1000  1000
