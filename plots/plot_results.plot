@@ -11,27 +11,6 @@ set pointsize  0.8
 #
 # Weak Scaling: Compute, Memory, Storage
 #
-#set xtic      1,5
-
-# FFAA00
-# FFD300
-# FF7400
-# A37D00
-
-# FF6600
-# 66FF00
-# 6600FF
-# 0066FF
-# 
-# 996600
-# 669900
-# 660099
-# 006699
-
-# lc rgb '#FFAA00'
-# lc rgb '#FFD300'
-# lc rgb '#FF7400'
-# lc rgb '#A37D00'
 
 set term pdfcairo enhanced color font "Arial,12"
 set output    'weak_scaling_compute.pdf'

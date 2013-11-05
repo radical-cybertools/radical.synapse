@@ -1,10 +1,14 @@
 
 
 import os
+import sys
 import time
 
 import synapse.atoms as sa
+import synapse.utils as su
 
+print su.get_mem_usage ()
+print su.get_io_usage  ()
 
 with open ('./test.dat', 'a') as f :
 
@@ -16,11 +20,11 @@ with open ('./test.dat', 'a') as f :
     stamp = time.ctime()
     start = time.time()
 
-    load_id        = str(os.environ['SYNAPSE_ID'])
-    load_instances = int(os.environ['SYNAPSE_INSTANCES'])
-    load_compute   = int(os.environ['SYNAPSE_COMPUTE_GFLOPS'])
-    load_memory    = int(os.environ['SYNAPSE_MEMORY_GBYTES' ])
-    load_storage   = int(os.environ['SYNAPSE_STORAGE_GBYTES'])
+    load_id        = str(os.environ.get ('SYNAPSE_ID',           'X'))
+    load_instances = int(os.environ.get ('SYNAPSE_INSTANCES',      1))
+    load_compute   = int(os.environ.get ('SYNAPSE_COMPUTE_GFLOPS', 0))
+    load_memory    = int(os.environ.get ('SYNAPSE_MEMORY_GBYTES' , 0))
+    load_storage   = int(os.environ.get ('SYNAPSE_STORAGE_GBYTES', 0))
 
     apps = list()
 
@@ -68,10 +72,18 @@ with open ('./test.dat', 'a') as f :
     for app in apps :
         cid += 1
 
-        t_c = float (app['c'].wait ())
-        t_m = float (app['m'].wait ())
-        t_s = float (app['s'].wait ())
-      # t_n = float (app['n'].wait ())
+        info_c = app['c'].wait ()
+        info_m = app['m'].wait ()
+        info_s = app['s'].wait ()
+      # info_n = app['n'].wait ()
+
+        t_c    = float(info_c['timer'])
+        t_m    = float(info_m['timer'])
+        t_s    = float(info_s['timer'])
+      # t_n    = float(info_n['timer'])
+
+        import pprint
+        pprint.pprint (info_c)
 
         times['c'] += t_c
         times['m'] += t_m
@@ -94,5 +106,8 @@ with open ('./test.dat', 'a') as f :
     print output
     f.write ("%s\n" % output)
 
-    time.sleep (10)
+#   time.sleep (10)
+
+    print su.get_mem_usage ()
+    print su.get_io_usage  ()
 
