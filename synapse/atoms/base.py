@@ -90,7 +90,8 @@ class AtomBase (object) :
 
         t_start = time.time ()
 
-        p = subprocess.Popen ("time perf stat %s" % cmd, shell=True,
+      # p = subprocess.Popen ("time perf stat %s" % cmd, shell=True,
+        p = subprocess.Popen ("%s" % cmd, shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
                               stderr=subprocess.PIPE)

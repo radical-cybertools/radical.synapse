@@ -7,18 +7,18 @@ import time
 import synapse.atoms as sa
 import synapse.utils as su
 
-print su.get_mem_usage ()
-print su.get_io_usage  ()
+home  = os.getenv ('HOME')
+host  = os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ()
 
-with open ('./test.dat', 'a') as f :
+with open ('%s/synapse/test.%s.dat' % (home, host), 'a') as f :
 
-    host  = os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ()
     _     = os.popen ('sync')
-    _     = os.popen ('rm -rf /tmp/synapse/')
-    _     = os.popen ('sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"')
+#   _     = os.popen ('rm -rf /tmp/synapse/')
+#   _     = os.popen ('sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"')
 
     stamp = time.ctime()
     start = time.time()
+
 
     load_id        = str(os.environ.get ('SYNAPSE_ID',           'X'))
     load_instances = int(os.environ.get ('SYNAPSE_INSTANCES',      1))
@@ -82,8 +82,8 @@ with open ('./test.dat', 'a') as f :
         t_s    = float(info_s['timer'])
       # t_n    = float(info_n['timer'])
 
-        import pprint
-        pprint.pprint (info_c)
+      # import pprint
+      # pprint.pprint (info_c)
 
         times['c'] += t_c
         times['m'] += t_m
@@ -94,7 +94,7 @@ with open ('./test.dat', 'a') as f :
                 (host, "%s.%002d" % (load_id, cid), t_c, t_m, t_s,
                  load_instances, load_compute, load_memory, load_storage)
 
-        print output
+      # print output
         f.write ("%s\n" % output)
 
 
@@ -103,11 +103,11 @@ with open ('./test.dat', 'a') as f :
              (host, load_id, time.time() - start, 
              load_instances, load_compute, load_memory, load_storage)
 
-    print output
+#   print output
     f.write ("%s\n" % output)
 
 #   time.sleep (10)
 
-    print su.get_mem_usage ()
-    print su.get_io_usage  ()
+#   print su.get_mem_usage ()
+#   print su.get_io_usage  ()
 
