@@ -7,8 +7,8 @@ import time
 import synapse.atoms as sa
 import synapse.utils as su
 
+host  = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
 home  = os.getenv ('HOME')
-host  = os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ()
 
 with open ('%s/synapse/test.%s.dat' % (home, host), 'a') as f :
 
