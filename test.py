@@ -10,7 +10,7 @@ import synapse.utils as su
 host  = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
 home  = os.getenv ('HOME')
 
-with open ('%s/synapse/test.%s.dat' % (home, host), 'a') as f :
+with open ('%s/synapse/experiments/%s.dat' % (home, host), 'a') as f :
 
     _     = os.popen ('sync')
 #   _     = os.popen ('rm -rf /tmp/synapse/')
