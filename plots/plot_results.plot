@@ -8,8 +8,8 @@ set pointsize  0.8
 #set ytic      0,5
 
 # exp = "boskop"
-# exp = "india"
-  exp = "sierra"
+  exp = "india"
+# exp = "sierra"
 
 dat = "../experiments/".exp.".dat"
 mod = "../experiments/".exp.".mod"
