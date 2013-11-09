@@ -1,0 +1,11 @@
+include *.py
+
+#include all tests
+recursive-include tests *
+
+include synapse/*.py
+include synapse/utils/*.py
+include synapse/atoms/*.py
+
+include MANIFEST.in 
+

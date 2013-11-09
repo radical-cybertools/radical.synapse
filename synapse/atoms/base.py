@@ -38,7 +38,7 @@ class AtomBase (object) :
 
 
         # storage for temporary data and statistics
-        self.delay   = 0
+        self.info    = None
         self._proc   = None
         self._uid    = os.getuid ()
         self._pid    = os.getpid ()
@@ -90,19 +90,17 @@ class AtomBase (object) :
 
         t_start = time.time ()
 
-        p = subprocess.Popen (cmd, shell=True,
+      # p = subprocess.Popen ("time perf stat %s" % cmd, shell=True,
+        p = subprocess.Popen ("%s" % cmd, shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
                               stderr=subprocess.PIPE)
         (pout, perr) = p.communicate ()
 
-        delay = "%3.2f" % (time.time () - t_start)
-        self._queue.put (delay)
-
-      # if  pout: print pout
-      # if  perr: print perr
-
-      # print "stop  %-10s (%s)" % (self.atype, self.aid)
+        self._queue.put ({'timer'    : "%3.2f" % (time.time () - t_start),
+                          'exitcode' : p.returncode, 
+                          'stdout'   : pout.split ('\n'), 
+                          'stderr'   : perr.split ('\n')})
 
 
     # --------------------------------------------------------------------------
@@ -134,10 +132,10 @@ class AtomBase (object) :
         if  self._proc :
             self._proc.join ()
 
-        if  not self.delay :
-            self.delay = self._queue.get ()
+        if  not self.info :
+            self.info = self._queue.get ()
 
-        return self.delay
+        return self.info
 
 
 
