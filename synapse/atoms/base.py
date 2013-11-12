@@ -44,7 +44,7 @@ class AtomBase (object) :
         self._pid    = os.getpid ()
      #  self._tmpdir = "/tmp/synapse_%d_%d" % (self._uid, self._pid)
      #  self._tmpdir = "/tmp/synapse/" # FIXME
-        self._tmpdir = "/tmp/synapse/" # FIXME
+        self._tmpdir = "/scratch/synapse/" # FIXME
 
 
         try:
