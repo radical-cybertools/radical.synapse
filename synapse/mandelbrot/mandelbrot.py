@@ -1,9 +1,7 @@
 
 import os
+import time
 import synapse.utils as su
-
-print  su.io_usage ()
-print  su.mem_usage ()
 
 # ------------------------------------------------------------------------------
 #
@@ -46,11 +44,12 @@ def mandel () :
     with open ("/tmp/mb.dat", "w") as f :
         f.write (str(rgb_image))
 
-    print  su.io_usage ()
-    print  su.mem_usage ()
 
 
 # ------------------------------------------------------------------------------
 #
-mandel ()
+perf_info = su.benchmark_function (mandel)
+
+for key in sorted (perf_info.iterkeys()) :
+    print " %-25s : %15.1f" % (key, float(perf_info[key]))
 
