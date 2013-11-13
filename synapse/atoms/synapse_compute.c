@@ -16,8 +16,10 @@ int main (int argc, char** argv)
 
   /* consume the given number of FLOPs, and some IOPS, too */
   unsigned long int i = 0;
-  for (i = 0; i < n; i++ ) { /* 3 MIPS, 1 BRANCH */
-    f = f * 1.000000000001;  /* 1 FLOP           */
+  for (i = 0; i < n; i++ ) {       /* 3 MIPS, 1 BRANCH */
+      if (i > 0) {                 /* 1 Branch         */
+          f = f * 1.000000000001;  /* 1 FLOP           */
+      }
   }
 
   return 0;

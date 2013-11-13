@@ -16,7 +16,6 @@ with open ('%s/synapse/experiments/%s.dat' % (home, host), 'a') as f :
 #   _     = os.popen ('rm -rf /tmp/synapse/')
 #   _     = os.popen ('sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"')
 
-    stamp = time.ctime()
     start = time.time()
 
 
@@ -107,7 +106,6 @@ with open ('%s/synapse/experiments/%s.dat' % (home, host), 'a') as f :
     f.write ("%s\n" % output)
 
     _ = os.popen ('ps -ef | grep -i "/tmp/synapse/" | grep -v grep | cut -c 8-15 | xargs -r kill -9')
-    time.sleep (10)
 
 #   print su.get_mem_usage ()
 #   print su.get_io_usage  ()

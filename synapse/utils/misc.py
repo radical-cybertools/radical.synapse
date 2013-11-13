@@ -105,7 +105,7 @@ def human_to_number (h) :
 #
 def benchmark_function (f, *args, **kwargs) :
 
-    def func_wrapper (f, q, *args, **kwargs) :
+    def func_wrapper (f, q, args, kwargs) :
 
 
         start_io  = get_io_usage  ()
@@ -115,7 +115,7 @@ def benchmark_function (f, *args, **kwargs) :
         _ = q.get ()
 
         # do the deed
-        ret = f ()
+        ret = f (*args, **kwargs)
 
 
         end_io  = get_io_usage  ()
@@ -144,7 +144,10 @@ def benchmark_function (f, *args, **kwargs) :
     q = mp.Queue ()
 
     # run the func in a separate process, but wrap into the wrapper
-    p = mp.Process (target=func_wrapper, args=(f, q, args, kwargs))
+    p = mp.Process (target = func_wrapper, 
+                    args   = (f, q), 
+                    kwargs = {'args'   : args, 
+                              'kwargs' : kwargs})
     p.start ()
 
     # tell perf to watch the new process
