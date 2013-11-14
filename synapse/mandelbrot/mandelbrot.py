@@ -123,7 +123,7 @@ for xy in [2560, 5120]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
         load_storage = int(float(info_1['io.write']) / (1024*1024))
 
         load_id  = 'RMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %5d %5d %5d %5d %5d %5d %5.1f %5.1f' % \
+        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d %9d %9d %5d %5d %5d %5.1f %5.1f' % \
                    (host, load_id, float(info_1['time.real']), 
                     1, load_compute, load_memory, load_storage,
                     xy, xy, z,
@@ -144,7 +144,7 @@ for xy in [2560, 5120]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
         load_storage = int(float(info_2['io.write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %5d %5d %5d %5d %5d %5d %5.1f %5.1f' % \
+        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %9d %9d %9d %5d %5d %5d %5d %5.1f %5.1f' % \
                    (host, load_id, float(info_2['time.real']), 
                     out[0], out[1], out[2],
                     1, load_compute, load_memory, load_storage,
