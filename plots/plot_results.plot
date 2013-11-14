@@ -43,7 +43,7 @@ set output    exp.'/weak_scaling_memory_'.exp.'.pdf'
 set title     'weak scaling memory '.exp
 set xlabel    'number of applications' font "Times-Italic, 20"
 set ylabel    'time to completion (s)' font "Times-Italic, 20"
-plot \
+plot[0:70][0:20]\
     "<(grep -e 'WS.M\... '  ".mod.")" using ($7+0.2):3 title 'Model total'   with linespoints lc rgb '#33DD55' pt 7 lw 3, \
     "<(grep -e 'WS.M\...\.' ".mod.")" using ($7-0.2):4 title 'Model compute' with points      lc rgb '#00BB77' pt 7, \
     "<(grep -e 'WS.M\...\.' ".mod.")" using ($7-0.2):5 title 'Model memory'  with points      lc rgb '#0077BB' pt 7, \

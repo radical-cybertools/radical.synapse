@@ -33,7 +33,7 @@ class Storage (AtomBase) :
     @rus.returns (rus.nothing)
     def run (self, info) : 
 
-        t = "/tmp/synapse.%p.storage"
+        t = "/scratch/synapse/synapse.%p.storage"
         n = 1
 
         if  'tgt' in info : t = info['tgt']
