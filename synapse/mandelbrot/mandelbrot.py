@@ -107,12 +107,14 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
 for xy in [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
     for z in [250] : 
         # print "%d %d %d" % (xy, xy, z)
-        pass
 
-if True :
-    if True :
-        xy = 1000
-        z  = 1
+# # ------------------------------------------------------------------------------
+#         pass
+# if True :
+#     if True :
+#         xy = 1000
+#         z  = 1
+# # ------------------------------------------------------------------------------
 
         _, info_1 = su.benchmark_function (mandel, xy, xy, z)
 
@@ -128,11 +130,8 @@ if True :
                     info_1['cpu.cycles idle front'], info_1['cpu.cycles idle back'])
         print output
 
-        print info_1
-        sys.exit (0)
 
         # --------------------------------------------------------------------------------------------
-
        
         load_compute = int(float(info_1['cpu.ops' ]) / (1024*1024) / 8)
         load_memory  = int(float(info_1['mem.peak']) / (1024*1024))

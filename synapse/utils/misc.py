@@ -38,7 +38,6 @@ def get_mem_usage () :
             else :
                 ret[info[key]] = "%f MB" % (float(v[1]) / scale[v[2].lower ()])
 
-        print ret
         return ret
 
 
@@ -154,7 +153,6 @@ def benchmark_function (f, *args, **kwargs) :
         # send stop signal
         q.put (ret)
         q.put (info)
-        print info
 
     # use a queue to sync with the multi-subprocess
     q = mp.Queue ()
@@ -190,10 +188,10 @@ def benchmark_function (f, *args, **kwargs) :
     threading.Timer (2.0, killperf, [perf.pid]).start ()
     perf_out = perf.communicate()[0].split ('\n')
 
+
     for line in perf_out :
 
         l = ru.ReString (line)
-        print l
 
         perf_keys = {"instructions"         : "cpu.ops",
                      "branches"             : "cpu.branches",
@@ -223,6 +221,12 @@ def benchmark_function (f, *args, **kwargs) :
         if l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
             info["sys.exit"] = int(l.get ()[0].replace(',', ''))
 
+
+        # must haves
+        if not 'cpu.ops'              in info : info['cpu.ops'              ] = 1
+        if not 'mem.resident'         in info : info['mem.resident'         ] = 1
+        if not 'cpu.cycles idle front'in info : info['cpu.cycles idle front'] = 0
+        if not 'cpu.cycles idle back' in info : info['cpu.cycles idle back' ] = 0
 
     return ret, info
 
