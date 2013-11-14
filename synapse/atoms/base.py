@@ -92,8 +92,8 @@ class AtomBase (object) :
         t_start = time.time ()
 
         mem = 0
-        p = subprocess.Popen ("/usr/bin/time -v perf stat %s" % cmd,
-      # p = subprocess.Popen ("%s" % cmd, 
+      # p = subprocess.Popen ("/usr/bin/time -v perf stat %s" % cmd,
+        p = subprocess.Popen ("%s" % cmd, 
                               shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
@@ -101,14 +101,12 @@ class AtomBase (object) :
 
         (pout, perr) = p.communicate ()
 
-        for line in ('%s\n%s' % (pout, perr)).split ('\n') :
-            print line
+        info = {'timer'    : float("%3.2f" % (time.time () - t_start)),
+                'exitcode' : int(p.returncode), 
+                'out'      : pout.split ('\n'), 
+                'err'      : perr.split ('\n')}
 
-        self._queue.put ({'timer'    : "%3.2f" % (time.time () - t_start),
-                          'exitcode' : p.returncode, 
-                          'mem'      : mem,
-                          'stdout'   : pout.split ('\n'), 
-                          'stderr'   : perr.split ('\n')})
+        self._queue.put (info)
 
 
     # --------------------------------------------------------------------------

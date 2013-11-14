@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import pprint        as pp
+import radical.utils as ru
 import synapse.utils as su
 import synapse.atoms as sa
 
@@ -66,42 +67,35 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
     start = time.time()
 
     # create containers for different system workload types
-    app = dict()
-    app['c'] = sa.Compute ()
-    app['m'] = sa.Memory  ()
-    app['s'] = sa.Storage ()
+    atoms = dict()
+    atoms['c'] = sa.Compute ()
+    atoms['m'] = sa.Memory  ()
+    atoms['s'] = sa.Storage ()
 
     # the atoms below are executed concurrently (in their own threads)
-    app['c'].run (info={'n'   : load_compute})
-    app['m'].run (info={'n'   : load_memory})
-    app['s'].run (info={'n'   : load_storage,
+    atoms['c'].run (info={'n'   : load_compute})
+    atoms['m'].run (info={'n'   : load_memory})
+    atoms['s'].run (info={'n'   : load_storage,
                             'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
 
-    # all are started -- now wait for completion and collect times
-    times = {}
-    times['c'] = 0.0
-    times['m'] = 0.0
-    times['s'] = 0.0
+    # wait for all atom threads to be done
+    info_c = atoms['c'].wait ()
+    info_m = atoms['m'].wait ()
+    info_s = atoms['s'].wait ()
 
-    info_c = app['c'].wait ()
-    info_m = app['m'].wait ()
-    info_s = app['s'].wait ()
+    for info in [info_c, info_m, info_s] :
+        for line in info['out'] :
+            l = ru.ReString (line)
+            if  l // '^(ru.\S+)\s+:\s+(\S+)$' :
+                info[l.get()[0]] = l.get()[1]
 
-    t_c    = float(info_c['timer'])
-    t_m    = float(info_m['timer'])
-    t_s    = float(info_s['timer'])
-
-    times['c'] += t_c
-    times['m'] += t_m
-    times['s'] += t_s
-
-    return [t_c, t_m, t_s]
+    return {'c':info_c, 'm':info_m, 's':info_s}
 
 
 # ------------------------------------------------------------------------------
 #
 
-for xy in [128]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
+for xy in [1280]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
     for z in [250] : 
         # print "%d %d %d" % (xy, xy, z)
 
@@ -113,58 +107,65 @@ for xy in [128]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
 #         z  = 1
 # # ------------------------------------------------------------------------------
 
-        _, info_1 = su.benchmark_function (mandel, xy, xy, z)
+        _, info_m = su.benchmark_function (mandel, xy, xy, z)
 
-        load_compute = int(float(info_1['cpu.ops' ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_1['mem.peak']) / (1024*1024))
-        load_storage = int(float(info_1['io.write']) / (1024*1024))
+        load_compute = int(float(info_m['cpu.ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_m['mem.peak']) / (1024*1024))
+        load_storage = int(float(info_m['io.write']) / (1024*1024))
 
         load_id  = 'RMB.%04d' % xy
         output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d %9d %9d %5d %5d %5d %5.1f %5.1f' % \
-                   (host, load_id, float(info_1['time.real']), 
+                   (host, load_id, float(info_m['time.real']), 
                     1, load_compute, load_memory, load_storage,
                     xy, xy, z,
-                    info_1['cpu.cycles idle front'], info_1['cpu.cycles idle back'])
+                    info_m['cpu.cycles idle front'], info_m['cpu.cycles idle back'])
         print output
 
 
         # --------------------------------------------------------------------------------------------
        
-        load_compute = int(float(info_1['cpu.ops' ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_1['mem.peak']) / (1024*1024))
-        load_storage = int(float(info_1['io.write']) / (1024*1024))
+        load_compute = int(float(info_m['cpu.ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_m['mem.peak']) / (1024*1024))
+        load_storage = int(float(info_m['io.write']) / (1024*1024))
        
-        out, info_2 = su.benchmark_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
+        info_s, info_2 = su.benchmark_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
 
-        load_compute = int(float(info_2['cpu.ops' ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_2['mem.peak']) / (1024*1024))
-        load_storage = int(float(info_2['io.write']) / (1024*1024))
+        info_s.update (info_2)
+
+        # pp.pprint (info_s)
+        load_memory = int( float(info_s['c']['ru.maxrss']) \
+                         + float(info_s['m']['ru.maxrss']) \
+                         + float(info_s['s']['ru.maxrss']) ) / (1024*1024)
+
+        load_compute = int(float(info_s['cpu.ops' ]) / (1024*1024) / 8)
+       #load_memory  = int(float(info_s['mem.peak']) / (1024*1024))
+        load_storage = int(float(info_s['io.write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
         output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d %9d %9d %5d %5d %5d %5.1f %5.1f' % \
-                   (host, load_id, float(info_2['time.real']), 
-                    out[0], out[1], out[2],
+                   (host, load_id, float(info_s['time.real']), 
+                    info_s['c']['timer'], info_s['m']['timer'], info_s['s']['timer'],
                     1, load_compute, load_memory, load_storage,
                     xy, xy, z,
-                    info_2['cpu.cycles idle front'], info_2['cpu.cycles idle back'])
+                    info_s['cpu.cycles idle front'], info_s['cpu.cycles idle back'])
 
         print output
 
         
 
-        print ' ---------------------------------------------'
-        for key in ['time.real', 
-                    'cpu.ops', 
-                    'io.write', 
-                    'mem.peak',
-                    'mem.max',
-                    'cpu.cycles idle front',
-                    'cpu.cycles idle back' ] :
-            print " RMB %-25s : %15.1f" % (key, float(info_1[key]))
-            print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
-        print ' ---------------------------------------------'
-        pp.pprint (info_1)
-        print ' ---------------------------------------------'
-        pp.pprint (info_2)
-        print ' ---------------------------------------------'
+      # print ' ---------------------------------------------'
+      # for key in ['time.real', 
+      #             'cpu.ops', 
+      #             'io.write', 
+      #             'mem.peak',
+      #             'mem.max',
+      #             'cpu.cycles idle front',
+      #             'cpu.cycles idle back' ] :
+      #     print " RMB %-25s : %15.1f" % (key, float(info_m[key]))
+      #     print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
+      # print ' ---------------------------------------------'
+      # pp.pprint (info_m)
+      # print ' ---------------------------------------------'
+      # pp.pprint (info_2)
+      # print ' ---------------------------------------------'
 
