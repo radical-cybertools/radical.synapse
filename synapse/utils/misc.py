@@ -86,8 +86,7 @@ def human_to_number (h) :
 
     rs = ru.ReString (h)
 
-    with rs // '^\s*([\d\.]+)\s*(\D+)\s*$' as match :
-
+    with rs // '^\s*([\d\.]+)\s*(\D+)\s*$' as match : 
         if  not match :
          #  print 'incorrect format: %s' % h
             return float(h)
@@ -103,13 +102,32 @@ def human_to_number (h) :
 
 # ------------------------------------------------------------------------------
 #
+def time_to_seconds (t) :
+
+    rs = ru.ReString (t)
+
+    with rs // '^(?:\s*(\d+)\s*[:])+\s*([\d\.]+)\s*$' as match :
+
+        if  not match :
+            return t
+
+        seconds = 0
+        if  len(match) ==  1 : seconds = float(match[0])
+        if  len(match) ==  2 : seconds = float(match[0]) * 60      + float(match[1])
+        if  len(match) ==  3 : seconds = float(match[0]) * 60 * 60 + float(match[1]) * 60 + float(match[2])
+
+        return seconds
+
+
+
+
+# ------------------------------------------------------------------------------
+#
 def benchmark_function (f, *args, **kwargs) :
 
     def func_wrapper (f, q, args, kwargs) :
 
-
         start_io  = get_io_usage  ()
-        start_mem = get_mem_usage ()
 
         # wait for startup signal
         _ = q.get ()
@@ -117,9 +135,7 @@ def benchmark_function (f, *args, **kwargs) :
         # do the deed
         ret = f (*args, **kwargs)
 
-
         end_io  = get_io_usage  ()
-        end_mem = get_mem_usage ()
 
         info = dict()
 
@@ -130,14 +146,8 @@ def benchmark_function (f, *args, **kwargs) :
             n_end     = human_to_number (s_end)
             info[key] = n_end-n_start
 
-        for key in end_mem :
-            s_start   = start_mem[key]
-            s_end     = end_mem  [key]
-            n_start   = human_to_number (s_start)
-            n_end     = human_to_number (s_end)
-            info[key] = n_end-n_start
-
         # send stop signal
+        q.put (ret)
         q.put (info)
 
     # use a queue to sync with the multi-subprocess
@@ -151,49 +161,70 @@ def benchmark_function (f, *args, **kwargs) :
     p.start ()
 
     # tell perf to watch the new process
-    perf = sp.Popen ("/usr/bin/time -p perf stat -p %d" % p.pid,
+    perf = sp.Popen ("/bin/sh -c '/usr/bin/time -v perf stat -p %d'" % p.pid,
                      stdout     = sp.PIPE,
-                     stderr     = sp.PIPE,
+                     stderr     = sp.STDOUT,
                      shell      = True,
                      preexec_fn = os.setsid)
 
 
     _    = q.put (True) # tell the wrapper to do the deed...
-    info = q.get ()     # ... and wait 'til the deed is done
+    ret  = q.get ()     # ... and wait 'til the deed is done
+    info = q.get ()     # ... and get statistics
+    time.sleep  (1)     # make sure the procs are done
 
-    # perf should be done now -- let it know
+    # must haves
+    info['cpu.ops'              ] = 1
+    info['mem.resident'         ] = 1
+    info['io.write'             ] = 1
+    info['cpu.cycles idle front'] = 0
+    info['cpu.cycles idle back' ] = 0
+
+    # perf should be done now -- let it know.  But first make sure we are
+    # listening on the pipes when it dies...
     def killperf (pid) :
-        os.killpg (pid, signal.SIGINT)
+        try :
+            os.killpg (pid, signal.SIGINT)
+        except :
+            pass
 
-    t = threading.Timer (1.0, killperf, [perf.pid])
-    t.start ()
-    perf_out = perf.communicate()[1].split ('\n')
+    threading.Timer (2.0, killperf, [perf.pid]).start ()
+    perf_out = perf.communicate()[0].split ('\n')
 
     for line in perf_out :
 
         l = ru.ReString (line)
 
-        perf_keys = "instructions|branches|branch-misses|cycles|" \
-                    "frontend cycles idle|backend  cycles idle|insns per cycle"
+        perf_keys = {"instructions"         : "cpu.ops",
+                     "branches"             : "cpu.branches",
+                     "branch-misses"        : "cpu.branch_misses",
+                     "cycles"               : "cpu.cycles",
+                     "frontend cycles idle" : "cpu.cycles idle front",
+                     "backend  cycles idle" : "cpu.cycles idle back",
+                     "insns per cycle"      : "cpu.ops/cycle"}
 
-        while l // ('^.*?\s+(?P<val>[\d\.,]+)%%?\s+(?P<key>%s)(?P<rest>.*)' % perf_keys) :
-            key = l.get ('key')
-            val = l.get ('val')
-            info['cpu.%s' % key] = val.replace (',', '')
-
-            l = ru.ReString (l.get ('rest'))
-
-        time_keys = "real|user|sys"
-
-        while l // ('^(?P<key>%s)\s+(?P<val>[\d\.]+)' % time_keys) :
-            key = l.get ('key')
-            val = l.get ('val')
-            info['time.%s' % key] = val.replace (',', '')
+        while l // ( '^.*?\s+(?P<val>[\d\.,]+)%%?\s+(?P<key>%s)(?P<rest>.*)' \
+                   % '|'.join(perf_keys.keys())) :
+            key = perf_keys[l.get ('key')]
+            val =           l.get ('val')
+            info['%s' % key] = float(val.replace (',', ''))
 
             l = ru.ReString (l.get ('rest'))
 
+        l = ru.ReString (line)
+        if l // '^\s*User time \(.*?\):\s+([\d\.]+)\s*$' :
+            info["time.user"] = float(l.get ()[0].replace(',', ''))
+        if l // '^\s*System time \(.*?\):\s+([\d\.]+)\s*$' :
+            info["time.system"] = float(l.get ()[0].replace(',', ''))
+        if l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
+            info["time.real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
+        if l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
+            info["mem.resident"] = int(l.get ()[0].replace(',', ''))
+        if l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
+            info["sys.exit"] = int(l.get ()[0].replace(',', ''))
 
-    return info
+
+    return ret, info
 
 
 

@@ -10,7 +10,8 @@ host  = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n')
 #
 def mandel (x=1024, y=1024, z=100) :
 
-    print 'mandel: %s %s %s' % (x, y, z)
+  # print 'mandel: %s %s %s' % (x, y, z)
+    start = time.time ()
 
     x_pixels  = x
     y_pixels  = y
@@ -49,15 +50,16 @@ def mandel (x=1024, y=1024, z=100) :
     with open ("/tmp/mb.dat", "w") as f :
         f.write (str(rgb_image))
 
+
 # ------------------------------------------------------------------------------
 #
 def synaptic (x, y, z, load_compute, load_memory, load_storage) :
 
     load_instances = 1
-    load_id        = 'MB'
+    load_id        = 'SMB.%04d' % x
 
-    print 'synaptic: %s %s %s' % (x, y, z)
-    print      '%8s: %s %s %s' % (load_id, load_compute, load_memory, load_storage)
+  # print 'synaptic: %s %s %s' % (x, y, z)
+  # print      '%8s: %s %s %s' % (load_id, load_compute, load_memory, load_storage)
 
     start = time.time()
 
@@ -95,37 +97,69 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
             (host, load_id, time.time() - start, t_c, t_m, t_s,
              load_instances, load_compute, load_memory, load_storage, x, y, z)
 
-    print output
+    return [t_c, t_m, t_s]
 
 
 # ------------------------------------------------------------------------------
 #
 
-for xy in range (100, 1001, 100) :
-    for z in range (0, 101, 10) :
-        pass
+for xy in [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
+    for z in [250] : 
+        # print "%d %d %d" % (xy, xy, z)
 
-if True :
-    if True :
+# if True :
+    # if True :
 
-        xy = 2000
-        z  = 10
-      # print '%s %s %s' % (xy, xy, z)
+        # xy = 2000
+        # z  = 1
        
-        perf_info = su.benchmark_function (mandel, xy, xy, z)
-        print perf_info['time.real']
-      # for key in sorted (perf_info.iterkeys()) :
-      #     print " %-25s : %15.1f" % (key, float(perf_info[key]))
-       
-        load_compute = int(float(perf_info['cpu.instructions']) / (1024*1024) / 8)
-        load_memory  = int(float(perf_info['mem.peak'        ]) / (1024*1024))
-        load_storage = int(float(perf_info['io.write'        ]) / (1024*1024))
-       
-        perf_info = su.benchmark_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
-        print perf_info['time.real']
-      # for key in sorted (perf_info.iterkeys()) :
-      #     print " %-25s : %15.1f" % (key, float(perf_info[key]))
+        _, info_1 = su.benchmark_function (mandel, xy, xy, z)
 
-        print
+        load_compute = int(float(info_1['cpu.ops'      ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_1['mem.resident' ]) / (1024*1024))
+        load_storage = int(float(info_1['io.write'     ]) / (1024*1024))
 
+        load_id  = 'RMB.%04d' % xy
+        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %5d %5d %5d %5d %5d %5d %5.1f %5.1f' % \
+                   (host, load_id, float(info_1['time.real']), 
+                    1, load_compute, load_memory, load_storage,
+                    xy, xy, z,
+                    info_1['cpu.cycles idle front'], info_1['cpu.cycles idle back'])
+        print output
+
+        # --------------------------------------------------------------------------------------------
+
+       
+        load_compute = int(float(info_1['cpu.ops'      ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_1['mem.resident' ]) / (1024*1024))
+        load_storage = int(float(info_1['io.write'     ]) / (1024*1024))
+       
+        out, info_2 = su.benchmark_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
+
+        load_compute = int(float(info_2['cpu.ops'      ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_2['mem.resident' ]) / (1024*1024))
+        load_storage = int(float(info_2['io.write'     ]) / (1024*1024))
+       
+        load_id  = 'SMB.%04d' % xy
+        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %5d %5d %5d %5d %5d %5d %5.1f %5.1f' % \
+                   (host, load_id, float(info_2['time.real']), 
+                    out[0], out[1], out[2],
+                    1, load_compute, load_memory, load_storage,
+                    xy, xy, z,
+                    info_2['cpu.cycles idle front'], info_2['cpu.cycles idle back'])
+
+        print output
+
+        
+
+     #  print ' ---------------------------------------------'
+     #  for key in ['time.real', 
+     #              'cpu.ops', 
+     #              'io.write', 
+     #              'mem.resident',
+     #              'cpu.cycles idle front',
+     #              'cpu.cycles idle back' ] :
+     #      print " RMB %-25s : %15.1f" % (key, float(info_1[key]))
+     #      print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
+     #  print ' ---------------------------------------------'
 

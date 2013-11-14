@@ -66,7 +66,7 @@ float mat_mult (float* a1, float* a2, int n)
                 : /* inputs    */
                 : /* clobbered */ "xmm0", "xmm1", "xmm2", "xmm3", "xmm4" );
             
-            ans[0] += ans[1] + ans[2] + ans[3];
+            ans[0] *= ans[1];
         }
         __asm__ __volatile__ (
             "movaps           %%xmm0, %0"
