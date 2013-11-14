@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import pprint        as pp
 import synapse.utils as su
 import synapse.atoms as sa
 
@@ -94,17 +95,13 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
     times['m'] += t_m
     times['s'] += t_s
 
-    output = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %5d %5d %5d %5d %5d %5d' % \
-            (host, load_id, time.time() - start, t_c, t_m, t_s,
-             load_instances, load_compute, load_memory, load_storage, x, y, z)
-
     return [t_c, t_m, t_s]
 
 
 # ------------------------------------------------------------------------------
 #
 
-for xy in [2560, 5120]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
+for xy in [128]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
     for z in [250] : 
         # print "%d %d %d" % (xy, xy, z)
 
@@ -144,7 +141,7 @@ for xy in [2560, 5120]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
         load_storage = int(float(info_2['io.write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %9d %9d %9d %5d %5d %5d %5d %5.1f %5.1f' % \
+        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d %9d %9d %5d %5d %5d %5.1f %5.1f' % \
                    (host, load_id, float(info_2['time.real']), 
                     out[0], out[1], out[2],
                     1, load_compute, load_memory, load_storage,
@@ -155,14 +152,19 @@ for xy in [2560, 5120]:#10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
 
         
 
-     #  print ' ---------------------------------------------'
-     #  for key in ['time.real', 
-     #              'cpu.ops', 
-     #              'io.write', 
-     #              'mem.peak'    ,
-     #              'cpu.cycles idle front',
-     #              'cpu.cycles idle back' ] :
-     #      print " RMB %-25s : %15.1f" % (key, float(info_1[key]))
-     #      print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
-     #  print ' ---------------------------------------------'
+        print ' ---------------------------------------------'
+        for key in ['time.real', 
+                    'cpu.ops', 
+                    'io.write', 
+                    'mem.peak',
+                    'mem.max',
+                    'cpu.cycles idle front',
+                    'cpu.cycles idle back' ] :
+            print " RMB %-25s : %15.1f" % (key, float(info_1[key]))
+            print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
+        print ' ---------------------------------------------'
+        pp.pprint (info_1)
+        print ' ---------------------------------------------'
+        pp.pprint (info_2)
+        print ' ---------------------------------------------'
 
