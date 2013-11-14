@@ -38,6 +38,7 @@ def get_mem_usage () :
             else :
                 ret[info[key]] = "%f MB" % (float(v[1]) / scale[v[2].lower ()])
 
+        print ret
         return ret
 
 
@@ -136,6 +137,7 @@ def benchmark_function (f, *args, **kwargs) :
         ret = f (*args, **kwargs)
 
         end_io  = get_io_usage  ()
+        end_mem = get_mem_usage  ()
 
         info = dict()
 
@@ -146,9 +148,13 @@ def benchmark_function (f, *args, **kwargs) :
             n_end     = human_to_number (s_end)
             info[key] = n_end-n_start
 
+        for key in end_mem  :
+            info[key] = human_to_number (end_mem [key])
+
         # send stop signal
         q.put (ret)
         q.put (info)
+        print info
 
     # use a queue to sync with the multi-subprocess
     q = mp.Queue ()
@@ -173,13 +179,6 @@ def benchmark_function (f, *args, **kwargs) :
     info = q.get ()     # ... and get statistics
     time.sleep  (1)     # make sure the procs are done
 
-    # must haves
-    info['cpu.ops'              ] = 1
-    info['mem.resident'         ] = 1
-    info['io.write'             ] = 1
-    info['cpu.cycles idle front'] = 0
-    info['cpu.cycles idle back' ] = 0
-
     # perf should be done now -- let it know.  But first make sure we are
     # listening on the pipes when it dies...
     def killperf (pid) :
@@ -194,6 +193,7 @@ def benchmark_function (f, *args, **kwargs) :
     for line in perf_out :
 
         l = ru.ReString (line)
+        print l
 
         perf_keys = {"instructions"         : "cpu.ops",
                      "branches"             : "cpu.branches",
@@ -219,7 +219,7 @@ def benchmark_function (f, *args, **kwargs) :
         if l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
             info["time.real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
         if l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
-            info["mem.resident"] = int(l.get ()[0].replace(',', ''))
+            info["mem.resident"] = int(l.get ()[0].replace(',', ''))*1024
         if l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
             info["sys.exit"] = int(l.get ()[0].replace(',', ''))
 

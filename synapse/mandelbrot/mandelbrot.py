@@ -1,5 +1,6 @@
 
 import os
+import sys
 import time
 import synapse.utils as su
 import synapse.atoms as sa
@@ -106,18 +107,18 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
 for xy in [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
     for z in [250] : 
         # print "%d %d %d" % (xy, xy, z)
+        pass
 
-# if True :
-    # if True :
+if True :
+    if True :
+        xy = 1000
+        z  = 1
 
-        # xy = 2000
-        # z  = 1
-       
         _, info_1 = su.benchmark_function (mandel, xy, xy, z)
 
-        load_compute = int(float(info_1['cpu.ops'      ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_1['mem.resident' ]) / (1024*1024))
-        load_storage = int(float(info_1['io.write'     ]) / (1024*1024))
+        load_compute = int(float(info_1['cpu.ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_1['mem.peak']) / (1024*1024))
+        load_storage = int(float(info_1['io.write']) / (1024*1024))
 
         load_id  = 'RMB.%04d' % xy
         output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %5d %5d %5d %5d %5d %5d %5.1f %5.1f' % \
@@ -127,18 +128,21 @@ for xy in [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
                     info_1['cpu.cycles idle front'], info_1['cpu.cycles idle back'])
         print output
 
+        print info_1
+        sys.exit (0)
+
         # --------------------------------------------------------------------------------------------
 
        
-        load_compute = int(float(info_1['cpu.ops'      ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_1['mem.resident' ]) / (1024*1024))
-        load_storage = int(float(info_1['io.write'     ]) / (1024*1024))
+        load_compute = int(float(info_1['cpu.ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_1['mem.peak']) / (1024*1024))
+        load_storage = int(float(info_1['io.write']) / (1024*1024))
        
         out, info_2 = su.benchmark_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
 
-        load_compute = int(float(info_2['cpu.ops'      ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_2['mem.resident' ]) / (1024*1024))
-        load_storage = int(float(info_2['io.write'     ]) / (1024*1024))
+        load_compute = int(float(info_2['cpu.ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_2['mem.peak']) / (1024*1024))
+        load_storage = int(float(info_2['io.write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
         output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %5d %5d %5d %5d %5d %5d %5.1f %5.1f' % \
@@ -156,7 +160,7 @@ for xy in [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120] :
      #  for key in ['time.real', 
      #              'cpu.ops', 
      #              'io.write', 
-     #              'mem.resident',
+     #              'mem.peak'    ,
      #              'cpu.cycles idle front',
      #              'cpu.cycles idle back' ] :
      #      print " RMB %-25s : %15.1f" % (key, float(info_1[key]))
