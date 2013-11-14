@@ -8,6 +8,7 @@ __license__   = "LGPL.v3"
 import os
 import time
 import errno
+import psutil
 import threading
 import subprocess
 import multiprocessing
@@ -90,17 +91,22 @@ class AtomBase (object) :
 
         t_start = time.time ()
 
-      # p = subprocess.Popen ("time perf stat %s" % cmd, shell=True,
-        p = subprocess.Popen ("%s" % cmd, shell=True,
+        mem = 0
+      # p = subprocess.Popen ("/usr/bin/time -v perf stat %s" % cmd,
+        p = subprocess.Popen ("%s" % cmd, 
+                              shell=True,
                               stdin=subprocess.PIPE, 
                               stdout=subprocess.PIPE, 
                               stderr=subprocess.PIPE)
+
         (pout, perr) = p.communicate ()
 
-        self._queue.put ({'timer'    : "%3.2f" % (time.time () - t_start),
-                          'exitcode' : p.returncode, 
-                          'stdout'   : pout.split ('\n'), 
-                          'stderr'   : perr.split ('\n')})
+        info = {'timer'    : float("%3.2f" % (time.time () - t_start)),
+                'exitcode' : int(p.returncode), 
+                'out'      : pout.split ('\n'), 
+                'err'      : perr.split ('\n')}
+
+        self._queue.put (info)
 
 
     # --------------------------------------------------------------------------

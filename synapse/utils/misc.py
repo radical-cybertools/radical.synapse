@@ -217,14 +217,15 @@ def benchmark_function (f, *args, **kwargs) :
         if l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
             info["time.real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
         if l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
-            info["mem.resident"] = int(l.get ()[0].replace(',', ''))*1024
+            info["mem.max"] = int(l.get ()[0].replace(',', ''))*1024
         if l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
             info["sys.exit"] = int(l.get ()[0].replace(',', ''))
 
 
         # must haves
-        if not 'cpu.ops'              in info : info['cpu.ops'              ] = 1
-        if not 'mem.resident'         in info : info['mem.resident'         ] = 1
+        if not 'cpu.ops'              in info : info['cpu.ops'              ] = 0
+        if not 'mem.peak'             in info : info['mem.peak'             ] = 0
+        if not 'mem.max'              in info : info['mem.max'              ] = 0
         if not 'cpu.cycles idle front'in info : info['cpu.cycles idle front'] = 0
         if not 'cpu.cycles idle back' in info : info['cpu.cycles idle back' ] = 0
 

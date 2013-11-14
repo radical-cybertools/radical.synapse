@@ -1,6 +1,15 @@
 
-#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/resource.h>
 
 #define CHUNKSIZE  (1024 * 256)  /* 10^6 */
 
@@ -8,27 +17,54 @@ float mat_mult (float* a1, float* a2, int n);
 
 int main (int argc, char** argv)
 {
-  /* size */
-  if ( argc < 2 )
-  {
-    return -1;
-  }
+    /* size */
+    if ( argc < 2 )
+    {
+        return -1;
+    }
 
-  size_t n = atol (argv[1]);
-  float f[CHUNKSIZE];
+    struct rusage ru;
+    size_t n = atol (argv[1]);
+    float f[CHUNKSIZE];
 
-  unsigned int i = 0;
-  for ( i = 0; i < CHUNKSIZE; i++ ) 
-  { 
-    f[i] = i * 0.01;
-  }
+    unsigned int i = 0;
+    for ( i = 0; i < CHUNKSIZE; i++ ) 
+    { 
+        f[i] = i * 0.01;
+    }
 
-  for ( i = 0; i < n * 13; i++ ) 
-  {
-      mat_mult (f, f, CHUNKSIZE);
-  }
+    for ( i = 0; i < n * 13; i++ ) 
+    {
+        mat_mult (f, f, CHUNKSIZE);
+    }
 
-  return 0;
+
+    if ( 0 != getrusage (RUSAGE_SELF, &ru) )
+    {
+        fprintf (stderr, "no ru: %s", strerror (errno));
+        return  (1);
+    }
+
+    fprintf (stdout, "ru.utime         : %ld.%ld\n", ru.ru_utime.tv_sec,
+                                                     ru.ru_utime.tv_usec ); /* user CPU time used */
+    fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime,
+                                                     ru.ru_stime.tv_usec ); /* system CPU time used */
+    fprintf (stdout, "ru.maxrss        : %ld\n",     ru.ru_maxrss*1024   ); /* maximum resident set size */
+    fprintf (stdout, "ru.ixrss         : %ld\n",     ru.ru_ixrss         ); /* integral shared memory size */
+    fprintf (stdout, "ru.idrss         : %ld\n",     ru.ru_idrss         ); /* integral unshared data size */
+    fprintf (stdout, "ru.isrss         : %ld\n",     ru.ru_isrss         ); /* integral unshared stack size */
+    fprintf (stdout, "ru.minflt        : %ld\n",     ru.ru_minflt        ); /* page reclaims (soft page faults) */
+    fprintf (stdout, "ru.majflt        : %ld\n",     ru.ru_majflt        ); /* page faults (hard page faults) */
+    fprintf (stdout, "ru.nswap         : %ld\n",     ru.ru_nswap         ); /* swaps */
+    fprintf (stdout, "ru.inblock       : %ld\n",     ru.ru_inblock       ); /* block input operations */
+    fprintf (stdout, "ru.oublock       : %ld\n",     ru.ru_oublock       ); /* block output operations */
+    fprintf (stdout, "ru.msgsnd        : %ld\n",     ru.ru_msgsnd        ); /* IPC messages sent */
+    fprintf (stdout, "ru.msgrcv        : %ld\n",     ru.ru_msgrcv        ); /* IPC messages received */
+    fprintf (stdout, "ru.nsignals      : %ld\n",     ru.ru_nsignals      ); /* signals received */
+    fprintf (stdout, "ru.nvcsw         : %ld\n",     ru.ru_nvcsw         ); /* voluntary context switches */
+    fprintf (stdout, "ru.nivcsw        : %ld\n",     ru.ru_nivcsw        ); /* involuntary context switches */
+
+    return 0;
 }
 
 
@@ -65,7 +101,7 @@ float mat_mult (float* a1, float* a2, int n)
                 : /* outputs   */ "+r" ( a1 ), "+r" ( a2 )
                 : /* inputs    */
                 : /* clobbered */ "xmm0", "xmm1", "xmm2", "xmm3", "xmm4" );
-            
+
             ans[0] *= ans[1];
         }
         __asm__ __volatile__ (

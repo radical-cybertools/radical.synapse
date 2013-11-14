@@ -37,7 +37,7 @@ class Memory (AtomBase) :
 
         if 'n' in info : n = info['n']
 
-        self._run (n)
+        return self._run (n)
 
 
 #-------------------------------------------------------------------------------
