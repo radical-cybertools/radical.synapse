@@ -136,6 +136,7 @@ def benchmark_function (f, *args, **kwargs) :
         ret = f (*args, **kwargs)
 
         end_io  = get_io_usage  ()
+        end_mem = get_mem_usage  ()
 
         info = dict()
 
@@ -145,6 +146,9 @@ def benchmark_function (f, *args, **kwargs) :
             n_start   = human_to_number (s_start)
             n_end     = human_to_number (s_end)
             info[key] = n_end-n_start
+
+        for key in end_mem  :
+            info[key] = human_to_number (end_mem [key])
 
         # send stop signal
         q.put (ret)
@@ -173,13 +177,6 @@ def benchmark_function (f, *args, **kwargs) :
     info = q.get ()     # ... and get statistics
     time.sleep  (1)     # make sure the procs are done
 
-    # must haves
-    info['cpu.ops'              ] = 1
-    info['mem.resident'         ] = 1
-    info['io.write'             ] = 1
-    info['cpu.cycles idle front'] = 0
-    info['cpu.cycles idle back' ] = 0
-
     # perf should be done now -- let it know.  But first make sure we are
     # listening on the pipes when it dies...
     def killperf (pid) :
@@ -190,6 +187,7 @@ def benchmark_function (f, *args, **kwargs) :
 
     threading.Timer (2.0, killperf, [perf.pid]).start ()
     perf_out = perf.communicate()[0].split ('\n')
+
 
     for line in perf_out :
 
@@ -219,10 +217,16 @@ def benchmark_function (f, *args, **kwargs) :
         if l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
             info["time.real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
         if l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
-            info["mem.resident"] = int(l.get ()[0].replace(',', ''))
+            info["mem.resident"] = int(l.get ()[0].replace(',', ''))*1024
         if l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
             info["sys.exit"] = int(l.get ()[0].replace(',', ''))
 
+
+        # must haves
+        if not 'cpu.ops'              in info : info['cpu.ops'              ] = 1
+        if not 'mem.resident'         in info : info['mem.resident'         ] = 1
+        if not 'cpu.cycles idle front'in info : info['cpu.cycles idle front'] = 0
+        if not 'cpu.cycles idle back' in info : info['cpu.cycles idle back' ] = 0
 
     return ret, info
 
