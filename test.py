@@ -106,7 +106,7 @@ with open ('%s/synapse/experiments/%s.dat' % (home, host), 'a') as f :
 #   print output
     f.write ("%s\n" % output)
 
-#   time.sleep (10)
+    time.sleep (10)
 
 #   print su.get_mem_usage ()
 #   print su.get_io_usage  ()
