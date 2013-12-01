@@ -1,146 +1,150 @@
 
+__author__    = "Andre Merzky, Ole Weidner"
+__copyright__ = "Copyright 2013, RADICAL Research, Rutgers University"
+__license__   = "MIT"
+
+
+""" Setup script. Used by easy_install and pip. """
+
 import os
 import sys
+import subprocess
 
 from setuptools import setup, Command
-from distutils.command.install_data import install_data
-from distutils.command.sdist import sdist
+
 
 #-----------------------------------------------------------------------------
-# figure out the current version
-def update_version():
+#
+# versioning mechanism:
+#
+#   - short_version:  1.2.3 - is used for installation
+#   - long_version:  v1.2.3-9-g0684b06  - is used as runtime (ru.version)
+#   - both are derived from the last git tag
+#   - the file synapse/VERSION is created with the long_version, und used
+#     by ru.__init__.py to provide the runtime version information. 
+#
+def get_version():
 
-    version = "latest"
+    short_version = None  # 0.4.0
+    long_version  = None  # 0.4.0-9-g0684b06
 
     try:
-        cwd = os.path.dirname(os.path.abspath(__file__))
-        fn = os.path.join(cwd, 'synapse/VERSION')
-        version = open(fn).read().strip()
-    except IOError:
-        from subprocess import Popen, PIPE, STDOUT
+        import subprocess as sp
         import re
 
-        VERSION_MATCH = re.compile(r'\d+\.\d+\.\d+(\w|-)*')
+        VERSION_MATCH = re.compile (r'(([\d\.]+)\D.*)')
 
-        try:
-            p = Popen(['git', 'describe', '--tags', '--always'],
-                      stdout=PIPE, stderr=STDOUT)
-            out = p.communicate()[0]
-
-            if (not p.returncode) and out:
-                v = VERSION_MATCH.search(out)
-                if v:
-                    version = v.group()
-        except OSError:
-            pass
-
-    return version
-
-#-----------------------------------------------------------------------------
-# check python version. we need > 2.5
-if sys.hexversion < 0x02050000:
-    raise RuntimeError("Synapse requires Python 2.5 or higher")
-
-#-----------------------------------------------------------------------------
-# 
-class our_install_data(install_data):
-
-    def finalize_options(self): 
-        self.set_undefined_options('install',
-                                   ('install_lib', 'install_dir'))
-        install_data.finalize_options(self)
-
-    def run(self):
-        install_data.run(self)
-        # ensure there's a synapse/VERSION file
-        fn = os.path.join(self.install_dir, 'synapse', 'VERSION')
-        open(fn, 'w').write(update_version())
-        self.outfiles.append(fn)
-
-#-----------------------------------------------------------------------------
-# 
-class our_sdist(sdist):
-
-    def make_release_tree(self, base_dir, files):
-        sdist.make_release_tree(self, base_dir, files)
-
-        fn = os.path.join(base_dir, 'synapse', 'VERSION')
-        open(fn, 'w').write(update_version())
+        # attempt to get version information from git
+        p   = sp.Popen (['git', 'describe', '--tags', '--always'],
+                        stdout=sp.PIPE, stderr=sp.STDOUT)
+        out = p.communicate()[0]
 
 
-class our_test(Command):
-    user_options = []
+        if  p.returncode != 0 or not out :
 
-    def initialize_options(self):
-        pass
+            # the git check failed -- its likely that we are called from
+            # a tarball, so use ./VERSION instead
+            out=open (os.path.dirname (os.path.abspath (__file__)) + "/VERSION", 'r').read().strip()
 
-    def finalize_options(self):
-        pass
 
-    def run(self):
+        # from the full string, extract short and long versions
+        v = VERSION_MATCH.search (out)
+        if v:
+            long_version  = v.groups ()[0]
+            short_version = v.groups ()[1]
+
+
+        # sanity check if we got *something*
+        if  not short_version or not long_version :
+            sys.stderr.write ("Cannot determine version from git or ./VERSION\n")
+            import sys
+            sys.exit (-1)
+
+
+        # make sure the version files exist for the runtime version inspection
+        open (        'VERSION', 'w').write (long_version+"\n")
+        open ('synapse/VERSION', 'w').write (long_version+"\n")
+
+
+    except Exception as e :
+        print 'Could not extract/set version: %s' % e
         import sys
-        import subprocess
+        sys.exit (-1)
+
+    return short_version, long_version
+
+short_version, long_version = get_version ()
+
+#-----------------------------------------------------------------------------
+# check python version. we need > 2.5, <3.x
+if  sys.hexversion < 0x02050000 or sys.hexversion >= 0x03000000:
+    raise RuntimeError("synapse requires Python 2.x (2.5 or higher)")
+
+
+#-----------------------------------------------------------------------------
+class our_test(Command):
+    def run(self):
         testdir = "%s/tests/" % os.path.dirname(os.path.realpath(__file__))
-        errno = subprocess.call([sys.executable, '%s/run_tests.py' % testdir,
-                                '--config=%s/configs/basetests.cfg' % testdir])
-        raise SystemExit(errno)
+        retval  = subprocess.call([sys.executable, 
+                                   '%s/run_tests.py'          % testdir,
+                                   '%s/configs/basetests.cfg' % testdir])
+        raise SystemExit(retval)
 
 
+#-----------------------------------------------------------------------------
+#
+def read(*rnames):
+    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+
+
+#-----------------------------------------------------------------------------
 setup_args = {
-    'name': "synapse",
-    'version': update_version(),
-    'description': "Tiered Resource OverlaY",
-    'long_description': "Tiered Resource OverlaY",
-    'author': "RADICAL@Rutgers", 
-    'author_email': "radical@rutgers.edu",
-    'maintainer': "RADICAL",
-    'maintainer_email': "radical@rutgers.edu",
-    'url': "http://saga-project.github.com/synapse/",
-    'license': "GPL3",
-    'classifiers': [
+    'name'             : "synapse",
+    'version'          : short_version,
+    'description'      : "SYNthetic APplicationS Emulator",
+    'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),    
+    'author'           : 'RADICAL Group at Rutgers University',
+    'author_email'     : "radical@rutgers.edu",
+    'maintainer'       : "Andre Merzky",
+    'maintainer_email' : "andre@merzky.net",
+    'url'              : "https://www.github.com/saga-project/synapse/",
+    'license'          : "LGPL.v3",
+    'keywords'         : "workload",
+    'classifiers'      : [
         'Development Status :: 5 - Production/Stable',
-        'Environment :: No Input/Output (Daemon)',
         'Intended Audience :: Developers',
+        'Environment          :: Console',                    
+        'License              :: OSI Approved :: LGPL3',
         'Programming Language :: Python',
-        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.5',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Topic                :: Utilities',
         'Topic :: System :: Distributed Computing',
         'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
-        'Operating System :: POSIX :: AIX',
-        'Operating System :: POSIX :: BSD',
-        'Operating System :: POSIX :: BSD :: BSD/OS',
-        'Operating System :: POSIX :: BSD :: FreeBSD',
-        'Operating System :: POSIX :: BSD :: NetBSD',
-        'Operating System :: POSIX :: BSD :: OpenBSD',
-        'Operating System :: POSIX :: GNU Hurd',
-        'Operating System :: POSIX :: HP-UX',
-        'Operating System :: POSIX :: IRIX',
-        'Operating System :: POSIX :: Linux',
-        'Operating System :: POSIX :: Other',
-        'Operating System :: POSIX :: SCO',
-        'Operating System :: POSIX :: SunOS/Solaris',
         'Operating System :: Unix'
     ],
-    'packages': [
+    'packages'         : [
         "synapse",
         "synapse.utils",
         "synapse.atoms",
     ],
-    'package_data': {'': ['*.sh']},
-    'zip_safe': False,
-    'scripts': [],
-    # mention data_files, even if empty, so install_data is called and
-    # VERSION gets copied
-    'data_files': [("synapse", [])],
-    'cmdclass': {
-        'install_data': our_install_data,
-        'sdist': our_sdist,
-        'test': our_test
+    'scripts'          : [],
+    'package_data'     : {'' : ['VERSION']},
+    'cmdclass'         : {
+        'test'         : our_test,
     },
-    'install_requires': [],
-    'tests_require':    []
+    'install_requires' : [],
+    'tests_require'    : ['nose'],
+    'zip_safe'         : False,
 }
 
-setup(**setup_args)
+#-----------------------------------------------------------------------------
+
+setup (**setup_args)
+
+#-----------------------------------------------------------------------------
 
