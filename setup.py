@@ -133,7 +133,7 @@ setup_args = {
         "synapse.atoms",
     ],
     'scripts'          : [],
-    'package_data'     : {'' : ['VERSION']},
+    'package_data'     : {'' : ['VERSION', '*.c']},
     'cmdclass'         : {
         'test'         : our_test,
     },

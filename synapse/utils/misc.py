@@ -123,7 +123,7 @@ def time_to_seconds (t) :
 
 # ------------------------------------------------------------------------------
 #
-def benchmark_function (f, *args, **kwargs) :
+def profile_function (f, *args, **kwargs) :
 
     def func_wrapper (f, q, args, kwargs) :
 
@@ -210,15 +210,15 @@ def benchmark_function (f, *args, **kwargs) :
             l = ru.ReString (l.get ('rest'))
 
         l = ru.ReString (line)
-        if l // '^\s*User time \(.*?\):\s+([\d\.]+)\s*$' :
+        if  l // '^\s*User time \(.*?\):\s+([\d\.]+)\s*$' :
             info["time.user"] = float(l.get ()[0].replace(',', ''))
-        if l // '^\s*System time \(.*?\):\s+([\d\.]+)\s*$' :
+        if  l // '^\s*System time \(.*?\):\s+([\d\.]+)\s*$' :
             info["time.system"] = float(l.get ()[0].replace(',', ''))
-        if l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
+        if  l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
             info["time.real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
-        if l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
+        if  l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
             info["mem.max"] = int(l.get ()[0].replace(',', ''))*1024
-        if l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
+        if  l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
             info["sys.exit"] = int(l.get ()[0].replace(',', ''))
 
 
@@ -229,7 +229,7 @@ def benchmark_function (f, *args, **kwargs) :
         if not 'cpu.cycles idle front'in info : info['cpu.cycles idle front'] = 0
         if not 'cpu.cycles idle back' in info : info['cpu.cycles idle back' ] = 0
 
-    return ret, info
+    return (ret, info)
 
 
 

@@ -96,9 +96,9 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
 #
 
 # for xy in [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240] :
-for xy in [2560, 5120, 10240] :
+for xy in [1024] :
     for z in [250] : 
-        # print "%d %d %d" % (xy, xy, z)
+        print "%d %d %d" % (xy, xy, z)
 
 # # ------------------------------------------------------------------------------
 #         pass
@@ -108,7 +108,7 @@ for xy in [2560, 5120, 10240] :
 #         z  = 1
 # # ------------------------------------------------------------------------------
 
-        _, info_m = su.benchmark_function (mandel, xy, xy, z)
+        _, info_m = su.profile_function (mandel, xy, xy, z)
 
         load_compute = int(float(info_m['cpu.ops' ]) / (1024*1024) / 8)
         load_memory  = int(float(info_m['mem.peak']) / (1024*1024))
@@ -129,17 +129,17 @@ for xy in [2560, 5120, 10240] :
         load_memory  = int(float(info_m['mem.peak']) / (1024*1024))
         load_storage = int(float(info_m['io.write']) / (1024*1024))
        
-        info_s, info_2 = su.benchmark_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
+        info_s, info_2 = su.profile_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
 
         info_s.update (info_2)
 
-        # pp.pprint (info_s)
+        pp.pprint (info_s)
         load_memory = int( float(info_s['c']['ru.maxrss']) \
                          + float(info_s['m']['ru.maxrss']) \
                          + float(info_s['s']['ru.maxrss']) ) / (1024*1024)
 
         load_compute = int(float(info_s['cpu.ops' ]) / (1024*1024) / 8)
-       #load_memory  = int(float(info_s['mem.peak']) / (1024*1024))
+        load_memory  = int(float(info_s['mem.peak']) / (1024*1024))
         load_storage = int(float(info_s['io.write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
@@ -154,19 +154,19 @@ for xy in [2560, 5120, 10240] :
 
         
 
-      # print ' ---------------------------------------------'
-      # for key in ['time.real', 
-      #             'cpu.ops', 
-      #             'io.write', 
-      #             'mem.peak',
-      #             'mem.max',
-      #             'cpu.cycles idle front',
-      #             'cpu.cycles idle back' ] :
-      #     print " RMB %-25s : %15.1f" % (key, float(info_m[key]))
-      #     print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
-      # print ' ---------------------------------------------'
-      # pp.pprint (info_m)
-      # print ' ---------------------------------------------'
-      # pp.pprint (info_2)
-      # print ' ---------------------------------------------'
+        print ' ---------------------------------------------'
+        for key in ['time.real', 
+                    'cpu.ops', 
+                    'io.write', 
+                    'mem.peak',
+                    'mem.max',
+                    'cpu.cycles idle front',
+                    'cpu.cycles idle back' ] :
+            print " RMB %-25s : %15.1f" % (key, float(info_m[key]))
+            print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
+        print ' ---------------------------------------------'
+        pp.pprint (info_m)
+        print ' ---------------------------------------------'
+        pp.pprint (info_2)
+        print ' ---------------------------------------------'
 
