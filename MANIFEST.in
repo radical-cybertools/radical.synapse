@@ -9,6 +9,4 @@ include synapse       *.py
 include synapse/atome *.py *.c
 include synapse/utils *.py
 
-prune plots
-prune experiments
 
