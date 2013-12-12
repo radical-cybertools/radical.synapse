@@ -1,5 +1,5 @@
 
-__author__    = "Andre Merzky, Ole Weidner"
+__author__    = "Andre Merzky"
 __copyright__ = "Copyright 2013, RADICAL Research, Rutgers University"
 __license__   = "MIT"
 
@@ -32,11 +32,12 @@ def get_version():
         import subprocess as sp
         import re
 
+        srcroot       = os.path.dirname (os.path.abspath (__file__))
         VERSION_MATCH = re.compile (r'(([\d\.]+)\D.*)')
 
         # attempt to get version information from git
-        p   = sp.Popen (['git', 'describe', '--tags', '--always'],
-                        stdout=sp.PIPE, stderr=sp.STDOUT)
+        p   = sp.Popen ('cd %s && git describe --tags --always' % srcroot,
+                        stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         out = p.communicate()[0]
 
 
@@ -44,7 +45,7 @@ def get_version():
 
             # the git check failed -- its likely that we are called from
             # a tarball, so use ./VERSION instead
-            out=open (os.path.dirname (os.path.abspath (__file__)) + "/VERSION", 'r').read().strip()
+            out=open ("%s/VERSION" % srcroot, 'r').read().strip()
 
 
         # from the full string, extract short and long versions
@@ -62,8 +63,8 @@ def get_version():
 
 
         # make sure the version files exist for the runtime version inspection
-        open (        'VERSION', 'w').write (long_version+"\n")
-        open ('synapse/VERSION', 'w').write (long_version+"\n")
+        open (        '%s/VERSION' % srcroot, 'w').write (long_version+"\n")
+        open ('%s/synapse/VERSION' % srcroot, 'w').write (long_version+"\n")
 
 
     except Exception as e :
@@ -72,6 +73,7 @@ def get_version():
         sys.exit (-1)
 
     return short_version, long_version
+
 
 short_version, long_version = get_version ()
 
@@ -83,7 +85,10 @@ if  sys.hexversion < 0x02050000 or sys.hexversion >= 0x03000000:
 
 #-----------------------------------------------------------------------------
 class our_test(Command):
-    def run(self):
+    user_options = []
+    def initialize_options (self) : pass
+    def finalize_options   (self) : pass
+    def run (self) :
         testdir = "%s/tests/" % os.path.dirname(os.path.realpath(__file__))
         retval  = subprocess.call([sys.executable, 
                                    '%s/run_tests.py'          % testdir,
@@ -99,7 +104,7 @@ def read(*rnames):
 
 #-----------------------------------------------------------------------------
 setup_args = {
-    'name'             : "synapse",
+    'name'             : "radical.synapse",
     'version'          : short_version,
     'description'      : "SYNthetic APplicationS Emulator",
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),    
@@ -108,19 +113,19 @@ setup_args = {
     'maintainer'       : "Andre Merzky",
     'maintainer_email' : "andre@merzky.net",
     'url'              : "https://www.github.com/saga-project/synapse/",
-    'license'          : "LGPL.v3",
+    'license'          : "LGPLv3+",
     'keywords'         : "workload",
     'classifiers'      : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
-        'Environment          :: Console',                    
-        'License              :: OSI Approved :: LGPL3',
+        'Environment :: Console',                    
+        'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Topic                :: Utilities',
+        'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
         'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
         'Operating System :: MacOS :: MacOS X',
@@ -133,11 +138,11 @@ setup_args = {
         "synapse.atoms",
     ],
     'scripts'          : [],
-    'package_data'     : {'' : ['VERSION', '*.c']},
+    'package_data'     : {'' : ['*.c', 'VERSION']},
     'cmdclass'         : {
         'test'         : our_test,
     },
-    'install_requires' : [],
+    'install_requires' : ['radical.utils'],
     'tests_require'    : ['nose'],
     'zip_safe'         : False,
 }
