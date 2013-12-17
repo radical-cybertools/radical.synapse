@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 
+import os
 import sys
+import time   
 import pymongo
 
 
@@ -90,6 +92,8 @@ def mandelbrot_calc (work) :
 
     """
 
+    start = time.time()
+
     if  'minx'  not in work : usage ("No 'minx'   in work '%s'" % work)
     if  'miny'  not in work : usage ("No 'miny'   in work '%s'" % work)
     if  'maxx'  not in work : usage ("No 'maxx'   in work '%s'" % work)
@@ -151,7 +155,9 @@ def mandelbrot_calc (work) :
               'pixy'      : pixy, 
               'subx'      : subx, 
               'suby'      : suby, 
-              'data'      : data}
+              'data'      : data, 
+              'time'      : time.time()-start,
+              'host'      : os.popen('hostname -f').read().strip()}
 
     return result
 

@@ -72,7 +72,7 @@ def split_url (url) :
 
 # ------------------------------------------------------------------------------
 #
-def main (master_id, num_workers) :
+def main (master_id, num_workers, mb_size) :
 
     [host, port, collection] = split_url (master_id)
 
@@ -89,16 +89,23 @@ def main (master_id, num_workers) :
     maxx    =  1.0
     miny    = -1.5
     maxy    =  1.5
-    pixx    =  1024  # divisible by subsx
-    pixy    =  1024  # divisible by subsy
+    pixx    =  mb_size  # divisible by subsx
+    pixy    =  mb_size  # divisible by subsy
     iters   =  100
     image   =  Image.new ("RGB", (pixx, pixy))
     
     stepx   = (maxx-minx) / subsx
     stepy   = (maxy-miny) / subsy
     
-    spixx   =  1024 / subsx
-    spixy   =  1024 / subsy
+    spixx   =  pixx / subsx
+    spixy   =  pixy / subsy
+
+    # initialize white pic
+    for     x in range (0, pixx) :
+        for y in range (0, pixy) :
+            image.putpixel ((x, y), (255, 255, 255))
+    image.save  ("%s/mandel.png" % os.environ['HOME'], "PNG")
+
 
     workers = dict()
     
@@ -149,8 +156,8 @@ def main (master_id, num_workers) :
                 active = True
                 data   = result['data']
 
-                for     y in range (0, pixy) :
-                    for x in range (0, pixx) :
+                for     x in range (0, pixx) :
+                    for y in range (0, pixy) :
                         i = data[x][y]
                         image.putpixel ((spixx*subx+y, spixy*suby+x), (i/4, i/4, i))
 
@@ -176,6 +183,7 @@ if __name__ == '__main__' :
 
     master_id   = None
     num_workers = 1
+    mb_size     = 1024
 
     for arg in sys.argv[1:] :
 
@@ -194,6 +202,9 @@ if __name__ == '__main__' :
             elif key == '--num_workers' :
                 num_workers = int(val)
 
+            elif key == '--mb_size' :
+                mb_size = int(val)
+
             else :
                 usage ("parameter '%s' not supported" % arg)
 
@@ -201,6 +212,6 @@ if __name__ == '__main__' :
     if  not master_id :
         usage ("need master_id to operate (%s)" % sys.argv)
 
-    main (master_id, num_workers)
+    main (master_id, num_workers, mb_size)
     
 
