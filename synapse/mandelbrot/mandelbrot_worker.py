@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 
 import sys
@@ -64,7 +65,8 @@ def work (master_id, worker_id) :
 
     print 'work      : %s' % str(work)
     if  not work :
-        raise LookupError ("cannot find work for %s : %s" % (master_id, worker_id))
+        print "cannot find work for %s : %s" % (master_id, worker_id)
+        sys.exit (0) # silent exit
 
     result = mandelbrot_calc (work)
 
@@ -219,7 +221,7 @@ if __name__ == '__main__' :
 
 
     if  not master_id or not worker_id :
-        usage ("need master_id and worker_id to operate")
+        usage ("need master_id and worker_id to operate (%s)" % sys.argv)
 
     
     work (master_id, worker_id)

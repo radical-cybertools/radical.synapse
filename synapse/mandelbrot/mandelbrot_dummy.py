@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 
 import os
 import sys
@@ -6,6 +8,7 @@ import pprint        as pp
 import radical.utils as ru
 import synapse.utils as su
 import synapse.atoms as sa
+
 
 host  = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
 

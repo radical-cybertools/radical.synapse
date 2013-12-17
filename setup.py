@@ -137,7 +137,10 @@ setup_args = {
         "synapse.utils",
         "synapse.atoms",
     ],
-    'scripts'          : [],
+    'scripts'          : ['synapse/mandelbrot/mandelbrot_dummy.py',
+                          'synapse/mandelbrot/mandelbrot_dumpdb.py',
+                          'synapse/mandelbrot/mandelbrot_master.py',
+                          'synapse/mandelbrot/mandelbrot_worker.py'],
     'package_data'     : {'' : ['*.c', 'VERSION']},
     'cmdclass'         : {
         'test'         : our_test,

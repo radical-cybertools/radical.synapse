@@ -1,8 +1,41 @@
+#!/usr/bin/env python
+
 
 import os
+import sys
+import math
 import time
 import pymongo
 from   PIL import Image
+
+
+# ------------------------------------------------------------------------------
+#
+def usage (msg=None) :
+    """
+    print usage.  If message is given, we exit with that error message
+    otherwise we exit peacefully .
+    """
+
+    if  msg :
+        sys.stderr.write ('\n    Error: %s' % msg)
+
+    print """
+
+    usage :
+
+        python mandelbrot_master.py
+               --master_id=mongodb://host.net:port/path
+               --num_wrokers=4
+
+    """
+
+    if  msg :
+        sys.exit (1)
+
+    else :
+        sys.exit (0)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -39,7 +72,7 @@ def split_url (url) :
 
 # ------------------------------------------------------------------------------
 #
-def main (master_id) :
+def main (master_id, num_workers) :
 
     [host, port, collection] = split_url (master_id)
 
@@ -49,8 +82,8 @@ def main (master_id) :
 
     collection.remove ()
   
-    subsx   = 4
-    subsy   = 4
+    subsx   = int(math.sqrt(num_workers))
+    subsy   = int(math.sqrt(num_workers))
     
     minx    = -2.0
     maxx    =  1.0
@@ -122,7 +155,7 @@ def main (master_id) :
                         image.putpixel ((spixx*subx+y, spixy*suby+x), (i/4, i/4, i))
 
                 done.append (worker_id)
-                image.save ("mandel.png", "PNG")
+                image.save  ("%s/mandel.png" % os.environ['HOME'], "PNG")
 
         if  not active:
             time.sleep (1)
@@ -137,9 +170,37 @@ def main (master_id) :
 #
 if __name__ == '__main__' :
 
-    if  not 'SYNAPSE_MB_MASTER' in os.environ :
-        raise LookupError ("'SYNAPSE_MB_MASTER' not set in environment")
+    """
+    parse arguments, and trigger action workload.
+    """
 
-    main (os.environ['SYNAPSE_MB_MASTER'])
+    master_id   = None
+    num_workers = 1
 
+    for arg in sys.argv[1:] :
+
+        if  arg == '--help' :
+            usage ()
+
+        else :
+            if  not '=' in arg :
+                usage ("invalid argument '%s'" % arg)
+
+            key, val = arg.split ('=', 1)
+
+            if  key == '--master_id' :
+                master_id = val
+
+            elif key == '--num_workers' :
+                num_workers = int(val)
+
+            else :
+                usage ("parameter '%s' not supported" % arg)
+
+
+    if  not master_id :
+        usage ("need master_id to operate (%s)" % sys.argv)
+
+    main (master_id, num_workers)
+    
 
