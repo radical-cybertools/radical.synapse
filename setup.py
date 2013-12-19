@@ -139,7 +139,7 @@ setup_args = {
     ],
     'scripts'          : ['synapse/synapse_profile.py',
                           'synapse/synapse_emulate.py',
-                          'synapse/mandelbrot/synapse_dumpdb.py',
+                          'synapse/synapse_dumpdb.py',
                           'synapse/mandelbrot/mandelbrot_dummy.py',
                           'synapse/mandelbrot/mandelbrot_master.py',
                           'synapse/mandelbrot/mandelbrot_worker.py'],
