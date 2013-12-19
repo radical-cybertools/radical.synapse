@@ -492,7 +492,7 @@ def split_dburl (url) :
     if  dbname == '.' : 
         dbname = None
 
-    print str([host, port, dbname, cname, pname])
+  # print str([host, port, dbname, cname, pname])
     return [host, port, dbname, cname, pname]
 
 
