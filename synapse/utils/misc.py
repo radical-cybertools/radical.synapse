@@ -353,6 +353,8 @@ def _parse_perf_output (perf_out) :
 # ------------------------------------------------------------------------------
 def store_profile (command, info) :
 
+    command_idx = index_command (command)
+
     host, port, dbname, _, _ = split_dburl (PROFILE_URL)
 
   # print 'url       : %s' % PROFILE_URL
@@ -366,9 +368,10 @@ def store_profile (command, info) :
 
     profile    = {'type'     : 'profile', 
                   'command'  : command, 
+                  'index'    : command_idx, 
                   'profiles' : list()}
-    results    = collection.find ({'type'    : 'profile', 
-                                   'command' : command})
+    results    = collection.find ({'type'  : 'profile', 
+                                   'index' : command_idx})
 
     if  results.count() :
         # expand existing profile
@@ -384,6 +387,8 @@ def store_profile (command, info) :
 # ------------------------------------------------------------------------------
 def get_profile (command) :
 
+    command_idx = index_command (command)
+
     host, port, dbname, _, _ = split_dburl (PROFILE_URL)
 
   # print 'url       : %s' % PROFILE_URL
@@ -396,15 +401,39 @@ def get_profile (command) :
     collection = database['profiles']
 
     results    = collection.find ({'type'    : 'profile', 
-                                   'command' : command})
+                                   'command' : command,
+                                   'index'   : command_idx})
 
     if  not results.count() :
-        # oops...
-        return None
+        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, PROFILE_URL))
+
 
     print 'profile retrieved from %s' % [host, port, dbname, 'profiles']
   # pprint.pprint (results[0])
     return results[0]
+
+
+# ------------------------------------------------------------------------------
+#
+def index_command (command) :
+    """remove hosts from URLs for cross-site indexing"""
+
+    ret = "%s" % command # deep copy
+
+    if  '://' in command :
+        url_idx   = command.find ('://')
+        host_idx  = command.find ('/', url_idx+3)
+        print '----'
+        print command
+        print url_idx
+        print host_idx
+        print command[:url_idx]
+        print command[host_idx:]
+        ret   = "%s:/%s" % (command[:url_idx], command[host_idx:])
+        print ret
+        print '----'
+
+    return ret
 
 
 # ------------------------------------------------------------------------------

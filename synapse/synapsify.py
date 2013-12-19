@@ -30,20 +30,28 @@ def synapsify (command, mode=NOTHING) :
     """
 
     if  mode == NOTHING :
+        synapse._logger.debug ("synapsify in : %s" % command)
+        synapse._logger.debug ("synapsify out: %s" % command)
         return command
 
 
     if  mode  == PROFILE :
-        ret = "python -c 'import synapse, sys; "\
-              "info, ret, out = synapse.profile_command (\"\"\"%s\"\"\"); "\
-              "print out; sys.exit (ret)'" % command
+        synapse._logger.debug ("synapsify in :                     %s" % command)
+      # ret = "python -c 'import synapse, sys; "\
+      #       "info, ret, out = synapse.profile_command (\"\"\"%s\"\"\"); "\
+      #       "print out; sys.exit (ret)'" % command
+        ret = "synapse_profile.py '%s'" % command
+        synapse._logger.debug ("synapsify out: %s" % ret)
         return ret
 
 
     if  mode  == EMULATE :
-        ret = "python -c 'import synapse, sys; "\
-              "info, ret, out = synapse.emulate_command (\"\"\"%s\"\"\"); "\
-              "print out; sys.exit (ret)'" % command
+        synapse._logger.debug ("synapsify in :                     %s" % command)
+      # ret = "python -c 'import synapse, sys; "\
+      #       "info, ret, out = synapse.emulate_command (\"\"\"%s\"\"\"); "\
+      #       "print out; sys.exit (ret)'" % command
+        ret = "synapse_emulate.py '%s'" % command
+        synapse._logger.debug ("synapsify out: %s" % ret)
         return ret
 
 

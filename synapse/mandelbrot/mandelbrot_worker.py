@@ -30,9 +30,9 @@ def work (master_id, worker_id) :
     collection = database[cname]
     docs = collection.find ()
 
-    for i in db_client.database_names  () : print "  %s" % i
-    for i in database.collection_names () : print "     %s" % i
-    print "      %d docs" % docs.count()
+  # for i in db_client.database_names  () : print "  %s" % i
+  # for i in database.collection_names () : print "     %s" % i
+  # print "      %d docs" % docs.count()
 
     print 'master id : %s' % master_id
     print 'worker id : %s' % worker_id
@@ -214,7 +214,9 @@ if __name__ == '__main__' :
                 worker_id = val
 
             else :
-                usage ("parameter '%s' not supported" % arg)
+                # ignore other parameters, those are used for profile indexing
+                pass
+              # usage ("parameter '%s' not supported" % arg)
 
 
     if  not master_id or not worker_id :

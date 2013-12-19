@@ -40,7 +40,7 @@ def usage (msg=None) :
 
 # ------------------------------------------------------------------------------
 #
-def main (master_id, num_workers, mb_size) :
+def main (master_id, num_workers, mb_size, mb_depth) :
 
     [host, port, dbname, cname, _] = su.split_dburl (master_id)
 
@@ -48,7 +48,7 @@ def main (master_id, num_workers, mb_size) :
     database   = db_client[dbname]
     collection = database[cname]
 
-    collection.remove ()
+  # collection.remove ()
   
     subsx   = int(math.sqrt(num_workers))
     subsy   = int(math.sqrt(num_workers))
@@ -59,7 +59,7 @@ def main (master_id, num_workers, mb_size) :
     maxy    =  1.5
     pixx    =  mb_size  # divisible by subsx
     pixy    =  mb_size  # divisible by subsy
-    iters   =  1024
+    iters   =  mb_depth
     image   =  Image.new ("RGB", (pixx, pixy))
     
     stepx   = (maxx-minx) / subsx
@@ -151,6 +151,7 @@ if __name__ == '__main__' :
     master_id   = None
     num_workers = 1
     mb_size     = 1024
+    mb_depth    = 1024
 
     for arg in sys.argv[1:] :
 
@@ -166,11 +167,17 @@ if __name__ == '__main__' :
             if  key == '--master_id' :
                 master_id = val
 
-            elif key == '--num_workers' :
+            elif key == '--num_workers' or \
+                 key == '-n'            :
                 num_workers = int(val)
 
-            elif key == '--mb_size' :
+            elif key == '--mb_size' or \
+                 key == '-s'        :
                 mb_size = int(val)
+
+            elif key == '--mb_depth' or \
+                 key == '-d'         :
+                mb_depth = int(val)
 
             else :
                 usage ("parameter '%s' not supported" % arg)
@@ -179,6 +186,6 @@ if __name__ == '__main__' :
     if  not master_id :
         usage ("need master_id to operate (%s)" % sys.argv)
 
-    main (master_id, num_workers, mb_size)
+    main (master_id, num_workers, mb_size, mb_depth)
     
 
