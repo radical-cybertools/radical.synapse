@@ -353,7 +353,7 @@ def _parse_perf_output (perf_out) :
 # ------------------------------------------------------------------------------
 def store_profile (command, info) :
 
-    host, port, dbname, _ = split_dburl (PROFILE_URL)
+    host, port, dbname, _, _ = split_dburl (PROFILE_URL)
 
   # print 'url       : %s' % PROFILE_URL
   # print 'host      : %s' % host
@@ -384,7 +384,7 @@ def store_profile (command, info) :
 # ------------------------------------------------------------------------------
 def get_profile (command) :
 
-    host, port, dbname, _ = split_dburl (PROFILE_URL)
+    host, port, dbname, _, _ = split_dburl (PROFILE_URL)
 
   # print 'url       : %s' % PROFILE_URL
   # print 'host      : %s' % host
@@ -425,9 +425,9 @@ def split_dburl (url) :
     if  url[:slashes[0]].lower() != 'mongodb:' :
         raise ValueError ("url must be a 'mongodb://' url, not %s" % url)
 
-    if  len(url) <= slashes[2]+1 :
-        raise ValueError ("url needs to be a mongodb url, the path element " \
-                          "must specify the database and collection id")
+  # if  len(url) <= slashes[2]+1 :
+  #     raise ValueError ("url needs to be a mongodb url, the path element " \
+  #                       "must specify the database and collection id")
 
     base_url = url[slashes[1]+1:slashes[2]]
     path     = url[slashes[2]+1:]
@@ -443,18 +443,28 @@ def split_dburl (url) :
         path = path[1:]
     path_elems = path.split ('/')
 
-    if len(path_elems) < 1 :
-        raise ValueError ("url needs to be a mongodb url, the path element " \
-                          "must specify the database and collection id")
 
-    if  len(path_elems) == 1 :
-        dbname = path_elems[0]
-        cname  = None
-    else :
-        dbname = path_elems[0]
-        cname  = '/'.join (path_elems[1:])
+    dbname = None
+    cname  = None
+    pname  = None
 
-    return [host, port, dbname, cname]
+    if  len(path_elems)  >  0 :
+        dbname = path_elems[0]
+
+    if  len(path_elems)  >  1 :
+        dbname = path_elems[0]
+        cname  = path_elems[1]
+
+    if  len(path_elems)  >  2 :
+        dbname = path_elems[0]
+        cname  = path_elems[1]
+        pname  = '/'.join (path_elems[2:])
+
+    if  dbname == '.' : 
+        dbname = None
+
+    print str([host, port, dbname, cname, pname])
+    return [host, port, dbname, cname, pname]
 
 
 # ------------------------------------------------------------------------------

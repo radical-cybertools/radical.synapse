@@ -8,6 +8,7 @@ import pymongo
 
 import synapse.utils as su
 
+ATTEMPTS = 10
 
 # ------------------------------------------------------------------------------
 #
@@ -20,24 +21,45 @@ def work (master_id, worker_id) :
     as collection ID, the client ID will specify the worker document.
     """
 
-    [host, port, dbname, cname] = su.split_dburl (master_id)
 
+    [host, port, dbname, cname, _] = su.split_dburl (master_id)
+
+    print "  %s:%d" % (host, port)
     db_client  = pymongo.MongoClient (host=host, port=port)
     database   = db_client[dbname]
     collection = database[cname]
+    docs = collection.find ()
 
+    for i in db_client.database_names  () : print "  %s" % i
+    for i in database.collection_names () : print "     %s" % i
+    print "      %d docs" % docs.count()
+
+    print 'master id : %s' % master_id
+    print 'worker id : %s' % worker_id
     print 'host      : %s' % host
     print 'port      : %s' % port
-    print 'collection: %s' % cname
+    print 'dbname    : %s' % dbname
+    print 'cname     : %s' % cname
     print 'worker_id : %s' % worker_id 
+    print 'works     : %s' % collection.find ().count()
 
-    work = collection.find_one ({'worker_id': int(worker_id),
-                                 'type'     : 'work'})
+    attempts = 0
 
-    print 'work      : %s' % str(work)
+    while attempts < ATTEMPTS :
+        work = collection.find_one ({'worker_id': int(worker_id),
+                                     'type'     : 'work'})
+        if  work :
+            break
+        else :
+            print 'waiting for work'
+            time.sleep (1)
+
     if  not work :
         print "cannot find work for %s : %s" % (master_id, worker_id)
         sys.exit (0) # silent exit
+
+
+    print 'work      : %s' % str(work)
 
     result = mandelbrot_calc (work)
 

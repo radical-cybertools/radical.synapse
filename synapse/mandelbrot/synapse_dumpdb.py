@@ -19,41 +19,58 @@ def dump (master_id) :
     collection.
     """
 
-    [host, port, dbname, cname] = su.split_dburl (master_id)
+    [host, port, dbname, cname, pname] = su.split_dburl (master_id)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
-    database   = db_client[dbname]
 
     print 'host      : %s' % host
     print 'port      : %s' % port
-    print 'database  : %s' % dbname
 
-    if  not cname :
-        # just list collections
-        print 'collections: %s' % database.collection_names ()
+    if  not dbname :
+        print 'databases :'
 
-    elif cname in ['REMOVE', 'DROP'] :
-        # remove all collections
-        for collection in database.collection_names () :
-            try :
-                database.drop_collection (collection)
-                print 'drop collection: %s' % collection
-            except :
-                # ignore errors on system collections
-                pass
+        for dbname in db_client.database_names () :
+            print "  %s" % dbname
+
 
     else :
-        print 'collection: %s' % cname
-        collection = database[cname]
-        docs = collection.find ()
 
-        if  not docs.count() :
-            print "no docs in collection"
+        print 'database  : %s' % dbname
+        database   = db_client[dbname]
 
-        for doc in docs:
-            pprint.pprint (doc)
+        if  not cname :
+            # just list collections
+            print 'collections: '
+            for cname in database.collection_names () :
+                print "   %s" % cname
 
-        db_client.disconnect ()
+
+        else :
+
+            if  cname in ['REMOVE', 'DROP'] :
+                print "drop db %s" % dbname
+                db_client.drop_database (dbname)
+            else :
+
+                print 'collection: %s' % cname
+                collection = database[cname]
+
+                if  pname in ['REMOVE', 'DROP'] :
+                    print "remove collection %s" % cname
+                    database.drop_collection (cname)
+
+                else :
+
+                    docs = collection.find ()
+
+                    if  not docs.count() :
+                        print "no docs in collection"
+
+                    for doc in docs:
+                        pprint.pprint (doc)
+
+
+    db_client.disconnect ()
 
 
 # ------------------------------------------------------------------------------
