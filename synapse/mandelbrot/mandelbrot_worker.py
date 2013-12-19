@@ -6,38 +6,7 @@ import sys
 import time   
 import pymongo
 
-
-# ------------------------------------------------------------------------------
-#
-def split_url (url) :
-    """
-    we split the master_id, which is a URL, into the base mongodb URL, and the
-    path element, which we use as collection id.
-    """
-
-    slashes = [idx for [idx,elem] in enumerate(url) if elem == '/']
-
-    if  len(slashes) < 3 :
-        usage ("master_id needs to be a mongodb URL, the path element must" \
-               "specify the master's collection id")
-
-    if  url[:slashes[0]].lower() != 'mongodb:' :
-        usage ("master_id must be a 'mongodb://' url, not %s" % url)
-
-    if  len(url) <= slashes[2]+1 :
-        usage ("master_id needs to be a mongodb URL, the path element must" \
-               "specify the master's collection id")
-
-    base_url   = url[slashes[1]+1:slashes[2]]
-    collection = url[slashes[2]+1:]
-
-    if  ':' in base_url :
-        host, port = base_url.split (':', 1)
-        port = int(port)
-    else :
-        host, port = base_url, None
-
-    return [host, port, collection]
+import synapse.utils as su
 
 
 # ------------------------------------------------------------------------------
@@ -51,10 +20,10 @@ def work (master_id, worker_id) :
     as collection ID, the client ID will specify the worker document.
     """
 
-    [host, port, cname] = split_url (master_id)
+    [host, port, dbname, cname] = su.split_dburl (master_id)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
-    database   = db_client['synapse_mandelbrot']
+    database   = db_client[dbname]
     collection = database[cname]
 
     print 'host      : %s' % host

@@ -114,7 +114,7 @@ setup_args = {
     'maintainer_email' : "andre@merzky.net",
     'url'              : "https://www.github.com/saga-project/synapse/",
     'license'          : "LGPLv3+",
-    'keywords'         : "workload",
+    'keywords'         : "radical emulate workload",
     'classifiers'      : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -137,15 +137,15 @@ setup_args = {
         "synapse.utils",
         "synapse.atoms",
     ],
-    'scripts'          : ['synapse/mandelbrot/mandelbrot_dummy.py',
-                          'synapse/mandelbrot/mandelbrot_dumpdb.py',
+    'scripts'          : ['synapse/mandelbrot/synapse_dumpdb.py',
+                          'synapse/mandelbrot/mandelbrot_dummy.py',
                           'synapse/mandelbrot/mandelbrot_master.py',
                           'synapse/mandelbrot/mandelbrot_worker.py'],
     'package_data'     : {'' : ['*.c', 'VERSION']},
     'cmdclass'         : {
         'test'         : our_test,
     },
-    'install_requires' : ['radical.utils'],
+    'install_requires' : ['pymongo', 'radical.utils'],
     'tests_require'    : ['nose'],
     'zip_safe'         : False,
 }

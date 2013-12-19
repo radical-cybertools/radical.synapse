@@ -5,8 +5,9 @@ include LICENSE.md
 include CHANGES.md 
 include VERSION
 
-include synapse       *.py
-include synapse/atome *.py *.c
-include synapse/utils *.py
+include synapse/*.py
+include synapse/atoms/*.py
+include synapse/atoms/*.c
+include synapse/utils/*.py
 
 

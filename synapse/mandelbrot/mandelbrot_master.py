@@ -8,6 +8,7 @@ import time
 import pymongo
 from   PIL import Image
 
+import synapse.utils as su
 
 # ------------------------------------------------------------------------------
 #
@@ -39,46 +40,13 @@ def usage (msg=None) :
 
 # ------------------------------------------------------------------------------
 #
-def split_url (url) :
-    """
-    we split the master_id, which is a URL, into the base mongodb URL, and the
-    path element, which we use as collection id.
-    """
-
-    slashes = [idx for [idx,elem] in enumerate(url) if elem == '/']
-
-    if  len(slashes) < 3 :
-        usage ("master_id needs to be a mongodb URL, the path element must" \
-               "specify the master's collection id")
-
-    if  url[:slashes[0]].lower() != 'mongodb:' :
-        usage ("master_id must be a 'mongodb://' url, not %s" % url)
-
-    if  len(url) <= slashes[2]+1 :
-        usage ("master_id needs to be a mongodb URL, the path element must" \
-               "specify the master's collection id")
-
-    base_url   = url[slashes[1]+1:slashes[2]]
-    collection = url[slashes[2]+1:]
-
-    if  ':' in base_url :
-        host, port = base_url.split (':', 1)
-        port = int(port)
-    else :
-        host, port = base_url, None
-
-    return [host, port, collection]
-
-
-# ------------------------------------------------------------------------------
-#
 def main (master_id, num_workers, mb_size) :
 
-    [host, port, collection] = split_url (master_id)
+    [host, port, dbname, cname] = su.split_dburl (master_id)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
-    database   = db_client['synapse_mandelbrot']
-    collection = database[collection]
+    database   = db_client[dbname]
+    collection = database[cname]
 
     collection.remove ()
   
@@ -91,7 +59,7 @@ def main (master_id, num_workers, mb_size) :
     maxy    =  1.5
     pixx    =  mb_size  # divisible by subsx
     pixy    =  mb_size  # divisible by subsy
-    iters   =  100
+    iters   =  1024
     image   =  Image.new ("RGB", (pixx, pixy))
     
     stepx   = (maxx-minx) / subsx
@@ -133,7 +101,6 @@ def main (master_id, num_workers, mb_size) :
 
 
     # wait for and evaluate results
-    results = collection.find ({'type' : 'result'})
     done    = list()
 
     while len(done) != len(workers) :
