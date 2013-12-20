@@ -3,7 +3,7 @@ import synapse.utils
 
 # ------------------------------------------------------------------------------
 
-NOTHING       = 'synapse_nothing'
+NOTHING       = None
 PROFILE       = 'synapse_profile'
 EMULATE       = 'synapse_emulate'
 
