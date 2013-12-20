@@ -161,9 +161,9 @@ if __name__ == '__main__' :
       example : %s remove mongodb://localhost:27017//synapse_profiles/profiles/
 
       The URL is interpreted as:
-          [schema]://[host]:[port]/[database]/[collection]/[path]
+          [schema]://[host]:[port]/[database]/[collection]/[document_id]
 
-      Path is at the moment not evaluated.  Commands are:
+      Commands are:
 
         tree:   show a tree of the hierarchy, but only  document IDs, no content
         dump:   show a tree of the hierarchy, including document contents
