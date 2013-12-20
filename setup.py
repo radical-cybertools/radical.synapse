@@ -104,7 +104,7 @@ def read(*rnames):
 
 #-----------------------------------------------------------------------------
 setup_args = {
-    'name'             : "radical.synapse",
+    'name'             : "synapse",
     'version'          : short_version,
     'description'      : "SYNthetic APplicationS Emulator",
     'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),    
