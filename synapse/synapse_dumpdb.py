@@ -138,11 +138,37 @@ def handle_doc (collection, mode, doc) :
             print " | | | +-- %-10s : %s" % (key, doc[key])
 
 
+def usage () :
+
+    print """
+
+      usage   : %s [command] [url]
+      example : %s mongodb://localhost/synapse_profiles/profiles/
+
+      The URL is interpreted as:
+          [schema]://[host]:[port]/[database]/[collection]/[document_id]
+
+      Commands are:
+
+        tree:   show a tree of the hierarchy, but only  document IDs, no content
+        dump:   show a tree of the hierarchy, including document contents
+        list:   list entries in the subtree, but do not traverse
+        remove: remove the specified subtree
+
+      The default command is 'tree'.  
+      The default URL is """ + "%s\n\n" % _DEFAULT_DBURL
+    sys.exit (0)
+
+
 # ------------------------------------------------------------------------------
 #
 if __name__ == '__main__' :
 
-    if  len(sys.argv) == 3 :
+    if  '--help' in sys.argv or \
+         '-h'    in sys.argv :
+        usage ()
+
+    elif  len(sys.argv) == 3 :
         mode = sys.argv[1]
         url  = sys.argv[2]
     
@@ -155,25 +181,7 @@ if __name__ == '__main__' :
         url  = _DEFAULT_DBURL
 
     else :
-        print """
-
-      usage   : %s [command] <url>
-      example : %s remove mongodb://localhost:27017//synapse_profiles/profiles/
-
-      The URL is interpreted as:
-          [schema]://[host]:[port]/[database]/[collection]/[document_id]
-
-      Commands are:
-
-        tree:   show a tree of the hierarchy, but only  document IDs, no content
-        dump:   show a tree of the hierarchy, including document contents
-        list:   list entries in the subtree, but do not traverse
-        remove: remove the specified subtree
-
-      The default command is 'tree'.
-
-"""
-        sys.exit (0)
+        usage ()
 
     dump (url, mode)
 
