@@ -8,15 +8,15 @@ import pymongo
 import synapse
 import synapse.utils as su
 
-DEFAULT_URL = '%s/synapse_profiles/profiles' % synapse.SYNAPSE_DBURL
+_DEFAULT_DBURL = 'mongodb://localhost:27017/'
+_DEFAULT_DBURL = 'mongodb://ec2-184-72-89-141.compute-1.amazonaws.com:27017/'
 
 
 # ------------------------------------------------------------------------------
 #
 def dump (url, mode) :
     """
-    Connect to mongodb at the given location, and dump all docs in the given
-    collection.
+    Connect to mongodb at the given location, and traverse the data bases
     """
 
     [host, port, dbname, cname, pname] = su.split_dburl (url)
@@ -50,7 +50,11 @@ def dump (url, mode) :
     db_client.disconnect ()
 
 
+# ------------------------------------------------------------------------------
 def handle_db (db_client, mode, dbname, cname, pname) :
+    """
+    For the given db, traverse collections
+    """
 
     database = db_client[dbname]
     print " +-- db   %s" % dbname
@@ -76,7 +80,11 @@ def handle_db (db_client, mode, dbname, cname, pname) :
 
 
 
+# ------------------------------------------------------------------------------
 def handle_coll (database, mode, cname, pname) :
+    """
+    For a given collection, traverse all documents
+    """
 
     if 'indexes' in cname :
         return
@@ -106,7 +114,11 @@ def handle_coll (database, mode, cname, pname) :
                 handle_doc (collection, mode, doc)
 
 
+# ------------------------------------------------------------------------------
 def handle_doc (collection, mode, doc) :
+    """
+    And, surprise, for a given document, show it according to 'mode'
+    """
 
     name = doc['_id']
 
@@ -138,6 +150,10 @@ if __name__ == '__main__' :
         mode = 'tree'
         url  = sys.argv[1]
 
+    elif len(sys.argv) == 1 :
+        mode = 'tree'
+        url  = _DEFAULT_DBURL
+
     else :
         print """
 
@@ -158,8 +174,6 @@ if __name__ == '__main__' :
 
 """
         sys.exit (0)
-
-
 
     dump (url, mode)
 
