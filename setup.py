@@ -147,7 +147,7 @@ setup_args = {
     'cmdclass'         : {
         'test'         : our_test,
     },
-    'install_requires' : ['pymongo', 'radical.utils'],
+    'install_requires' : ['pymongo', 'radical.utils', 'psutil'],
     'tests_require'    : ['nose'],
     'zip_safe'         : False,
 }

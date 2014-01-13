@@ -101,7 +101,7 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
 # for xy in [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240] :
 for xy in [1024] :
     for z in [250] : 
-        print "%d %d %d" % (xy, xy, z)
+      # print "%d %d %d" % (xy, xy, z)
 
 # # ------------------------------------------------------------------------------
 #         pass
@@ -111,65 +111,63 @@ for xy in [1024] :
 #         z  = 1
 # # ------------------------------------------------------------------------------
 
-        _, info_m = su.profile_function (mandel, xy, xy, z)
+        info_m, ret, out = su.profile_function (mandel, xy, xy, z)
 
-        load_compute = int(float(info_m['cpu.ops' ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_m['mem.peak']) / (1024*1024))
-        load_storage = int(float(info_m['io.write']) / (1024*1024))
+        load_compute = int(float(info_m['cpu']['ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_m['mem']['max'])  / (1024*1024))
+        load_storage = int(float(info_m['io']['write']) / (1024*1024))
 
         load_id  = 'RMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d %9d %9d %5d %5d %5d %5.1f %5.1f' % \
-                   (host, load_id, float(info_m['time.real']), 
+        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d %9d %9d %5d %5d %5d %7.2f' % \
+                   (host, load_id, float(info_m['time']['real']), 
                     1, load_compute, load_memory, load_storage,
                     xy, xy, z,
-                    info_m['cpu.cycles idle front'], info_m['cpu.cycles idle back'])
+                    info_m['cpu']['efficiency'])
         print output
 
 
         # --------------------------------------------------------------------------------------------
        
-        load_compute = int(float(info_m['cpu.ops' ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_m['mem.peak']) / (1024*1024))
-        load_storage = int(float(info_m['io.write']) / (1024*1024))
+        load_compute = int(float(info_m['cpu']['ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_m['mem']['max'])  / (1024*1024))
+        load_storage = int(float(info_m['io']['write']) / (1024*1024))
        
-        info_s, info_2 = su.profile_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
+        info_s, ret, out = su.profile_function (synaptic, xy, xy, z, load_compute, load_memory, load_storage)
 
-        info_s.update (info_2)
 
-        pp.pprint (info_s)
-        load_memory = int( float(info_s['c']['ru.maxrss']) \
-                         + float(info_s['m']['ru.maxrss']) \
-                         + float(info_s['s']['ru.maxrss']) ) / (1024*1024)
-
-        load_compute = int(float(info_s['cpu.ops' ]) / (1024*1024) / 8)
-        load_memory  = int(float(info_s['mem.peak']) / (1024*1024))
-        load_storage = int(float(info_s['io.write']) / (1024*1024))
+        load_compute = int(float(info_s['cpu']['ops' ]) / (1024*1024) / 8)
+        load_memory  = int(float(info_s['mem']['max' ]) / (1024*1024))
+        load_storage = int(float(info_s['io']['write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d %9d %9d %5d %5d %5d %5.1f %5.1f' % \
-                   (host, load_id, float(info_s['time.real']), 
-                    info_s['c']['timer'], info_s['m']['timer'], info_s['s']['timer'],
+        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d %9d %9d %5d %5d %5d %7.2f' % \
+                   (host, load_id, float(info_s['time']['real']), 
+                    0.0, 0.0, 0.0,
                     1, load_compute, load_memory, load_storage,
                     xy, xy, z,
-                    info_s['cpu.cycles idle front'], info_s['cpu.cycles idle back'])
+                    info_s['cpu']['efficiency'])
 
         print output
 
         
 
-        print ' ---------------------------------------------'
-        for key in ['time.real', 
-                    'cpu.ops', 
-                    'io.write', 
-                    'mem.peak',
-                    'mem.max',
-                    'cpu.cycles idle front',
-                    'cpu.cycles idle back' ] :
-            print " RMB %-25s : %15.1f" % (key, float(info_m[key]))
-            print " SMB %-25s : %15.1f" % (key, float(info_2[key]))
-        print ' ---------------------------------------------'
-        pp.pprint (info_m)
-        print ' ---------------------------------------------'
-        pp.pprint (info_2)
-        print ' ---------------------------------------------'
+        print ' ---------------------------------------------------------------'
+        print " RMB %-25s : %15.2f" % ('time.real',          float(info_m['time']['real'         ]))
+        print " RMB %-25s : %15.2f" % ('cpu.ops',            float(info_m['cpu']['ops'           ]))
+        print " RMB %-25s : %15.2f" % ('cpu.efficiency',     float(info_m['cpu']['efficiency'    ]))
+        print " RMB %-25s : %15.2f" % ('cpu.flops_per_core', float(info_s['cpu']['flops_per_core']))
+        print " RMB %-25s : %15.2f" % ('io.write',           float(info_m['io']['write'          ]))
+        print " RMB %-25s : %15.2f" % ('mem.max',            float(info_m['mem']['max'           ]))
+        print ' ---------------------------------------------------------------'
+        print " SYN %-25s : %15.2f" % ('time.real',          float(info_s['time']['real'         ]))
+        print " SYN %-25s : %15.2f" % ('cpu.ops',            float(info_s['cpu']['ops'           ]))
+        print " SYN %-25s : %15.2f" % ('cpu.efficiency',     float(info_s['cpu']['efficiency'    ]))
+        print " SYN %-25s : %15.2f" % ('cpu.flops_per_core', float(info_s['cpu']['flops_per_core']))
+        print " SYN %-25s : %15.2f" % ('io.write',           float(info_s['io']['write'          ]))
+        print " SYN %-25s : %15.2f" % ('mem.max',            float(info_s['mem']['max'           ]))
+        print ' ---------------------------------------------------------------'
+      # pp.pprint (info_m)                                  
+      # print ' ---------------------------------------------------------------'
+      # pp.pprint (info_s)                                  
+      # print ' ---------------------------------------------------------------'
 
