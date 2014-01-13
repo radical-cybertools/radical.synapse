@@ -1,16 +1,24 @@
 
-# see http://stackoverflow.com/questions/938733/total-memory-used-by-python-process
 
 import os
 import time
-import threading
+import shlex
 import signal
+import pprint
+import pymongo
+import threading
 import radical.utils   as ru
 import subprocess      as sp
 import multiprocessing as mp
 
+import synapse
+import synapse.atoms   as sa
+
+PROFILE_URL = '%s/synapse_profiles/' % synapse.SYNAPSE_DBURL
 
 # ------------------------------------------------------------------------------
+#
+# see http://stackoverflow.com/questions/938733/total-memory-used-by-python-process
 #
 def get_mem_usage () :
 
@@ -119,13 +127,12 @@ def time_to_seconds (t) :
         return seconds
 
 
-
-
 # ------------------------------------------------------------------------------
 #
-def benchmark_function (f, *args, **kwargs) :
+def profile_function (func, *args, **kwargs) :
 
-    def func_wrapper (f, q, args, kwargs) :
+    # --------------------------------------------------------------------------
+    def func_wrapper (func, q, args, kwargs) :
 
         start_io  = get_io_usage  ()
 
@@ -133,7 +140,7 @@ def benchmark_function (f, *args, **kwargs) :
         _ = q.get ()
 
         # do the deed
-        ret = f (*args, **kwargs)
+        ret = func (*args, **kwargs)
 
         end_io  = get_io_usage  ()
         end_mem = get_mem_usage  ()
@@ -153,24 +160,26 @@ def benchmark_function (f, *args, **kwargs) :
         # send stop signal
         q.put (ret)
         q.put (info)
+    # --------------------------------------------------------------------------
+
+
 
     # use a queue to sync with the multi-subprocess
     q = mp.Queue ()
 
     # run the func in a separate process, but wrap into the wrapper
-    p = mp.Process (target = func_wrapper, 
-                    args   = (f, q), 
-                    kwargs = {'args'   : args, 
-                              'kwargs' : kwargs})
-    p.start ()
+    proc = mp.Process (target = func_wrapper, 
+                       args   = (func, q), 
+                       kwargs = {'args'   : args, 
+                                 'kwargs' : kwargs})
+    proc.start ()
 
     # tell perf to watch the new process
-    perf = sp.Popen ("/bin/sh -c '/usr/bin/time -v perf stat -p %d'" % p.pid,
+    perf = sp.Popen ("/bin/sh -c '/usr/bin/time -v perf stat -p %d'" % proc.pid,
                      stdout     = sp.PIPE,
                      stderr     = sp.STDOUT,
                      shell      = True,
                      preexec_fn = os.setsid)
-
 
     _    = q.put (True) # tell the wrapper to do the deed...
     ret  = q.get ()     # ... and wait 'til the deed is done
@@ -186,52 +195,305 @@ def benchmark_function (f, *args, **kwargs) :
             pass
 
     threading.Timer (2.0, killperf, [perf.pid]).start ()
-    perf_out = perf.communicate()[0].split ('\n')
+    out = perf.communicate()[0]
 
+    info.update (_parse_perf_output (out))
+
+
+    # don't return any stdout, thus the None
+    return (info, ret, None)  
+
+
+# ------------------------------------------------------------------------------
+#
+def profile_command (command) :
+
+    info = dict()
+
+    # run the profiled command in a separate process
+    pcommand = "/usr/bin/time -v perf stat %s" % command
+    args     = shlex.split (pcommand)
+    proc     = sp.Popen    (args, shell=False, stdout=sp.PIPE, stderr=sp.STDOUT)
+    out      = proc.communicate ()[0]
+    ret      = proc.returncode
+
+    info.update (_parse_perf_output (out))
+
+  # pprint.pprint (info)
+
+    store_profile (command, info)
+
+    return info, ret, out
+
+
+# ------------------------------------------------------------------------------
+#
+def emulate_command (command) :
+
+    profile  = get_profile (command)
+    old_info = profile['profiles'][0]
+
+    flops  = int(old_info['cpu']['cycles'] / 8 / 1024 / 1024)
+    mem    = int(old_info['mem']['max']        / 1024 / 1024)
+  # io_in  = int(old_info['io']['in']) 
+  # io_out = int(old_info['io']['out'])
+    io_in  = 0
+    io_out = 0
+
+    def emulator (flops, mem, io_in, io_out) :
+
+        app_c = sa.Compute ()
+        app_m = sa.Memory  ()
+        app_s = sa.Storage ()
+     #  app_n = sa.Network ()
+
+        # the atoms below are executed concurrently (in their own threads)
+        app_c.run (info={'n'   : flops})   # consume  10 GFlop CPY Cycles
+        app_m.run (info={'n'   : mem})     # allocate  5 GByte memory
+        app_s.run (info={'n'   : io_out,   # write     2 GByte to disk
+                         'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
+     #  app_n.run (info={'type'   : 'server', # communicate a 1 MByte message
+     #                   'mode'   : 'read',
+     #                   'port'   : 10000,
+     #                   'n'      : 100})
+     #  time.sleep (1)
+     #  app_n.run (info={'type'   : 'client',
+     #                   'mode'   : 'write',
+     #                   'host'   : 'localhost',
+     #                   'port'   : 10000,
+     #                   'n'      : 100})
+
+      # # all are started -- now wait for completion and collect times
+      # time_c = 0.0
+      # time_m = 0.0
+      # time_s = 0.0
+     ## time_n = 0.0
+
+        info_c = app_c.wait ()
+        info_m = app_m.wait ()
+        info_s = app_s.wait ()
+     #  info_n = app_n.wait ()
+
+      # time_c = float(info_c['timer'])
+      # time_m = float(info_m['timer'])
+      # time_s = float(info_s['timer'])
+     ## time_n = float(info_n['timer'])
+
+      # host   = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
+      # output = '%-10s %10s ------- %7.2f %7.2f %7.2f %5d %5d %5d %5d' % \
+      #         (host, "", time_c, time_m, time_s,
+      #          0, flops, mem, io_out)
+
+      # print output
+      # f.write ("%s\n" % output)
+
+
+    new_info, ret, _ = profile_function (emulator, flops, mem, io_in, io_out)
+
+    return (new_info, ret, None)
+
+
+# ------------------------------------------------------------------------------
+
+def _parse_perf_output (perf_out) :
+
+    info         = dict()
+    info['cpu']  = dict()
+    info['mem']  = dict()
+    info['net']  = dict()
+    info['sys']  = dict()
+    info['time'] = dict()
+
+    if  isinstance (perf_out, basestring) :
+        perf_out = perf_out.split ('\n')
 
     for line in perf_out :
 
         l = ru.ReString (line)
 
-        perf_keys = {"instructions"         : "cpu.ops",
-                     "branches"             : "cpu.branches",
-                     "branch-misses"        : "cpu.branch_misses",
-                     "cycles"               : "cpu.cycles",
-                     "frontend cycles idle" : "cpu.cycles idle front",
-                     "backend  cycles idle" : "cpu.cycles idle back",
-                     "insns per cycle"      : "cpu.ops/cycle"}
+        perf_keys = {"instructions"         : "ops",
+                     "branches"             : "branches",
+                     "branch-misses"        : "branch_misses",
+                     "cycles"               : "cycles",
+                     "frontend cycles idle" : "cycles idle front",
+                     "backend  cycles idle" : "cycles idle back",
+                     "insns per cycle"      : "ops/cycle"}
 
         while l // ( '^.*?\s+(?P<val>[\d\.,]+)%%?\s+(?P<key>%s)(?P<rest>.*)' \
                    % '|'.join(perf_keys.keys())) :
             key = perf_keys[l.get ('key')]
             val =           l.get ('val')
-            info['%s' % key] = float(val.replace (',', ''))
+            info['cpu']['%s' % key] = float(val.replace (',', ''))
 
             l = ru.ReString (l.get ('rest'))
 
         l = ru.ReString (line)
-        if l // '^\s*User time \(.*?\):\s+([\d\.]+)\s*$' :
-            info["time.user"] = float(l.get ()[0].replace(',', ''))
-        if l // '^\s*System time \(.*?\):\s+([\d\.]+)\s*$' :
-            info["time.system"] = float(l.get ()[0].replace(',', ''))
-        if l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
-            info["time.real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
-        if l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
-            info["mem.max"] = int(l.get ()[0].replace(',', ''))*1024
-        if l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
-            info["sys.exit"] = int(l.get ()[0].replace(',', ''))
+        if  l // '^\s*User time \(.*?\):\s+([\d\.]+)\s*$' :
+            info["time"]["user"] = float(l.get ()[0].replace(',', ''))
+        if  l // '^\s*System time \(.*?\):\s+([\d\.]+)\s*$' :
+            info["time"]["system"] = float(l.get ()[0].replace(',', ''))
+        if  l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
+            info["time"]["real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
+        if  l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
+            info["mem"]["max"] = int(l.get ()[0].replace(',', ''))*1024
+        if  l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
+            info["sys"]["exit"] = int(l.get ()[0].replace(',', ''))
 
 
-        # must haves
-        if not 'cpu.ops'              in info : info['cpu.ops'              ] = 0
-        if not 'mem.peak'             in info : info['mem.peak'             ] = 0
-        if not 'mem.max'              in info : info['mem.max'              ] = 0
-        if not 'cpu.cycles idle front'in info : info['cpu.cycles idle front'] = 0
-        if not 'cpu.cycles idle back' in info : info['cpu.cycles idle back' ] = 0
+    # must haves
+    if not 'ops'              in info['cpu'] : info['cpu']['ops'              ] = 0
+    if not 'peak'             in info['mem'] : info['mem']['peak'             ] = 0
+    if not 'max'              in info['mem'] : info['mem']['max'              ] = 0
+    if not 'cycles idle front'in info['cpu'] : info['cpu']['cycles idle front'] = 0
+    if not 'cycles idle back' in info['cpu'] : info['cpu']['cycles idle back' ] = 0
 
-    return ret, info
+    return info
 
 
+# ------------------------------------------------------------------------------
+def store_profile (command, info) :
+
+    command_idx = index_command (command)
+
+    host, port, dbname, _, _ = split_dburl (PROFILE_URL)
+
+  # print 'url       : %s' % PROFILE_URL
+  # print 'host      : %s' % host
+  # print 'port      : %s' % port
+  # print 'database  : %s' % dbname
+
+    db_client  = pymongo.MongoClient (host=host, port=port)
+    database   = db_client[dbname]
+    collection = database['profiles']
+
+    profile    = {'type'     : 'profile', 
+                  'command'  : command, 
+                  'index'    : command_idx, 
+                  'profiles' : list()}
+    results    = collection.find ({'type'  : 'profile', 
+                                   'index' : command_idx})
+
+    if  results.count() :
+        # expand existing profile
+        profile = results[0]
+
+
+    profile['profiles'].append (info)
+
+    collection.save (profile)
+    print 'profile stored in %s' % [host, port, dbname, 'profiles']
+
+
+# ------------------------------------------------------------------------------
+def get_profile (command) :
+
+    command_idx = index_command (command)
+
+    host, port, dbname, _, _ = split_dburl (PROFILE_URL)
+
+  # print 'url       : %s' % PROFILE_URL
+  # print 'host      : %s' % host
+  # print 'port      : %s' % port
+  # print 'database  : %s' % dbname
+
+    db_client  = pymongo.MongoClient (host=host, port=port)
+    database   = db_client[dbname]
+    collection = database['profiles']
+
+    results    = collection.find ({'type'    : 'profile', 
+                                   'command' : command,
+                                   'index'   : command_idx})
+
+    if  not results.count() :
+        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, PROFILE_URL))
+
+
+    print 'profile retrieved from %s' % [host, port, dbname, 'profiles']
+  # pprint.pprint (results[0])
+    return results[0]
+
+
+# ------------------------------------------------------------------------------
+#
+def index_command (command) :
+    """remove hosts from URLs for cross-site indexing"""
+
+    ret = "%s" % command # deep copy
+
+    if  '://' in command :
+        url_idx   = command.find ('://')
+        host_idx  = command.find ('/', url_idx+3)
+        print '----'
+        print command
+        print url_idx
+        print host_idx
+        print command[:url_idx]
+        print command[host_idx:]
+        ret   = "%s:/%s" % (command[:url_idx], command[host_idx:])
+        print ret
+        print '----'
+
+    return ret
+
+
+# ------------------------------------------------------------------------------
+#
+def split_dburl (url) :
+    """
+    we split the url into the base mongodb URL, and the path element, whose
+    first element is the database name, and the remainder is interpreted as
+    collection id.
+    """
+
+    slashes = [idx for [idx,elem] in enumerate(url) if elem == '/']
+
+    if  len(slashes) < 3 :
+        raise ValueError ("url needs to be a mongodb URL, the path element " \
+                          "must specify the database and collection id")
+
+    if  url[:slashes[0]].lower() != 'mongodb:' :
+        raise ValueError ("url must be a 'mongodb://' url, not %s" % url)
+
+  # if  len(url) <= slashes[2]+1 :
+  #     raise ValueError ("url needs to be a mongodb url, the path element " \
+  #                       "must specify the database and collection id")
+
+    base_url = url[slashes[1]+1:slashes[2]]
+    path     = url[slashes[2]+1:]
+
+    if  ':' in base_url :
+        host, port = base_url.split (':', 1)
+        port = int(port)
+    else :
+        host, port = base_url, None
+
+    path = os.path.normpath(path)
+    if  path.startswith ('/') :
+        path = path[1:]
+    path_elems = path.split ('/')
+
+
+    dbname = None
+    cname  = None
+    pname  = None
+
+    if  len(path_elems)  >  0 :
+        dbname = path_elems[0]
+
+    if  len(path_elems)  >  1 :
+        dbname = path_elems[0]
+        cname  = path_elems[1]
+
+    if  len(path_elems)  >  2 :
+        dbname = path_elems[0]
+        cname  = path_elems[1]
+        pname  = '/'.join (path_elems[2:])
+
+    if  dbname == '.' : 
+        dbname = None
+
+  # print str([host, port, dbname, cname, pname])
+    return [host, port, dbname, cname, pname]
 
 
 # ------------------------------------------------------------------------------

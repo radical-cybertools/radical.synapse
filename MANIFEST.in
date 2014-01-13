@@ -1,11 +1,13 @@
-include *.py
-
-#include all tests
-recursive-include tests *
-
-include synapse/*.py
-include synapse/utils/*.py
-include synapse/atoms/*.py
 
 include MANIFEST.in 
+include README.md 
+include LICENSE.md 
+include CHANGES.md 
+include VERSION
+
+include synapse/*.py
+include synapse/atoms/*.py
+include synapse/atoms/*.c
+include synapse/utils/*.py
+
 

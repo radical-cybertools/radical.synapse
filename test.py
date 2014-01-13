@@ -4,8 +4,24 @@ import os
 import sys
 import time
 
+from   pprint import pprint
+
+import synapse
 import synapse.atoms as sa
 import synapse.utils as su
+
+def sleep (delay) :
+    time.sleep (delay)
+
+command = synapse.synapsify ('sleep 10', synapse.NOTHING)
+command = synapse.synapsify ('sleep 10', synapse.PROFILE)
+command = synapse.synapsify ('sleep 10', synapse.EMULATE)
+
+info, ret, out = su.profile_function (sleep, 10 ); pprint (info)
+info, ret, out = su.profile_command  ('sleep 10'); pprint (info)
+info, ret, out = su.emulate_command  ('sleep 10'); pprint (info)
+
+sys.exit (0)
 
 host  = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
 home  = os.getenv ('HOME')

@@ -99,7 +99,7 @@ class AtomBase (object) :
                               stdout=subprocess.PIPE, 
                               stderr=subprocess.PIPE)
 
-        (pout, perr) = p.communicate ()
+        pout, perr = p.communicate ()
 
         info = {'timer'    : float("%3.2f" % (time.time () - t_start)),
                 'exitcode' : int(p.returncode), 
