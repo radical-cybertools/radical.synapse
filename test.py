@@ -13,13 +13,13 @@ import synapse.utils as su
 def sleep (delay) :
     time.sleep (delay)
 
-command = synapse.synapsify ('sleep 10', synapse.NOTHING)
-command = synapse.synapsify ('sleep 10', synapse.PROFILE)
-command = synapse.synapsify ('sleep 10', synapse.EMULATE)
+# command = synapse.synapsify ('sleep 10', synapse.NOTHING)
+# command = synapse.synapsify ('sleep 10', synapse.PROFILE)
+# command = synapse.synapsify ('sleep 10', synapse.EMULATE)
 
-info, ret, out = su.profile_function (sleep, 10 ); pprint (info)
-info, ret, out = su.profile_command  ('sleep 10'); pprint (info)
-info, ret, out = su.emulate_command  ('sleep 10'); pprint (info)
+info, ret, out = su.profile_function (sleep, 1 ); pprint (info)
+# info, ret, out = su.profile_command  ('sleep 10'); pprint (info)
+# info, ret, out = su.emulate_command  ('sleep 10'); pprint (info)
 
 sys.exit (0)
 

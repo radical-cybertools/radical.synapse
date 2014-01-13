@@ -79,7 +79,7 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
     atoms['c'].run (info={'n'   : load_compute})
     atoms['m'].run (info={'n'   : load_memory})
     atoms['s'].run (info={'n'   : load_storage,
-                            'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
+                          'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
 
     # wait for all atom threads to be done
     info_c = atoms['c'].wait ()

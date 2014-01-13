@@ -22,56 +22,51 @@ PROFILE_URL = '%s/synapse_profiles/' % synapse.SYNAPSE_DBURL
 #
 def get_mem_usage () :
 
-    ret   = dict ()
-
-    scale = {'kb'      : 1024.0,
-             'mb'      : 1     }
-    info  = {'VmPeak:' : 'mem.peak',
-             'VmSize:' : 'mem.size',
-             'VmData:' : 'mem.data',
-             'VmRSS:'  : 'mem.resident',
-             'VmStk:'  : 'mem.stack'}
+    info    = {'mem'     : dict()}
+    scale   = {'kb'      : 1024.0,
+               'mb'      : 1     }
+    keymap  = {'VmPeak:' : 'peak',
+               'VmSize:' : 'size',
+               'VmData:' : 'data',
+               'VmRSS:'  : 'resident',
+               'VmStk:'  : 'stack'}
 
     with open ('/proc/%d/status'  %  os.getpid ()) as t :
 
         text = t.read ()
 
-        for key in info.keys () :
+        for key in keymap.keys () :
 
             i = text.index (key)
             v = text[i:].split (None, 3)
 
-            if  len(v) < 3 :
-                ret[info[key]] = -1
-            else :
-                ret[info[key]] = "%f MB" % (float(v[1]) / scale[v[2].lower ()])
+            if  len(v) >= 2 :
+                info['mem'][keymap[key]] = human_to_number (v[1])
 
-        return ret
+        return info
 
 
 # ------------------------------------------------------------------------------
 #
 def get_io_usage () :
 
-    ret   = dict ()
-    info  = {'read_bytes:'  : 'io.read' ,
-             'write_bytes:' : 'io.write'}
+    info   = {'io'           : dict()}
+    keymap = {'read_bytes:'  : 'read' ,
+              'write_bytes:' : 'write'}
 
     with open ('/proc/%d/io'  %  os.getpid ()) as t :
 
         text = t.read ()
 
-        for key in info.keys () :
+        for key in keymap.keys () :
 
             i = text.index (key)
             v = text[i:].split (None, 3)
 
-            if  len(v) < 2 :
-                ret[info[key]] = -1
-            else :
-                ret[info[key]] = "%d" % int(v[1])
+            if  len(v) >= 2 :
+                info['io'][keymap[key]] = "%d" % int(v[1])
 
-        return ret
+        return info
 
 
 # ------------------------------------------------------------------------------
@@ -145,17 +140,18 @@ def profile_function (func, *args, **kwargs) :
         end_io  = get_io_usage  ()
         end_mem = get_mem_usage  ()
 
-        info = dict()
+        info = {'io'  : dict(), 
+                'mem' : dict()}
 
-        for key in end_io  :
-            s_start   = start_io[key]
-            s_end     = end_io  [key]
+        for key in end_io['io']  :
+            s_start   = start_io['io'][key]
+            s_end     = end_io  ['io'][key]
             n_start   = human_to_number (s_start)
             n_end     = human_to_number (s_end)
-            info[key] = n_end-n_start
+            info['io'][key] = n_end-n_start
 
-        for key in end_mem  :
-            info[key] = human_to_number (end_mem [key])
+        for key in end_mem['mem']  :
+            info['mem'][key] = human_to_number (end_mem['mem'][key])
 
         # send stop signal
         q.put (ret)
@@ -230,15 +226,16 @@ def profile_command (command) :
 #
 def emulate_command (command) :
 
-    profile  = get_profile (command)
-    old_info = profile['profiles'][0]
+    profile    = get_profile (command)
+    old_info   = profile['profiles'][0]
 
-    flops  = int(old_info['cpu']['cycles'] / 8 / 1024 / 1024)
-    mem    = int(old_info['mem']['max']        / 1024 / 1024)
-  # io_in  = int(old_info['io']['in']) 
-  # io_out = int(old_info['io']['out'])
-    io_in  = 0
-    io_out = 0
+    flops      = int(old_info['cpu']['cycles'] / 8 / 1024 / 1024)
+    efficiency = int(old_info['cpu']['efficiency'])
+    mem        = int(old_info['mem']['max']        / 1024 / 1024)
+  # io_in      = int(old_info['io']['in']) 
+  # io_out     = int(old_info['io']['out'])
+    io_in      = 0
+    io_out     = 0
 
     def emulator (flops, mem, io_in, io_out) :
 
@@ -346,6 +343,69 @@ def _parse_perf_output (perf_out) :
     if not 'max'              in info['mem'] : info['mem']['max'              ] = 0
     if not 'cycles idle front'in info['cpu'] : info['cpu']['cycles idle front'] = 0
     if not 'cycles idle back' in info['cpu'] : info['cpu']['cycles idle back' ] = 0
+
+    # also determine the theoretical number of FLOPS, which is calculated as
+    #   FLOPS = #cores * #cycles/sec * flops/cycle
+    # where flops/cycle are assumed to be 4 (see wikipedia on FLOPS).  We assume
+    # that the watched process uses only one core, so we calculate the number
+    # for one core only, but also report the number of cores.
+    with open ("/proc/cpuinfo") as proc_cpuinfo:
+
+        cpu_freq         = 1 # in Hz
+        num_sockets      = 1
+        cores_per_socket = 1 
+        core_siblings    = 1
+        threads_per_core = 1
+        flops_per_cycle  = 4 # see wikipedia on FLOPS
+        flops_per_core   = flops_per_cycle * cpu_freq
+
+        for line in proc_cpuinfo.readlines ()  :
+
+            if  line.startswith ('model name') :
+                elems = line.split ('@')
+                if  elems[-1].endswith ('Hz') :
+                    cpu_freq = max(cpu_freq, human_to_number (elems[-1]))
+
+            if  line.startswith ('cpu MHz') :
+                elems = line.split (':')
+                cpu_freq = max(cpu_freq, float(elems[-1]) * 1024*1024)
+
+            if  line.startswith ('physical id') :
+                elems = line.split (':')
+                num_sockets = max(num_sockets, int(elems[-1])+1)
+
+            if  line.startswith ('cpu cores') :
+                elems = line.split (':')
+                cores_per_socket = max(cores_per_socket, int(elems[-1]))
+
+            if  line.startswith ('siblings') :
+                elems = line.split (':')
+                core_siblings = max(core_siblings, int(elems[-1]))
+
+        threads_per_core = int(core_siblings / cores_per_socket)
+        flops_per_core   = int(cpu_freq * flops_per_cycle)
+
+  # print "cpu_freq         : %d" % cpu_freq         
+  # print "num_sockets      : %d" % num_sockets      
+  # print "cores_per_socket : %d" % cores_per_socket 
+  # print "core_siblings    : %d" % core_siblings    
+  # print "threads_per_core : %d" % threads_per_core 
+  # print "flops_per_cycle  : %d" % flops_per_cycle  
+  # print "flops_per_core   : %d" % flops_per_core   
+
+    info['cpu']['cpu_freq'         ] = cpu_freq         
+    info['cpu']['num_sockets'      ] = num_sockets      
+    info['cpu']['cores_per_socket' ] = cores_per_socket 
+    info['cpu']['threads_per_core' ] = threads_per_core 
+    info['cpu']['flops_per_cycle'  ] = flops_per_cycle  
+    info['cpu']['flops_per_core'   ] = flops_per_core   
+
+    time_cutoff = float(1.0 / 1000 / 1000)
+    stime = info['time']['system']
+    if  float(stime) < time_cutoff :
+        stime = max(time_cutoff, info['time']['real'])
+        
+    info['cpu']['efficiency'] = min(1.0, info['cpu']['ops'] / stime / flops_per_core)
 
     return info
 

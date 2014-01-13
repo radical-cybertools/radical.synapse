@@ -10,7 +10,7 @@ import radical.utils.logger as rul
 
 # ------------------------------------------------------------------------------
 
-SYNAPSE_DBURL = 'mongodb://ec2-184-72-89-141.compute-1.amazonaws.com:27017/'
+SYNAPSE_DBURL = os.environ.get ('SYNAPSE_DBURL', 'mongodb://localhost:27017/')
 
 from synapsify import synapsify
 from synapsify import NOTHING
