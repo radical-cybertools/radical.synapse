@@ -72,20 +72,30 @@ def get_io_usage () :
 # ------------------------------------------------------------------------------
 #
 #
-PREFIX = { 'k' : 1024,
-           'm' : 1024 * 1024,
-           'g' : 1024 * 1024 * 1024,
-           't' : 1024 * 1024 * 1024 * 1024,
-           'p' : 1024 * 1024 * 1024 * 1024 * 1024,
-           'e' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
-           'z' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
-           'y' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
-         }
+PREFIX_BIN = { 'K' : 1024,
+               'M' : 1024 * 1024,
+               'G' : 1024 * 1024 * 1024,
+               'T' : 1024 * 1024 * 1024 * 1024,
+               'P' : 1024 * 1024 * 1024 * 1024 * 1024,
+               'E' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+               'Z' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+               'Y' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
+             }
+
+PREFIX_ISO = { 'K' : 1000,
+               'M' : 1000 * 1000,
+               'G' : 1000 * 1000 * 1000,
+               'T' : 1000 * 1000 * 1000 * 1000,
+               'P' : 1000 * 1000 * 1000 * 1000 * 1000,
+               'E' : 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
+               'Z' : 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
+               'Y' : 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000
+             }
 
 
 # ------------------------------------------------------------------------------
 #
-def human_to_number (h) :
+def human_to_number (h, prefix=PREFIX_BIN) :
 
     rs = ru.ReString (h)
 
@@ -94,13 +104,26 @@ def human_to_number (h) :
          #  print 'incorrect format: %s' % h
             return float(h)
 
-        p = match[1].lower()[0]
+        p = match[1].upper()[0]
 
-        if  not p in PREFIX :
+        if  not p in prefix :
          #  print 'unknown prefix: %s' % h
             return float(h)
 
-        return float(match[0]) * PREFIX[p]
+        return float(match[0]) * prefix[p]
+
+
+# ------------------------------------------------------------------------------
+#
+def number_to_human (n, prefix=PREFIX_BIN, unit='', template="%(val)f %(unit)s") :
+
+    for key in prefix.keys () :
+
+        hn = n / float(prefix[key])
+        if  hn > 1 and hn < 1000 :
+            return template % {'val' : hn, 'unit' : "%s%s" % (key, unit)}
+
+    return template % {'val' : n, 'unit' : unit}
 
 
 # ------------------------------------------------------------------------------
@@ -364,11 +387,11 @@ def _parse_perf_output (perf_out) :
             if  line.startswith ('model name') :
                 elems = line.split ('@')
                 if  elems[-1].endswith ('Hz') :
-                    cpu_freq = max(cpu_freq, human_to_number (elems[-1]))
+                    cpu_freq = max(cpu_freq, human_to_number (elems[-1]), mode=PREFIX_ISO)
 
             if  line.startswith ('cpu MHz') :
                 elems = line.split (':')
-                cpu_freq = max(cpu_freq, float(elems[-1]) * 1024*1024)
+                cpu_freq = max(cpu_freq, float(elems[-1]) * 1000*1000)
 
             if  line.startswith ('physical id') :
                 elems = line.split (':')
