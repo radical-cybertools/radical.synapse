@@ -12,10 +12,15 @@ import radical.utils   as ru
 import subprocess      as sp
 import multiprocessing as mp
 
+# import pudb 
+# pudb.set_interrupt_handler ()
+
 import synapse
 import synapse.atoms   as sa
 
 PROFILE_URL = '%s/synapse_profiles/' % synapse.SYNAPSE_DBURL
+LOAD        = int (os.environ.get ('LOAD', '0'))
+LOAD_CMD    = "top -b -n1 | head -1 | cut -f 5 -d : | cut -f 1 -d ," 
 
 # ------------------------------------------------------------------------------
 #
@@ -153,19 +158,33 @@ def profile_function (func, *args, **kwargs) :
     # --------------------------------------------------------------------------
     def func_wrapper (func, q, args, kwargs) :
 
+        info = {'io'  : dict(), 
+                'cpu' : dict(),
+                'mem' : dict(), 
+                'net' : dict(), 
+                'sys' : dict()}
+
         start_io  = get_io_usage  ()
 
         # wait for startup signal
         _ = q.get ()
+
+        # start stress, get it spinning for one min to et a confirmed load
+        # measurement, then run our own load, then kill stress.
+        if  LOAD > 0 :
+            synapse._logger.info ("creating system load %s" % LOAD)
+            os.popen ("killall -9 stress 2>&1 > /dev/null")
+            os.popen ('stress --cpu %s&' % LOAD)
+            time.sleep (60)
+
+        time_1 = time.time()
+        load_1 = float(os.popen (LOAD_CMD).read())
 
         # do the deed
         ret = func (*args, **kwargs)
 
         end_io  = get_io_usage  ()
         end_mem = get_mem_usage  ()
-
-        info = {'io'  : dict(), 
-                'mem' : dict()}
 
         for key in end_io['io']  :
             s_start   = start_io['io'][key]
@@ -177,9 +196,22 @@ def profile_function (func, *args, **kwargs) :
         for key in end_mem['mem']  :
             info['mem'][key] = human_to_number (end_mem['mem'][key])
 
+        time_2 = time.time()
+        load_2 = float(os.popen (LOAD_CMD).read())
+        info['sys']['load'] = max(load_1, load_2)
+        synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
+
+
+
+        if  LOAD > 0 :
+            synapse._logger.info ("stopping system load")
+            os.popen ("killall -9 stress 2>&1 > /dev/null")
+            synapse._logger.info ("stopped  system load")
+
         # send stop signal
         q.put (ret)
         q.put (info)
+
     # --------------------------------------------------------------------------
 
 
@@ -217,8 +249,24 @@ def profile_function (func, *args, **kwargs) :
     threading.Timer (2.0, killperf, [perf.pid]).start ()
     out = perf.communicate()[0]
 
-    info.update (_parse_perf_output (out))
+  # pprint.pprint (info)
+    dict_merge    (info, _parse_perf_output (out))
+  # pprint.pprint (info)
 
+    cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
+    cycles_max  = info['cpu']['frequency'] * info['time']['real']
+    info['cpu']['utilization'] = cycles_used / cycles_max
+
+  # print "utilization    : %s \n" % info['cpu']['utilization']
+  #
+  # print "cycles_max     : %s " % cycles_max 
+  # print "frequency      : %s " % info['cpu']['frequency']
+  # print "time           : %s \n" % info['time']['real']
+  #
+  # print "cycles_used    : %s " % cycles_used
+  # print "cycles         : %s " % info['cpu']['cycles']
+  # print "stalled_front  : %s " % info['cpu']['cycles_stalled_front']
+  # print "stalled_back   : %s " % info['cpu']['cycles_stalled_back']
 
     # don't return any stdout, thus the None
     return (info, ret, None)  
@@ -228,7 +276,23 @@ def profile_function (func, *args, **kwargs) :
 #
 def profile_command (command) :
 
-    info = dict()
+    info = {'io'  : dict(), 
+            'cpu' : dict(),
+            'mem' : dict(), 
+            'net' : dict(), 
+            'sys' : dict()}
+
+    # start stress, get it spinning for one min to et a confirmed load
+    # measurement, then run our own load, then kill stress.
+    if  LOAD > 0 :
+        synapse._logger.info ("creating system load %s" % LOAD)
+        os.popen ("killall -9 stress 2>&1 > /dev/null")
+        os.Popen ('stress --cpu %s &' % LOAD)
+        time.sleep (60)
+
+    time_1 = time.time()
+    load_1 = float(os.popen (LOAD_CMD).read())
+    synapse._logger.info ("creating system load %s: %s" % (LOAD, info['sys']['load']))
 
     # run the profiled command in a separate process
     pcommand = "/usr/bin/time -v perf stat %s" % command
@@ -237,9 +301,34 @@ def profile_command (command) :
     out      = proc.communicate ()[0]
     ret      = proc.returncode
 
-    info.update (_parse_perf_output (out))
+    time_2 = time.time()
+    load_2 = float(os.popen (LOAD_CMD).read())
+    info['sys']['load'] = max(load_1, load_2)
+    synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
+
+    if  LOAD > 0 :
+        synapse._logger.info ("stopping system load")
+        os.popen ("killall -9 stress 2>&1 > /dev/null")
+        synapse._logger.info ("stopped  system load")
 
   # pprint.pprint (info)
+    dict_merge    (info, _parse_perf_output (out))
+  # pprint.pprint (info)
+ 
+    cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
+    cycles_max  = info['cpu']['frequency'] * info['time']['real']
+    info['cpu']['utilization'] = cycles_used / cycles_max
+
+  # print "utilization    : %s \n" % info['cpu']['utilization']
+  #
+  # print "cycles_max     : %s " % cycles_max 
+  # print "frequency      : %s " % info['cpu']['frequency']
+  # print "time           : %s \n" % info['time']['real']
+  #
+  # print "cycles_used    : %s " % cycles_used
+  # print "cycles         : %s " % info['cpu']['cycles']
+  # print "stalled_front  : %s " % info['cpu']['cycles_stalled_front']
+  # print "stalled_back   : %s " % info['cpu']['cycles_stalled_back']
 
     store_profile (command, info)
 
@@ -311,6 +400,19 @@ def emulate_command (command) :
 
     new_info, ret, _ = profile_function (emulator, flops, mem, io_in, io_out)
 
+    new_info['cpu']['efficiency']  = new_info['cpu']['ops']                       \
+                                     / ( new_info['cpu']['ops']                   \
+                                       + new_info['cpu']['cycles_stalled_front']  \
+                                       + new_info['cpu']['cycles_stalled_back']   \
+                                       )
+                                 
+   #print 'efficiency = %s / (%s + %s + %s) = %s' % (
+   #          new_info['cpu']['ops'],
+   #          new_info['cpu']['ops'],
+   #          new_info['cpu']['cycles_stalled_front'],
+   #          new_info['cpu']['cycles_stalled_back'],
+   #          new_info['cpu']['efficiency'])
+
     return (new_info, ret, None)
 
 
@@ -329,16 +431,16 @@ def _parse_perf_output (perf_out) :
         perf_out = perf_out.split ('\n')
 
     # prepare to dig data from perf output lines
-    perf_keys  = {"CPUs utilized"           : "utilization",
-                  "instructions"            : "ops",
-                  "branches"                : "branches",
-                  "branch-misses"           : "branch_misses",
-                  "cycles"                  : "cycles",
-                  "stalled-cycles-frontend" : "cycles_stalled_front",
-                  "stalled-cycles-backend"  : "cycles_stalled_back",
-                  "frontend cycles idle"    : "cycles_idle_front",
-                  "backend  cycles idle"    : "cycles_idle_back",
-                  "insns per cycle"         : "ops_per_cycle"}
+    perf_keys  = {# "CPUs utilized"           : "utilization",
+                    "instructions"            : "ops",
+                    "branches"                : "branches",
+                    "branch-misses"           : "branch_misses",
+                    "cycles"                  : "cycles",
+                    "stalled-cycles-frontend" : "cycles_stalled_front",
+                    "stalled-cycles-backend"  : "cycles_stalled_back",
+                    "frontend cycles idle"    : "cycles_idle_front",
+                    "backend  cycles idle"    : "cycles_idle_back",
+                    "insns per cycle"         : "ops_per_cycle"}
     ored_keys   = '|'.join(perf_keys.keys()).replace (' ', '\s')
     perf_patstr = r"""
         ^(?P<lead>.*?\s+)            # lead-in
@@ -393,16 +495,23 @@ def _parse_perf_output (perf_out) :
     if not 'ops'                  in info['cpu'] : info['cpu']['ops'                  ] = 1
     if not 'peak'                 in info['mem'] : info['mem']['peak'                 ] = 0
     if not 'max'                  in info['mem'] : info['mem']['max'                  ] = 0
-    if not 'cycles idle front'    in info['cpu'] : info['cpu']['cycles_idle_front'    ] = 0
-    if not 'cycles idle back'     in info['cpu'] : info['cpu']['cycles_idle_back'     ] = 0
-    if not 'cycles stalled front' in info['cpu'] : info['cpu']['cycles_stalled_front' ] = 0
-    if not 'cycles stalled back'  in info['cpu'] : info['cpu']['cycles_stalled_back'  ] = 0
+    if not 'cycles_idle_front'    in info['cpu'] : info['cpu']['cycles_idle_front'    ] = 0
+    if not 'cycles_idle_back'     in info['cpu'] : info['cpu']['cycles_idle_back'     ] = 0
+    if not 'cycles_stalled_front' in info['cpu'] : info['cpu']['cycles_stalled_front' ] = 0
+    if not 'cycles_stalled_back'  in info['cpu'] : info['cpu']['cycles_stalled_back'  ] = 0
 
-    info['cpu']['efficiency']  = ( info['cpu']['ops']                   \
-                                 - info['cpu']['cycles_stalled_front']  \
-                                 - info['cpu']['cycles_stalled_back']   \
-                                 )                                      \
-                                 / info['cpu']['ops']
+    info['cpu']['efficiency']  = info['cpu']['ops']                       \
+                                 / ( info['cpu']['ops']                   \
+                                   + info['cpu']['cycles_stalled_front']  \
+                                   + info['cpu']['cycles_stalled_back']   \
+                                   )
+                                 
+  # print 'efficiency = %s / (%s + %s + %s) = %s' % (
+  #           info['cpu']['ops'],
+  #           info['cpu']['ops'],
+  #           info['cpu']['cycles_stalled_front'],
+  #           info['cpu']['cycles_stalled_back'],
+  #           info['cpu']['efficiency'])
 
     # also determine the theoretical number of FLOPS, which is calculated as
     #   FLOPS = #cores * #cycles/sec * flops/cycle
@@ -423,8 +532,8 @@ def _parse_perf_output (perf_out) :
 
             if  line.startswith ('model name') :
                 elems = line.split ('@')
-                if  elems[-1].endswith ('Hz') :
-                    cpu_freq = max(cpu_freq, human_to_number (elems[-1]), mode=PREFIX_ISO)
+                if  elems[-1].endswith ('Hz\n') :
+                    cpu_freq = max(cpu_freq, human_to_number (elems[-1], prefix=PREFIX_ISO))
 
             if  line.startswith ('cpu MHz') :
                 elems = line.split (':')
@@ -453,7 +562,7 @@ def _parse_perf_output (perf_out) :
   # print "flops_per_cycle  : %d" % flops_per_cycle  
   # print "flops_per_core   : %d" % flops_per_core   
 
-    info['cpu']['cpu_freq'         ] = cpu_freq         
+    info['cpu']['frequency'        ] = cpu_freq         
     info['cpu']['num_sockets'      ] = num_sockets      
     info['cpu']['cores_per_socket' ] = cores_per_socket 
     info['cpu']['threads_per_core' ] = threads_per_core 
@@ -465,8 +574,6 @@ def _parse_perf_output (perf_out) :
     if  float(stime) < time_cutoff :
         stime = max(time_cutoff, info['time']['real'])
         
-    info['cpu']['efficiency'] = min(1.0, info['cpu']['ops'] / stime / flops_per_core)
-
   # pprint.pprint (info)
 
     return info
@@ -617,6 +724,43 @@ def split_dburl (url) :
   # print str([host, port, dbname, cname, pname])
     return [host, port, dbname, cname, pname]
 
+
+# ------------------------------------------------------------------------------
+#
+def dict_merge (a, b, _path=[]):
+    # thanks to 
+    # http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
+
+    for key in b:
+        
+        if  key in a:
+
+            # need to resolve conflict
+            if  isinstance (a[key], dict) and isinstance (b[key], dict):
+                dict_merge (a[key], b[key], _path + [str(key)])
+            
+            elif a[key] == b[key]:
+                pass # same leaf value
+
+            elif  not a[key] and b[key] :
+                a[key] = b[key] # use be value
+
+            elif  not b[key] and a[key] :
+                pass # keep value
+
+            elif  not b[key] and not a[key] :
+                pass # keep no value
+
+            else:
+                raise ValueError ('Conflict at %s (%s : %s)' \
+                               % ('.'.join(_path + [str(key)]), a[key], b[key]))
+        
+        else:
+            # no conflict - simply add.  Not that this is a potential shallow
+            # copy if b[key] is a complex type.
+            a[key] = b[key]
+    
+    return a
 
 # ------------------------------------------------------------------------------
 
