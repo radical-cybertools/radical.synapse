@@ -1,5 +1,6 @@
 
 
+import re
 import os
 import time
 import shlex
@@ -101,13 +102,13 @@ def human_to_number (h, prefix=PREFIX_BIN) :
 
     with rs // '^\s*([\d\.]+)\s*(\D+)\s*$' as match : 
         if  not match :
-         #  print 'incorrect format: %s' % h
+          # print 'incorrect format: %s' % h
             return float(h)
 
         p = match[1].upper()[0]
 
         if  not p in prefix :
-         #  print 'unknown prefix: %s' % h
+          # print 'unknown prefix: %s' % h
             return float(h)
 
         return float(match[0]) * prefix[p]
@@ -327,24 +328,52 @@ def _parse_perf_output (perf_out) :
     if  isinstance (perf_out, basestring) :
         perf_out = perf_out.split ('\n')
 
+    # prepare to dig data from perf output lines
+    perf_keys  = {"CPUs utilized"           : "utilization",
+                  "instructions"            : "ops",
+                  "branches"                : "branches",
+                  "branch-misses"           : "branch_misses",
+                  "cycles"                  : "cycles",
+                  "stalled-cycles-frontend" : "cycles_stalled_front",
+                  "stalled-cycles-backend"  : "cycles_stalled_back",
+                  "frontend cycles idle"    : "cycles_idle_front",
+                  "backend  cycles idle"    : "cycles_idle_back",
+                  "insns per cycle"         : "ops_per_cycle"}
+    ored_keys   = '|'.join(perf_keys.keys()).replace (' ', '\s')
+    perf_patstr = r"""
+        ^(?P<lead>.*?\s+)            # lead-in
+        (?P<val>[\d\.,]+)%%?         # value
+        \s+                          # skip
+        (?P<key>%s)                  # key
+        \s*                          # skip
+        (\[(?P<perc>[\d\.]+)%%\])?   # percentage (optional)
+        \s*                          # skip
+        (?P<rest>.*)$                # lead-out
+    """ % ored_keys
+    perf_pat    = re.compile (perf_patstr, re.VERBOSE)
+
+    # and go
     for line in perf_out :
+
+        synapse._logger.debug ("perf out: %s" % line)
 
         l = ru.ReString (line)
 
-        perf_keys = {"instructions"         : "ops",
-                     "branches"             : "branches",
-                     "branch-misses"        : "branch_misses",
-                     "cycles"               : "cycles",
-                     "frontend cycles idle" : "cycles idle front",
-                     "backend  cycles idle" : "cycles idle back",
-                     "insns per cycle"      : "ops/cycle"}
+        while l // (perf_pat) :
 
-        while l // ( '^.*?\s+(?P<val>[\d\.,]+)%%?\s+(?P<key>%s)(?P<rest>.*)' \
-                   % '|'.join(perf_keys.keys())) :
-            key = perf_keys[l.get ('key')]
-            val =           l.get ('val')
-            info['cpu']['%s' % key] = float(val.replace (',', ''))
+            key  = perf_keys[l.get ('key')]
+            val  =           l.get ('val')
+            perc =           l.get ('perc', '-1.0')
 
+            if  not perc :
+                perc = '-1.0'
+
+          # print " ->  %s  %s  %s" % (key, val, perc)
+
+            info['cpu']['%s'      % key] = float(val.replace  (',', ''))
+            info['cpu']['%s_perc' % key] = float(perc.replace (',', ''))
+
+          # print "rest: %s" % l.get ('rest')
             l = ru.ReString (l.get ('rest'))
 
         l = ru.ReString (line)
@@ -361,11 +390,19 @@ def _parse_perf_output (perf_out) :
 
 
     # must haves
-    if not 'ops'              in info['cpu'] : info['cpu']['ops'              ] = 0
-    if not 'peak'             in info['mem'] : info['mem']['peak'             ] = 0
-    if not 'max'              in info['mem'] : info['mem']['max'              ] = 0
-    if not 'cycles idle front'in info['cpu'] : info['cpu']['cycles idle front'] = 0
-    if not 'cycles idle back' in info['cpu'] : info['cpu']['cycles idle back' ] = 0
+    if not 'ops'                  in info['cpu'] : info['cpu']['ops'                  ] = 1
+    if not 'peak'                 in info['mem'] : info['mem']['peak'                 ] = 0
+    if not 'max'                  in info['mem'] : info['mem']['max'                  ] = 0
+    if not 'cycles idle front'    in info['cpu'] : info['cpu']['cycles_idle_front'    ] = 0
+    if not 'cycles idle back'     in info['cpu'] : info['cpu']['cycles_idle_back'     ] = 0
+    if not 'cycles stalled front' in info['cpu'] : info['cpu']['cycles_stalled_front' ] = 0
+    if not 'cycles stalled back'  in info['cpu'] : info['cpu']['cycles_stalled_back'  ] = 0
+
+    info['cpu']['efficiency']  = ( info['cpu']['ops']                   \
+                                 - info['cpu']['cycles_stalled_front']  \
+                                 - info['cpu']['cycles_stalled_back']   \
+                                 )                                      \
+                                 / info['cpu']['ops']
 
     # also determine the theoretical number of FLOPS, which is calculated as
     #   FLOPS = #cores * #cycles/sec * flops/cycle
@@ -430,6 +467,8 @@ def _parse_perf_output (perf_out) :
         
     info['cpu']['efficiency'] = min(1.0, info['cpu']['ops'] / stime / flops_per_core)
 
+  # pprint.pprint (info)
+
     return info
 
 
@@ -464,7 +503,7 @@ def store_profile (command, info) :
     profile['profiles'].append (info)
 
     collection.save (profile)
-    print 'profile stored in %s' % [host, port, dbname, 'profiles']
+  # print 'profile stored in %s' % [host, port, dbname, 'profiles']
 
 
 # ------------------------------------------------------------------------------
@@ -491,7 +530,7 @@ def get_profile (command) :
         raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, PROFILE_URL))
 
 
-    print 'profile retrieved from %s' % [host, port, dbname, 'profiles']
+  # print 'profile retrieved from %s' % [host, port, dbname, 'profiles']
   # pprint.pprint (results[0])
     return results[0]
 
@@ -506,15 +545,15 @@ def index_command (command) :
     if  '://' in command :
         url_idx   = command.find ('://')
         host_idx  = command.find ('/', url_idx+3)
-        print '----'
-        print command
-        print url_idx
-        print host_idx
-        print command[:url_idx]
-        print command[host_idx:]
+      # print '----'
+      # print command
+      # print url_idx
+      # print host_idx
+      # print command[:url_idx]
+      # print command[host_idx:]
         ret   = "%s:/%s" % (command[:url_idx], command[host_idx:])
-        print ret
-        print '----'
+      # print ret
+      # print '----'
 
     return ret
 

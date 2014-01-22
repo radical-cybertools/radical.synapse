@@ -119,9 +119,10 @@ for xy in [1024] :
         load_storage = int(float(info_m['io']['write']) / (1024*1024))
 
         load_id  = 'RMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d %9d %9d %5d %5d %5d %7.2f' % \
+        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d/%0.2f/%0.2f %9d %9d %5d %5d %5d %7.2f' % \
                    (host, load_id, float(info_m['time']['real']), 
-                    1, load_compute, load_memory, load_storage,
+                    1, load_compute, info_m['cpu']['utilization'], info_m['cpu']['efficiency'],
+                    load_memory, load_storage,
                     xy, xy, z,
                     info_m['cpu']['efficiency'])
         print output
@@ -141,32 +142,34 @@ for xy in [1024] :
         load_storage = int(float(info_s['io']['write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d %9d %9d %5d %5d %5d %7.2f' % \
+        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d/%0.2f/%0.2f %9d %9d %5d %5d %5d' % \
                    (host, load_id, float(info_s['time']['real']), 
                     0.0, 0.0, 0.0,
-                    1, load_compute, load_memory, load_storage,
-                    xy, xy, z,
-                    info_s['cpu']['efficiency'])
+                    1, load_compute, info_s['cpu']['utilization'], info_s['cpu']['efficiency'],
+                    load_memory, load_storage,
+                    xy, xy, z)
 
         print output
 
         
 
-        print ' ---------------------------------------------------------------'
-        print " RMB %-25s : %15.2f" % ('time.real',               float(info_m['time']['real'         ]))
-        print " RMB %-25s : %s"     % ('cpu.ops',            n2h (float(info_m['cpu']['ops'           ]), su.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
-        print " RMB %-25s : %s"     % ('cpu.efficiency',     n2h (float(info_m['cpu']['efficiency'    ]), su.PREFIX_ISO, '%'     , "%(val)15.2f %(unit)s"))
-        print " RMB %-25s : %s"     % ('cpu.flops_per_core', n2h (float(info_m['cpu']['flops_per_core']), su.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
-        print " RMB %-25s : %s"     % ('io.write',           n2h (float(info_m['io']['write'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
-        print " RMB %-25s : %s"     % ('mem.max',            n2h (float(info_m['mem']['max'           ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
-        print ' ---------------------------------------------------------------'                                                        
-        print " SYN %-25s : %15.2f" % ('time.real',               float(info_s['time']['real'         ]))                            
-        print " SYN %-25s : %s"     % ('cpu.ops',            n2h (float(info_s['cpu']['ops'           ]), su.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
-        print " SYN %-25s : %s"     % ('cpu.efficiency',     n2h (float(info_s['cpu']['efficiency'    ]), su.PREFIX_ISO, '%'     , "%(val)15.2f %(unit)s"))
-        print " SYN %-25s : %s"     % ('cpu.flops_per_core', n2h (float(info_s['cpu']['flops_per_core']), su.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
-        print " SYN %-25s : %s"     % ('io.write',           n2h (float(info_s['io']['write'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
-        print " SYN %-25s : %s"     % ('mem.max',            n2h (float(info_s['mem']['max'           ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
-        print ' ---------------------------------------------------------------'
+      # print ' ---------------------------------------------------------------'
+      # print " MB  %-25s : %15.2f s" % ('time.real',               float(info_m['time']['real'         ]))
+      # print " MB  %-25s : %s"       % ('cpu.ops',            n2h (float(info_m['cpu']['ops'           ]), su.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
+      # print " MB  %-25s : %s"       % ('cpu.utilization',    n2h (float(info_m['cpu']['utilization'   ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+      # print " MB  %-25s : %s"       % ('cpu.efficiency',     n2h (float(info_m['cpu']['efficiency'    ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+      # print " MB  %-25s : %s"       % ('cpu.flops_per_core', n2h (float(info_m['cpu']['flops_per_core']), su.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
+      # print " MB  %-25s : %s"       % ('io.write',           n2h (float(info_m['io']['write'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+      # print " MB  %-25s : %s"       % ('mem.max',            n2h (float(info_m['mem']['max'           ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+      # print ' ---------------------------------------------------------------'                                                        
+      # print " SYN %-25s : %15.2f s" % ('time.real',               float(info_s['time']['real'         ]))                            
+      # print " SYN %-25s : %s"       % ('cpu.ops',            n2h (float(info_s['cpu']['ops'           ]), su.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
+      # print " SYN %-25s : %s"       % ('cpu.utilization',    n2h (float(info_s['cpu']['utilization'   ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+      # print " SYN %-25s : %s"       % ('cpu.efficiency',     n2h (float(info_s['cpu']['efficiency'    ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+      # print " SYN %-25s : %s"       % ('cpu.flops_per_core', n2h (float(info_s['cpu']['flops_per_core']), su.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
+      # print " SYN %-25s : %s"       % ('io.write',           n2h (float(info_s['io']['write'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+      # print " SYN %-25s : %s"       % ('mem.max',            n2h (float(info_s['mem']['max'           ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+      # print ' ---------------------------------------------------------------'
       # pp.pprint (info_m)                                  
       # print ' ---------------------------------------------------------------'
       # pp.pprint (info_s)                                  
