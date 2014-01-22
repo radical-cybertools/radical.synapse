@@ -119,7 +119,7 @@ for xy in [1024] :
         load_storage = int(float(info_m['io']['write']) / (1024*1024))
 
         load_id  = 'RMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d/%0.2f/%0.2f %9d %9d %5d %5d %5d %7.2f' % \
+        output   = '%-10s %10s    %7.2f ------- ------- ------- %5d %9d %0.2f %0.2f %9d %9d %5d %5d %5d %7.2f' % \
                    (host, load_id, float(info_m['time']['real']), 
                     1, load_compute, info_m['cpu']['utilization'], info_m['cpu']['efficiency'],
                     load_memory, load_storage,
@@ -142,7 +142,7 @@ for xy in [1024] :
         load_storage = int(float(info_s['io']['write']) / (1024*1024))
        
         load_id  = 'SMB.%04d' % xy
-        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d/%0.2f/%0.2f %9d %9d %5d %5d %5d' % \
+        output   = '%-10s %10s    %7.2f %7.2f %7.2f %7.2f %5d %9d %0.2f %0.2f %9d %9d %5d %5d %5d' % \
                    (host, load_id, float(info_s['time']['real']), 
                     0.0, 0.0, 0.0,
                     1, load_compute, info_s['cpu']['utilization'], info_s['cpu']['efficiency'],
