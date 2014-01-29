@@ -1,16 +1,97 @@
 #!/usr/bin/env python
 
 
+import os
 import sys
-import pprint
 import pymongo
 
-import synapse
-import synapse.utils as su
 
 _DEFAULT_DBURL = 'mongodb://localhost:27017/'
 _DEFAULT_DBURL = 'mongodb://ec2-184-72-89-141.compute-1.amazonaws.com:27017/'
 
+
+# ------------------------------------------------------------------------------
+#
+def usage () :
+
+    print """
+
+      usage   : %s [command] [url]
+      example : %s mongodb://localhost/synapse_profiles/profiles/
+
+      The URL is interpreted as:
+          [schema]://[host]:[port]/[database]/[collection]/[document_id]
+
+      Commands are:
+
+        tree:   show a tree of the hierarchy, but only  document IDs, no content
+        dump:   show a tree of the hierarchy, including document contents
+        list:   list entries in the subtree, but do not traverse
+        remove: remove the specified subtree
+
+      The default command is 'tree'.  
+      The default URL is """ + "%s\n\n" % _DEFAULT_DBURL
+    sys.exit (0)
+
+
+# ------------------------------------------------------------------------------
+#
+def split_dburl (url) :
+    """
+    we split the url into the base mongodb URL, and the path element, whose
+    first element is the database name, and the remainder is interpreted as
+    collection id.
+    """
+
+    slashes = [idx for [idx,elem] in enumerate(url) if elem == '/']
+
+    if  len(slashes) < 3 :
+        raise ValueError ("url needs to be a mongodb URL, the path element " \
+                          "must specify the database and collection id")
+
+    if  url[:slashes[0]].lower() != 'mongodb:' :
+        raise ValueError ("url must be a 'mongodb://' url, not %s" % url)
+
+  # if  len(url) <= slashes[2]+1 :
+  #     raise ValueError ("url needs to be a mongodb url, the path element " \
+  #                       "must specify the database and collection id")
+
+    base_url = url[slashes[1]+1:slashes[2]]
+    path     = url[slashes[2]+1:]
+
+    if  ':' in base_url :
+        host, port = base_url.split (':', 1)
+        port = int(port)
+    else :
+        host, port = base_url, None
+
+    path = os.path.normpath(path)
+    if  path.startswith ('/') :
+        path = path[1:]
+    path_elems = path.split ('/')
+
+
+    dbname = None
+    cname  = None
+    pname  = None
+
+    if  len(path_elems)  >  0 :
+        dbname = path_elems[0]
+
+    if  len(path_elems)  >  1 :
+        dbname = path_elems[0]
+        cname  = path_elems[1]
+
+    if  len(path_elems)  >  2 :
+        dbname = path_elems[0]
+        cname  = path_elems[1]
+        pname  = '/'.join (path_elems[2:])
+
+    if  dbname == '.' : 
+        dbname = None
+
+  # print str([host, port, dbname, cname, pname])
+    return [host, port, dbname, cname, pname]
 
 # ------------------------------------------------------------------------------
 #
@@ -19,7 +100,7 @@ def dump (url, mode) :
     Connect to mongodb at the given location, and traverse the data bases
     """
 
-    [host, port, dbname, cname, pname] = su.split_dburl (url)
+    [host, port, dbname, cname, pname] = split_dburl (url)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
 
@@ -138,28 +219,6 @@ def handle_doc (collection, mode, doc) :
             print " | | | +-- %-10s : %s" % (key, doc[key])
 
 
-def usage () :
-
-    print """
-
-      usage   : %s [command] [url]
-      example : %s mongodb://localhost/synapse_profiles/profiles/
-
-      The URL is interpreted as:
-          [schema]://[host]:[port]/[database]/[collection]/[document_id]
-
-      Commands are:
-
-        tree:   show a tree of the hierarchy, but only  document IDs, no content
-        dump:   show a tree of the hierarchy, including document contents
-        list:   list entries in the subtree, but do not traverse
-        remove: remove the specified subtree
-
-      The default command is 'tree'.  
-      The default URL is """ + "%s\n\n" % _DEFAULT_DBURL
-    sys.exit (0)
-
-
 # ------------------------------------------------------------------------------
 #
 if __name__ == '__main__' :
@@ -185,4 +244,6 @@ if __name__ == '__main__' :
 
     dump (url, mode)
 
+
+# ------------------------------------------------------------------------------
 
