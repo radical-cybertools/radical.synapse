@@ -250,7 +250,7 @@ def profile_function (func, *args, **kwargs) :
     out = perf.communicate()[0]
 
   # pprint.pprint (info)
-    dict_merge    (info, _parse_perf_output (out))
+    ru.dict_merge (info, _parse_perf_output (out))
   # pprint.pprint (info)
 
     cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
@@ -312,7 +312,7 @@ def profile_command (command) :
         synapse._logger.info ("stopped  system load")
 
   # pprint.pprint (info)
-    dict_merge    (info, _parse_perf_output (out))
+    ru.dict_merge (info, _parse_perf_output (out))
   # pprint.pprint (info)
  
     cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
@@ -724,43 +724,6 @@ def split_dburl (url) :
   # print str([host, port, dbname, cname, pname])
     return [host, port, dbname, cname, pname]
 
-
-# ------------------------------------------------------------------------------
-#
-def dict_merge (a, b, _path=[]):
-    # thanks to 
-    # http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
-
-    for key in b:
-        
-        if  key in a:
-
-            # need to resolve conflict
-            if  isinstance (a[key], dict) and isinstance (b[key], dict):
-                dict_merge (a[key], b[key], _path + [str(key)])
-            
-            elif a[key] == b[key]:
-                pass # same leaf value
-
-            elif  not a[key] and b[key] :
-                a[key] = b[key] # use be value
-
-            elif  not b[key] and a[key] :
-                pass # keep value
-
-            elif  not b[key] and not a[key] :
-                pass # keep no value
-
-            else:
-                raise ValueError ('Conflict at %s (%s : %s)' \
-                               % ('.'.join(_path + [str(key)]), a[key], b[key]))
-        
-        else:
-            # no conflict - simply add.  Not that this is a potential shallow
-            # copy if b[key] is a complex type.
-            a[key] = b[key]
-    
-    return a
 
 # ------------------------------------------------------------------------------
 
