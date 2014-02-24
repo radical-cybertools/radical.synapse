@@ -8,6 +8,7 @@ import time
 import pymongo
 from   PIL import Image
 
+import radical.utils as ru
 import synapse.utils as su
 
 # ------------------------------------------------------------------------------
@@ -42,7 +43,7 @@ def usage (msg=None) :
 #
 def main (master_id, num_workers, mb_size, mb_depth) :
 
-    [host, port, dbname, cname, _] = su.split_dburl (master_id)
+    [host, port, dbname, cname, _] = ru.split_dburl (master_id)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
     database   = db_client[dbname]
