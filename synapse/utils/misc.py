@@ -20,7 +20,7 @@ import synapse.atoms   as sa
 
 PROFILE_URL = '%s/synapse_profiles/' % synapse.SYNAPSE_DBURL
 LOAD        = int (os.environ.get ('LOAD', '0'))
-LOAD_CMD    = "top -b -n1 | head -1 | cut -f 5 -d : | cut -f 1 -d ," 
+LOAD_CMD    = "top -b -n1 | head -1 | cut -f 4 -d : | cut -f 1 -d ,"
 
 # ------------------------------------------------------------------------------
 #
@@ -177,6 +177,7 @@ def profile_function (func, *args, **kwargs) :
             os.popen ('stress --cpu %s&' % LOAD)
             time.sleep (60)
 
+        synapse._logger.info ("system load cmd: %s" % (LOAD_CMD))
         time_1 = time.time()
         load_1 = float(os.popen (LOAD_CMD).read())
 
