@@ -28,8 +28,19 @@ def usage (msg=None) :
 
         python mandelbrot_master.py
                --master_id=mongodb://host.net:port/path
-               --num_wrokers=4
+               --num_workers=4
+               --mb_size=1024
+               --mb_depth=128
 
+        or
+
+        python mandelbrot_master.py
+               -i=mongodb://host.net:port/path
+               -n=4
+               -s=1024
+               -d=1024
+
+        ID is mandatory.
     """
 
     if  msg :
@@ -165,7 +176,8 @@ if __name__ == '__main__' :
 
             key, val = arg.split ('=', 1)
 
-            if  key == '--master_id' :
+            if  key == '--master_id' or \
+                key == '-i'          :
                 master_id = val
 
             elif key == '--num_workers' or \
