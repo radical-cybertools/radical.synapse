@@ -9,6 +9,8 @@ import radical.utils.signatures   as rus
 from   base      import AtomBase
 from   constants import COMPUTE
 
+OVERHEAD = 20   # in %
+
 # ------------------------------------------------------------------------------
 #
 class Compute (AtomBase) :
@@ -36,6 +38,8 @@ class Compute (AtomBase) :
 
         if 'n' in info : n = info['n']
 
+        # remove a empirical overhead
+        n -= int(n/100*OVERHEAD)
         self._run (n)
 
 

@@ -42,7 +42,7 @@ int main (int argc, char** argv)
         return (1);
     }
 
-    fprintf (stdout, "ru.utime         : %ld.%ld\n", ru.ru_utime.tv_sec,
+    fprintf (stdout, "ru.Utime         : %ld.%ld\n", ru.ru_utime.tv_sec,
                                                      ru.ru_utime.tv_usec ); /* user CPU time used */
     fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime,
                                                      ru.ru_stime.tv_usec ); /* system CPU time used */

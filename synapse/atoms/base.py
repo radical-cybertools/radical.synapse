@@ -106,6 +106,9 @@ class AtomBase (object) :
                 'out'      : pout.split ('\n'), 
                 'err'      : perr.split ('\n')}
 
+      # import pprint
+      # pprint.pprint (info)
+
         self._queue.put (info)
 
 

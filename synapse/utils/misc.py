@@ -21,6 +21,7 @@ import synapse.atoms   as sa
 PROFILE_URL = '%s/synapse_profiles/' % synapse.SYNAPSE_DBURL
 LOAD        = int (os.environ.get ('LOAD', '0'))
 LOAD_CMD    = "top -b -n1 | head -1 | cut -f 4 -d : | cut -f 1 -d ,"
+LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
 
 # ------------------------------------------------------------------------------
 #
@@ -39,15 +40,20 @@ def get_mem_usage () :
 
     with open ('/proc/%d/status'  %  os.getpid ()) as t :
 
-        text = t.read ()
+        lines = t.read ().split ('\n')
 
-        for key in keymap.keys () :
+        for line in lines :
 
-            i = text.index (key)
-            v = text[i:].split (None, 3)
+            for key in keymap.keys () :
 
-            if  len(v) >= 2 :
-                info['mem'][keymap[key]] = human_to_number (v[1])
+                i = line.find (key)
+                if  i == -1 :
+                    continue
+
+                v = line[i:].split (None, 3)
+
+                if  len(v) >= 2 :
+                    info['mem'][keymap[key]] = human_to_number ("%s %s" % (v[1], v[2]))
 
         return info
 
@@ -185,7 +191,9 @@ def profile_function (func, *args, **kwargs) :
         ret = func (*args, **kwargs)
 
         end_io  = get_io_usage  ()
+      # print "get mem for func"
         end_mem = get_mem_usage  ()
+      # print "got mem for func: %s" % end_mem
 
         for key in end_io['io']  :
             s_start   = start_io['io'][key]
@@ -201,6 +209,7 @@ def profile_function (func, *args, **kwargs) :
         load_2 = float(os.popen (LOAD_CMD).read())
         info['sys']['load'] = max(load_1, load_2)
         synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
+        synapse._logger.info ("app mem     %s: %s" % (LOAD, info['mem']))
 
 
 
@@ -252,7 +261,9 @@ def profile_function (func, *args, **kwargs) :
 
   # pprint.pprint (info)
     ru.dict_merge (info, _parse_perf_output (out))
+  # print '~~~~~~~~~~~~~~~~~~'
   # pprint.pprint (info)
+  # print '~~~~~~~~~~~~~~~~~~'
 
     cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
     cycles_max  = info['cpu']['frequency'] * info['time']['real']
@@ -501,6 +512,9 @@ def _parse_perf_output (perf_out) :
     if not 'cycles_stalled_front' in info['cpu'] : info['cpu']['cycles_stalled_front' ] = 0
     if not 'cycles_stalled_back'  in info['cpu'] : info['cpu']['cycles_stalled_back'  ] = 0
 
+  # print "peak:"
+  # print info['mem']['peak']
+  # print info['mem']['max']
     info['cpu']['efficiency']  = info['cpu']['ops']                       \
                                  / ( info['cpu']['ops']                   \
                                    + info['cpu']['cycles_stalled_front']  \
