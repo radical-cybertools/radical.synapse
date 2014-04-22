@@ -265,8 +265,12 @@ def profile_function (func, *args, **kwargs) :
   # pprint.pprint (info)
   # print '~~~~~~~~~~~~~~~~~~'
 
+
     cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
     cycles_max  = info['cpu']['frequency'] * info['time']['real']
+
+    cycles_max = max (1, cycles_max) # make sure its nonzero...
+
     info['cpu']['utilization'] = cycles_used / cycles_max
 
   # print "utilization    : %s \n" % info['cpu']['utilization']
