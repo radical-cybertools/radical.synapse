@@ -23,6 +23,8 @@ def mandel (x, y, z) :
 
   # print 'mandel: %s %s %s' % (x, y, z)
 
+    start = time.time ()
+
     x_pixels  = x
     y_pixels  = y
     iter_max  = z
@@ -62,7 +64,9 @@ def mandel (x, y, z) :
     with open ("/tmp/mb.dat", "w") as f :
         f.write (str(rgb_image))
 
-    return
+    stop = time.time ()
+
+    return stop - start
 
 
 # ------------------------------------------------------------------------------
@@ -107,7 +111,7 @@ def main (cfg_list) :
             load_id  = 'RUN.%04d' % x
             output   = '%-10s %15s %5d %5d %5d %6d %8.2f --------- --------- --------- %9.2f %0.2f %0.2f %5.2f %9.2f %9.2f' % \
                        (host, load_id, x, y, z, stress,
-                        float(info_run['time']['real']), 
+                        ret, 
                         load_compute, 
                         info_run['cpu']['utilization'], 
                         info_run['cpu']['efficiency'], 
@@ -117,7 +121,7 @@ def main (cfg_list) :
                        )
             print output
 
-            iter_1_time .append(float(info_run['time']['real']))
+            iter_1_time .append(float(ret))
             iter_1_cpu  .append(float(load_compute))
             iter_1_mem  .append(float(load_memory))
             iter_1_io   .append(float(load_storage))
