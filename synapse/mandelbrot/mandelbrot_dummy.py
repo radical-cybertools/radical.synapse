@@ -136,139 +136,139 @@ for stress in range(12,13) :
                 time.sleep (5) # warmup time
     
     
-          #   # --------------------------------------------------------------------------------------------
+            # --------------------------------------------------------------------------------------------
     
-          #   iter_0_time = list()
+            iter_0_time = list()
     
-          #   for iter in range (iters) :
+            for iter in range (iters) :
     
-          #       start = time.time ()
-          #       mandel (x, y, z)
-          #       stop  = time.time ()
+                start = time.time ()
+                mandel (x, y, z)
+                stop  = time.time ()
     
-          #       iter_0_time.append (stop - start)
+                iter_0_time.append (stop - start)
 
-          #       load_id  = 'EXE.%04d' % x
-          #       stat_exe   = '%-10s %15s %5s %5s %5s %5d %9.2f' % \
-          #                      (host, load_id, x, y, z, stress, stop-start)
-          #       print stat_exe
+                load_id  = 'EXE.%04d' % x
+                stat_exe   = '%-10s %15s %5s %5s %5s %5d %9.2f' % \
+                               (host, load_id, x, y, z, stress, stop-start)
+                print stat_exe
     
-          #   iter_0_mean_time = numpy.mean (numpy.array (iter_0_time))
-          #   iter_0_std_time  = numpy.std  (numpy.array (iter_0_time))
+            iter_0_mean_time = numpy.mean (numpy.array (iter_0_time))
+            iter_0_std_time  = numpy.std  (numpy.array (iter_0_time))
     
-          #   load_id  = 'STAT_EXE.%04d' % x
-          #   stat_0   = '%-10s %15s %5s %5s %5s %5d %9.2f %9.2f' % \
-          #                  (host, load_id, x, y, z, stress, 
-          #                   iter_0_mean_time, iter_0_std_time)
-          #   print stat_0
+            load_id  = 'STAT_EXE.%04d' % x
+            stat_0   = '%-10s %15s %5s %5s %5s %5d %9.2f %9.2f' % \
+                           (host, load_id, x, y, z, stress, 
+                            iter_0_mean_time, iter_0_std_time)
+            print stat_0
 
-          # # sp.call ("killall    stress", shell=True)
-          # # sp.call ("killall -9 stress", shell=True)
-          # #
-          # # continue
+          # sp.call ("killall    stress", shell=True)
+          # sp.call ("killall -9 stress", shell=True)
+          #
+          # continue
     
     
-          #   # --------------------------------------------------------------------------------------------
-          #   iter_1_time = list()
-          #   iter_1_cpu  = list()
-          #   iter_1_mem  = list()
-          #   iter_1_io   = list()
-          #   iter_1_util = list()
-          #   iter_1_eff  = list()
-          #   iter_1_sys  = list()
+            # --------------------------------------------------------------------------------------------
+            iter_1_time = list()
+            iter_1_cpu  = list()
+            iter_1_mem  = list()
+            iter_1_io   = list()
+            iter_1_util = list()
+            iter_1_eff  = list()
+            iter_1_sys  = list()
     
-          #   for iter in range (iters) :
+            for iter in range (iters) :
     
-          #       info_pro, ret, out = su.profile_function (mandel, x, y, z)
+                info_pro, ret, out = su.profile_function (mandel, x, y, z)
     
-          #       load_compute = float(info_pro['cpu']['ops' ]) / (1024*1024) / 8
-          #       load_memory  = float(info_pro['mem']['peak']) / (1024*1024)
-          #       load_storage = float(info_pro['io']['write']) / (1024*1024)
+                load_compute = float(info_pro['cpu']['ops' ]) / (1024*1024) / 8
+                load_memory  = float(info_pro['mem']['peak']) / (1024*1024)
+                load_storage = float(info_pro['io']['write']) / (1024*1024)
     
-          #       load_id  = 'PRO.%04d' % x
-          #       output   = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %0.2f %0.2f %5.2f %9.2f %9.2f' % \
-          #                  (host, load_id, x, y, z, stress,
-          #                   float(info_pro['time']['real']), 
-          #                   load_compute, 
-          #                   info_pro['cpu']['utilization'], 
-          #                   info_pro['cpu']['efficiency'], 
-          #                   info_pro['sys']['load'],
-          #                   load_memory, 
-          #                   load_storage
-          #                  )
-          #       print output
-          #                    
-          #       iter_1_time .append(float(info_pro['time']['real']))
-          #       iter_1_cpu  .append(float(load_compute))
-          #       iter_1_mem  .append(float(load_memory))
-          #       iter_1_io   .append(float(load_storage))
-          #       iter_1_util .append(float(info_pro['cpu']['utilization']))
-          #       iter_1_eff  .append(float(info_pro['cpu']['efficiency']))
-          #       iter_1_sys  .append(float(info_pro['sys']['load']))
+                load_id  = 'PRO.%04d' % x
+                output   = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %0.2f %0.2f %5.2f %9.2f %9.2f' % \
+                           (host, load_id, x, y, z, stress,
+                            float(info_pro['time']['real']), 
+                            load_compute, 
+                            info_pro['cpu']['utilization'], 
+                            info_pro['cpu']['efficiency'], 
+                            info_pro['sys']['load'],
+                            load_memory, 
+                            load_storage
+                           )
+                print output
+                             
+                iter_1_time .append(float(info_pro['time']['real']))
+                iter_1_cpu  .append(float(load_compute))
+                iter_1_mem  .append(float(load_memory))
+                iter_1_io   .append(float(load_storage))
+                iter_1_util .append(float(info_pro['cpu']['utilization']))
+                iter_1_eff  .append(float(info_pro['cpu']['efficiency']))
+                iter_1_sys  .append(float(info_pro['sys']['load']))
     
-          #   iter_1_mean_time = numpy.mean (numpy.array (iter_1_time))
-          #   iter_1_mean_cpu  = numpy.mean (numpy.array (iter_1_cpu ))
-          #   iter_1_mean_mem  = numpy.mean (numpy.array (iter_1_mem ))
-          #   iter_1_mean_io   = numpy.mean (numpy.array (iter_1_io  ))
-          #   iter_1_mean_util = numpy.mean (numpy.array (iter_1_util))
-          #   iter_1_mean_eff  = numpy.mean (numpy.array (iter_1_eff ))
-          #   iter_1_mean_sys  = numpy.mean (numpy.array (iter_1_sys ))
+            iter_1_mean_time = numpy.mean (numpy.array (iter_1_time))
+            iter_1_mean_cpu  = numpy.mean (numpy.array (iter_1_cpu ))
+            iter_1_mean_mem  = numpy.mean (numpy.array (iter_1_mem ))
+            iter_1_mean_io   = numpy.mean (numpy.array (iter_1_io  ))
+            iter_1_mean_util = numpy.mean (numpy.array (iter_1_util))
+            iter_1_mean_eff  = numpy.mean (numpy.array (iter_1_eff ))
+            iter_1_mean_sys  = numpy.mean (numpy.array (iter_1_sys ))
     
-          #   iter_1_std_time  = numpy.std  (numpy.array (iter_1_time))
-          #   iter_1_std_cpu   = numpy.std  (numpy.array (iter_1_cpu ))
-          #   iter_1_std_mem   = numpy.std  (numpy.array (iter_1_mem ))
-          #   iter_1_std_io    = numpy.std  (numpy.array (iter_1_io  ))
-          #   iter_1_std_util  = numpy.std  (numpy.array (iter_1_util))
-          #   iter_1_std_eff   = numpy.std  (numpy.array (iter_1_eff ))
-          #   iter_1_std_sys   = numpy.std  (numpy.array (iter_1_sys ))
-          #   
-          #   load_id  = 'MEAN_PRO.%04d' % x
-          #   mean     = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
-          #              (host, load_id, x, y, z, stress,
-          #               iter_1_mean_time, 
-          #               iter_1_mean_cpu,
-          #               iter_1_mean_util, 
-          #               iter_1_mean_eff, 
-          #               iter_1_mean_sys,
-          #               iter_1_mean_mem, 
-          #               iter_1_mean_io
-          #              )
-          #   print mean  
+            iter_1_std_time  = numpy.std  (numpy.array (iter_1_time))
+            iter_1_std_cpu   = numpy.std  (numpy.array (iter_1_cpu ))
+            iter_1_std_mem   = numpy.std  (numpy.array (iter_1_mem ))
+            iter_1_std_io    = numpy.std  (numpy.array (iter_1_io  ))
+            iter_1_std_util  = numpy.std  (numpy.array (iter_1_util))
+            iter_1_std_eff   = numpy.std  (numpy.array (iter_1_eff ))
+            iter_1_std_sys   = numpy.std  (numpy.array (iter_1_sys ))
+            
+            load_id  = 'MEAN_PRO.%04d' % x
+            mean     = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
+                       (host, load_id, x, y, z, stress,
+                        iter_1_mean_time, 
+                        iter_1_mean_cpu,
+                        iter_1_mean_util, 
+                        iter_1_mean_eff, 
+                        iter_1_mean_sys,
+                        iter_1_mean_mem, 
+                        iter_1_mean_io
+                       )
+            print mean  
     
-          #   load_id  = 'STD_PRO.%04d' % x
-          #   std      = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
-          #              (host, load_id, x, y, z, stress, 
-          #               iter_1_std_time, 
-          #               iter_1_std_cpu,
-          #               iter_1_std_util, 
-          #               iter_1_std_eff, 
-          #               iter_1_std_sys,
-          #               iter_1_std_mem, 
-          #               iter_1_std_io
-          #              )
-          #   print std
+            load_id  = 'STD_PRO.%04d' % x
+            std      = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
+                       (host, load_id, x, y, z, stress, 
+                        iter_1_std_time, 
+                        iter_1_std_cpu,
+                        iter_1_std_util, 
+                        iter_1_std_eff, 
+                        iter_1_std_sys,
+                        iter_1_std_mem, 
+                        iter_1_std_io
+                       )
+            print std
     
-          #   load_id  = 'STAT_PRO.%04d' % x
-          #   stat     = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f --------- --------- --------- --------- --------- --------- %9.2f %9.2f %.2f %.2f %.2f %.2f %5.2f %5.2f %9.2f %9.2f %9.2f %9.2f' % \
-          #              (host, load_id, x, y, z, stress, 
-          #               iter_1_mean_time, 
-          #               iter_1_std_time, 
-          #               iter_1_mean_cpu,
-          #               iter_1_std_cpu,
-          #               iter_1_mean_util, 
-          #               iter_1_std_util, 
-          #               iter_1_mean_eff, 
-          #               iter_1_std_eff, 
-          #               iter_1_mean_sys,
-          #               iter_1_std_sys,
-          #               iter_1_mean_mem, 
-          #               iter_1_std_mem, 
-          #               iter_1_mean_io,
-          #               iter_1_std_io
-          #              )
-          #   print stat  
+            load_id  = 'STAT_PRO.%04d' % x
+            stat     = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f --------- --------- --------- --------- --------- --------- %9.2f %9.2f %.2f %.2f %.2f %.2f %5.2f %5.2f %9.2f %9.2f %9.2f %9.2f' % \
+                       (host, load_id, x, y, z, stress, 
+                        iter_1_mean_time, 
+                        iter_1_std_time, 
+                        iter_1_mean_cpu,
+                        iter_1_std_cpu,
+                        iter_1_mean_util, 
+                        iter_1_std_util, 
+                        iter_1_mean_eff, 
+                        iter_1_std_eff, 
+                        iter_1_mean_sys,
+                        iter_1_std_sys,
+                        iter_1_mean_mem, 
+                        iter_1_std_mem, 
+                        iter_1_mean_io,
+                        iter_1_std_io
+                       )
+            print stat  
     
-          #   # --------------------------------------------------------------------------------------------
+            # --------------------------------------------------------------------------------------------
            
             iter_2_time = list()
             iter_2_tcpu = list()
