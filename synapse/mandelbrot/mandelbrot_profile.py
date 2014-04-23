@@ -88,15 +88,15 @@ def main (cfg_list) :
         memory  = 0
         storage = 0
 
-        for iter in range (iters) :
+        iter_1_time = list()
+        iter_1_cpu  = list()
+        iter_1_mem  = list()
+        iter_1_io   = list()
+        iter_1_util = list()
+        iter_1_eff  = list()
+        iter_1_sys  = list()
 
-            iter_1_time = list()
-            iter_1_cpu  = list()
-            iter_1_mem  = list()
-            iter_1_io   = list()
-            iter_1_util = list()
-            iter_1_eff  = list()
-            iter_1_sys  = list()
+        for iter in range (iters) :
 
             info_run, ret, out = su.profile_function (mandel, x, y, z)
         
