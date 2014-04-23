@@ -20,7 +20,7 @@ import synapse.atoms   as sa
 
 PROFILE_URL = '%s/synapse_profiles/' % synapse.SYNAPSE_DBURL
 LOAD        = int (os.environ.get ('LOAD', '0'))
-LOAD_CMD    = "top -b -n1 | head -1 | cut -f 4 -d : | cut -f 1 -d ,"
+LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
 LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
 
 # ------------------------------------------------------------------------------
@@ -164,11 +164,12 @@ def profile_function (func, *args, **kwargs) :
     # --------------------------------------------------------------------------
     def func_wrapper (func, q, args, kwargs) :
 
-        info = {'io'  : dict(), 
-                'cpu' : dict(),
-                'mem' : dict(), 
-                'net' : dict(), 
-                'sys' : dict()}
+        info = {'io'   : dict(), 
+                'cpu'  : dict(),
+                'mem'  : dict(), 
+                'net'  : dict(), 
+                'sys'  : dict(),
+                'time' : dict()}
 
         start_io  = get_io_usage  ()
 
@@ -178,22 +179,21 @@ def profile_function (func, *args, **kwargs) :
         # start stress, get it spinning for one min to et a confirmed load
         # measurement, then run our own load, then kill stress.
         if  LOAD > 0 :
-            synapse._logger.info ("creating system load %s" % LOAD)
+            synapse._logger.info ("creating system load %d" % LOAD)
             os.popen ("killall -9 stress 2>&1 > /dev/null")
-            os.popen ('stress --cpu %s&' % LOAD)
+            os.popen ('stress --cpu %d &' % LOAD)
             time.sleep (60)
 
         synapse._logger.info ("system load cmd: %s" % (LOAD_CMD))
-        time_1 = time.time()
-        load_1 = float(os.popen (LOAD_CMD).read())
+        load_1  = float(os.popen (LOAD_CMD).read())
+        time_1  = time.time()
 
         # do the deed
         ret = func (*args, **kwargs)
 
+        time_2  = time.time()
         end_io  = get_io_usage  ()
-      # print "get mem for func"
         end_mem = get_mem_usage  ()
-      # print "got mem for func: %s" % end_mem
 
         for key in end_io['io']  :
             s_start   = start_io['io'][key]
@@ -211,6 +211,7 @@ def profile_function (func, *args, **kwargs) :
         synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
         synapse._logger.info ("app mem     %s: %s" % (LOAD, info['mem']))
 
+        info['time']['real'] = time_2 - time_1
 
 
         if  LOAD > 0 :
@@ -237,63 +238,70 @@ def profile_function (func, *args, **kwargs) :
     proc.start ()
 
     # do we have perf?
-    if 'no perf in' in sp.Popen ("which perf", 
+
+    if  'no perf in' in sp.Popen ("which perf", 
                                  shell=True,
                                  stdout=sp.PIPE, 
                                  stderr=sp.STDOUT).stdout.read () :
-        perf = ''
-    else :
-        perf = 'perf stat'
+        prof = None
 
-    # profile the new process
-    prof = sp.Popen ("/bin/sh -c '/usr/bin/time -v %s -p %d'" % (perf, proc.pid),
-                     stdout     = sp.PIPE,
-                     stderr     = sp.STDOUT,
-                     shell      = True,
-                     preexec_fn = os.setsid)
+    else :
+        # profile the new process
+        prof = sp.Popen ("/bin/sh -c '/usr/bin/time -v perf stat -p %d'" % (proc.pid),
+                         stdout     = sp.PIPE,
+                         stderr     = sp.STDOUT,
+                         shell      = True,
+                         preexec_fn = os.setsid)
+
+
 
     _    = q.put (True) # tell the wrapper to do the deed...
     ret  = q.get ()     # ... and wait 'til the deed is done
     info = q.get ()     # ... and get statistics
     time.sleep  (1)     # make sure the procs are done
 
-    # prof should be done now -- let it know.  But first make sure we are
-    # listening on the pipes when it dies...
-    def killperf (pid) :
-        try :
-            os.killpg (pid, signal.SIGINT)
-        except :
-            pass
 
-    threading.Timer (2.0, killperf, [prof.pid]).start ()
-    out = prof.communicate()[0]
+    if  prof :
 
-  # pprint.pprint (info)
-    ru.dict_merge (info, _parse_perf_output (out))
-  # print '~~~~~~~~~~~~~~~~~~'
-  # pprint.pprint (info)
-  # print '~~~~~~~~~~~~~~~~~~'
+        # prof should be done now -- let it know.  But first make sure we are
+        # listening on the pipes when it dies...
+        def killperf (pid) :
+            try :
+                os.killpg (pid, signal.SIGINT)
+            except :
+                pass
+
+        threading.Timer (2.0, killperf, [prof.pid]).start ()
+        out = prof.communicate()[0]
+
+        pprint.pprint (info)
+        pprint.pprint (_parse_perf_output (out))
+        ru.dict_merge (info, _parse_perf_output (out), policy='overwrite')
+      # print '~~~~~~~~~~~~~~~~~~'
+      # pprint.pprint (info)
+      # print '~~~~~~~~~~~~~~~~~~'
 
 
-    cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
-    cycles_max  = info['cpu']['frequency'] * info['time']['real']
+        cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
+        cycles_max  = info['cpu']['frequency'] * info['time']['real']
 
-    cycles_max = max (1, cycles_max) # make sure its nonzero...
+        cycles_max = max (1, cycles_max) # make sure its nonzero...
 
-    info['cpu']['utilization'] = cycles_used / cycles_max
+        info['cpu']['utilization'] = cycles_used / cycles_max
 
-  # print "utilization    : %s \n" % info['cpu']['utilization']
-  #
-  # print "cycles_max     : %s " % cycles_max 
-  # print "frequency      : %s " % info['cpu']['frequency']
-  # print "time           : %s \n" % info['time']['real']
-  #
-  # print "cycles_used    : %s " % cycles_used
-  # print "cycles         : %s " % info['cpu']['cycles']
-  # print "stalled_front  : %s " % info['cpu']['cycles_stalled_front']
-  # print "stalled_back   : %s " % info['cpu']['cycles_stalled_back']
+      # print "utilization    : %s \n" % info['cpu']['utilization']
+      #
+      # print "cycles_max     : %s " % cycles_max 
+      # print "frequency      : %s " % info['cpu']['frequency']
+      # print "time           : %s \n" % info['time']['real']
+      #
+      # print "cycles_used    : %s " % cycles_used
+      # print "cycles         : %s " % info['cpu']['cycles']
+      # print "stalled_front  : %s " % info['cpu']['cycles_stalled_front']
+      # print "stalled_back   : %s " % info['cpu']['cycles_stalled_back']
 
-    # don't return any stdout, thus the None
+      # don't return any stdout, thus the None
+
     return (info, ret, None)  
 
 
