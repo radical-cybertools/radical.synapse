@@ -79,6 +79,13 @@ def main (cfg_list) :
             iter_1_sys  = list()
 
             info_emu, ret, out = su.profile_function (synaptic, compute, memory, storage)
+
+            if not 'utilization' in info_emu['cpu'] : info_emu['cpu']['utilization' ] = 0
+            if not 'efficiency'  in info_emu['cpu'] : info_emu['cpu']['efficiency'  ] = 0
+            if not 'load'        in info_emu['cpu'] : info_emu['cpu']['load'        ] = 0
+            if not 'ops'         in info_emu['cpu'] : info_emu['cpu']['ops'         ] = 0
+            if not 'max'         in info_emu['mem'] : info_emu['mem']['max'         ] = 0
+            if not 'write'       in info_emu['io']  : info_emu['io']['write'        ] = 0
         
             load_compute = int(float(info_emu['cpu']['ops' ]) / (1024*1024) / 8)
             load_memory  = int(float(info_emu['mem']['max' ]) / (1024*1024))
