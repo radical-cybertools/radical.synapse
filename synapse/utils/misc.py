@@ -274,8 +274,8 @@ def profile_function (func, *args, **kwargs) :
         threading.Timer (2.0, killperf, [prof.pid]).start ()
         out = prof.communicate()[0]
 
-        pprint.pprint (info)
-        pprint.pprint (_parse_perf_output (out))
+      # pprint.pprint (info)
+      # pprint.pprint (_parse_perf_output (out))
         ru.dict_merge (info, _parse_perf_output (out), policy='overwrite')
       # print '~~~~~~~~~~~~~~~~~~'
       # pprint.pprint (info)
