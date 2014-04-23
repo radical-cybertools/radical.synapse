@@ -236,8 +236,14 @@ def profile_function (func, *args, **kwargs) :
                                  'kwargs' : kwargs})
     proc.start ()
 
-    # tell perf to watch the new process
-    perf = sp.Popen ("/bin/sh -c '/usr/bin/time -v perf stat -p %d'" % proc.pid,
+    # do we have perf?
+    if 'no perf in' in os.popen ("which perf").read () :
+        perf = ''
+    else :
+        perf = 'perf stat'
+
+    # profile the new process
+    prof = sp.Popen ("/bin/sh -c '/usr/bin/time -v %s -p %d'" % (perf, proc.pid),
                      stdout     = sp.PIPE,
                      stderr     = sp.STDOUT,
                      shell      = True,
@@ -248,7 +254,7 @@ def profile_function (func, *args, **kwargs) :
     info = q.get ()     # ... and get statistics
     time.sleep  (1)     # make sure the procs are done
 
-    # perf should be done now -- let it know.  But first make sure we are
+    # prof should be done now -- let it know.  But first make sure we are
     # listening on the pipes when it dies...
     def killperf (pid) :
         try :
@@ -256,8 +262,8 @@ def profile_function (func, *args, **kwargs) :
         except :
             pass
 
-    threading.Timer (2.0, killperf, [perf.pid]).start ()
-    out = perf.communicate()[0]
+    threading.Timer (2.0, killperf, [prof.pid]).start ()
+    out = prof.communicate()[0]
 
   # pprint.pprint (info)
     ru.dict_merge (info, _parse_perf_output (out))
@@ -310,12 +316,20 @@ def profile_command (command) :
     load_1 = float(os.popen (LOAD_CMD).read())
     synapse._logger.info ("creating system load %s: %s" % (LOAD, info['sys']['load']))
 
+    # do we have perf?
+    if 'no perf in' in os.popen ("which perf").read () :
+        perf = ''
+    else :
+        perf = 'perf stat'
+
     # run the profiled command in a separate process
-    pcommand = "/usr/bin/time -v perf stat %s" % command
-    args     = shlex.split (pcommand)
-    proc     = sp.Popen    (args, shell=False, stdout=sp.PIPE, stderr=sp.STDOUT)
-    out      = proc.communicate ()[0]
-    ret      = proc.returncode
+    prof = sp.Popen ("/bin/sh -c '/usr/bin/time -v %s %s'" % (perf, command),
+                     stdout     = sp.PIPE,
+                     stderr     = sp.STDOUT,
+                     shell      = True,
+                     preexec_fn = os.setsid)
+    out      = prof.communicate ()[0]
+    ret      = prof.returncode
 
     time_2 = time.time()
     load_2 = float(os.popen (LOAD_CMD).read())
