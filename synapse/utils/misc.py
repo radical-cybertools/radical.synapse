@@ -237,7 +237,9 @@ def profile_function (func, *args, **kwargs) :
     proc.start ()
 
     # do we have perf?
-    if 'no perf in' in os.popen ("which perf").read () :
+    if 'no perf in' in sp.popen ("which perf", 
+                                 stdout=sp.PIPE, 
+                                 stderr=sp.STDOUT).stdout.read () :
         perf = ''
     else :
         perf = 'perf stat'
@@ -317,7 +319,9 @@ def profile_command (command) :
     synapse._logger.info ("creating system load %s: %s" % (LOAD, info['sys']['load']))
 
     # do we have perf?
-    if 'no perf in' in os.popen ("which perf").read () :
+    if 'no perf in' in sp.popen ("which perf", 
+                                 stdout=sp.PIPE, 
+                                 stderr=sp.STDOUT).stdout.read () :
         perf = ''
     else :
         perf = 'perf stat'
