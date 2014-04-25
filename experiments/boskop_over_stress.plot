@@ -88,8 +88,8 @@ do for [host_i=1:words(hosts)] {
         set format x ""
 
         plot [-1:13][20:630] \
-            '<(grep -e "STAT_EXE" '.dat.')' using 6:7       title ''                      with lines       ls 6, \
-            '<(grep -e "STAT_EXE" '.dat.')' using 6:7:8     title 'Execution'             with yerrorbars  ls 6, \
+            '<(grep -e "STAT_RUN" '.dat.')' using 6:7       title ''                      with lines       ls 6, \
+            '<(grep -e "STAT_RUN" '.dat.')' using 6:7:8     title 'Execution'             with yerrorbars  ls 6, \
             '<(grep -e "STAT_PRO" '.dat.')' using 6:7       title ''                      with lines       ls 7, \
             '<(grep -e "STAT_PRO" '.dat.')' using 6:7:8     title 'Profiling'             with yerrorbars  ls 7, \
             '<(grep -e "STAT_EMU" '.dat.')' using 6:7       title ''                      with lines       ls 8, \

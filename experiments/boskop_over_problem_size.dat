@@ -1,13 +1,13 @@
 # host                  id     x     y     z stress   t_real     t_cpu     t_mem      t_io       cpu util  eff  load       mem        io
-boskop       STAT_EXE.0010    10    10   250      0     0.00      0.00
-boskop       STAT_EXE.0010    10    10   250      0     0.00      0.00
-boskop       STAT_EXE.0020    20    20   250      0     0.01      0.00
-boskop       STAT_EXE.0040    40    40   250      0     0.03      0.00
-boskop       STAT_EXE.0080    80    80   250      0     0.14      0.00
-boskop       STAT_EXE.0160   160   160   250      0     0.55      0.01
-boskop       STAT_EXE.0320   320   320   250      0     2.24      0.03
-boskop       STAT_EXE.0640   640   640   250      0     9.19      0.08
-boskop       STAT_EXE.1280  1280  1280   250      0    38.55      0.71
+boskop       STAT_RUN.0010    10    10   250      0     0.00      0.00
+boskop       STAT_RUN.0010    10    10   250      0     0.00      0.00
+boskop       STAT_RUN.0020    20    20   250      0     0.01      0.00
+boskop       STAT_RUN.0040    40    40   250      0     0.03      0.00
+boskop       STAT_RUN.0080    80    80   250      0     0.14      0.00
+boskop       STAT_RUN.0160   160   160   250      0     0.55      0.01
+boskop       STAT_RUN.0320   320   320   250      0     2.24      0.03
+boskop       STAT_RUN.0640   640   640   250      0     9.19      0.08
+boskop       STAT_RUN.1280  1280  1280   250      0    38.55      0.71
 boskop            PRO.0010    10    10   250      0     3.37 --------- --------- ---------     23.15 0.01 0.61  0.87     95.02      0.03
 boskop            PRO.0010    10    10   250      0     3.33 --------- --------- ---------      6.40 0.00 0.55  0.80    239.03      0.03
 boskop            PRO.0010    10    10   250      0     3.33 --------- --------- ---------      6.38 0.00 0.55  0.74    239.03      0.03
