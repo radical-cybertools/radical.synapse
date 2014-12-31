@@ -2,8 +2,7 @@
 
 import radical.utils as ru
 
-import synapse
-import synapse.atoms as sa
+import atoms as rsa
 
 # 
 # 
@@ -27,7 +26,7 @@ import synapse.atoms as sa
 #             import troy
 # 
 #         except Exception as e :
-#             synapse._logger.error ("Cannot import troy")
+#             radical.synapse._logger.error ("Cannot import troy")
 #             return  None
 # 
 # 
@@ -61,10 +60,10 @@ import synapse.atoms as sa
 #     for i in range (0, load_instances) :
 # 
 #         app = dict()
-#         app['c'] = sa.Compute ()
-#         app['m'] = sa.Memory  ()
-#         app['s'] = sa.Storage ()
-#       # app['n'] = sa.Network ()
+#         app['c'] = rsa.Compute ()
+#         app['m'] = rsa.Memory  ()
+#         app['s'] = rsa.Storage ()
+#       # app['n'] = rsa.Network ()
 # 
 #         apps.append (app)
 # 

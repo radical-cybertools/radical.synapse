@@ -9,8 +9,8 @@ import pprint        as pp
 import radical.utils as ru
 import subprocess    as sp
 
-import synapse.utils as su
-import synapse.atoms as sa
+import radical.synapse       as rs
+import radical.synapse.atoms as rsa
 
 # import pudb 
 # pudb.set_interrupt_handler ()
@@ -87,9 +87,9 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
 
     # create containers for different system workload types
     atoms = dict()
-    atoms['c'] = sa.Compute ()
-    atoms['m'] = sa.Memory  ()
-    atoms['s'] = sa.Storage ()
+    atoms['c'] = rsa.Compute ()
+    atoms['m'] = rsa.Memory  ()
+    atoms['s'] = rsa.Storage ()
 
     # the atoms below are executed concurrently (in their own threads)
     atoms['c'].run (info={'n'   : load_compute})
@@ -113,7 +113,7 @@ def synaptic (x, y, z, load_compute, load_memory, load_storage) :
 # ------------------------------------------------------------------------------
 #
 
-n2h = su.number_to_human
+n2h = rs.number_to_human
 
 # host        load_id     t_real --------- --------- ---------     ?      load util  eff    load load_memory load_storage     x     y     z
 header   = '%-10s %15s %5s %5s %5s stress   t_real     t_cpu     t_mem      t_io %9s %4s %4s %5s %9s %9s' % \
@@ -179,7 +179,7 @@ for stress in range(12,13) :
     
             for iter in range (iters) :
     
-                info_pro, ret, out = su.profile_function (mandel, x, y, z)
+                info_pro, ret, out = rs.profile_function (mandel, x, y, z)
     
                 load_compute = float(info_pro['cpu']['ops' ]) / (1024*1024) / 8
                 load_memory  = float(info_pro['mem']['peak']) / (1024*1024)
@@ -287,7 +287,7 @@ for stress in range(12,13) :
     
             for iter in range (iters) :
     
-                info_s, ret, out = su.profile_function (synaptic, x, y, z,
+                info_s, ret, out = rs.profile_function (synaptic, x, y, z,
                         iter_1_mean_cpu, iter_1_mean_mem, iter_1_mean_io)
     
               # print "#####################"
@@ -409,21 +409,21 @@ for stress in range(12,13) :
           # print ' ---------------------------------------------------------------'
           # print " MB  %-25s : %15.2f s" % ('time.real',               float(info_pro['time']['real'         ]))
           # print " MB  %-25s : %15.2f"   % ('sys.load',                float(info_pro['sys']['load'          ]))
-          # print " MB  %-25s : %s"       % ('cpu.ops',            n2h (float(info_pro['cpu']['ops'           ]), su.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
-          # print " MB  %-25s : %s"       % ('cpu.utilization',    n2h (float(info_pro['cpu']['utilization'   ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
-          # print " MB  %-25s : %s"       % ('cpu.efficiency',     n2h (float(info_pro['cpu']['efficiency'    ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
-          # print " MB  %-25s : %s"       % ('cpu.flops_per_core', n2h (float(info_pro['cpu']['flops_per_core']), su.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
-          # print " MB  %-25s : %s"       % ('io.write',           n2h (float(info_pro['io']['write'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
-          # print " MB  %-25s : %s"       % ('mem.peak',           n2h (float(info_pro['mem']['peak'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+          # print " MB  %-25s : %s"       % ('cpu.ops',            n2h (float(info_pro['cpu']['ops'           ]), rs.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
+          # print " MB  %-25s : %s"       % ('cpu.utilization',    n2h (float(info_pro['cpu']['utilization'   ]), rs.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+          # print " MB  %-25s : %s"       % ('cpu.efficiency',     n2h (float(info_pro['cpu']['efficiency'    ]), rs.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+          # print " MB  %-25s : %s"       % ('cpu.flops_per_core', n2h (float(info_pro['cpu']['flops_per_core']), rs.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
+          # print " MB  %-25s : %s"       % ('io.write',           n2h (float(info_pro['io']['write'          ]), rs.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+          # print " MB  %-25s : %s"       % ('mem.peak',           n2h (float(info_pro['mem']['peak'          ]), rs.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
           # print ' ---------------------------------------------------------------'                                                        
           # print " SYN %-25s : %15.2f s" % ('time.real',               float(info_s['time']['real'         ]))                            
           # print " SYN %-25s : %15.2f"   % ('sys.load',                float(info_s['sys']['load'          ]))
-          # print " SYN %-25s : %s"       % ('cpu.ops',            n2h (float(info_s['cpu']['ops'           ]), su.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
-          # print " SYN %-25s : %s"       % ('cpu.utilization',    n2h (float(info_s['cpu']['utilization'   ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
-          # print " SYN %-25s : %s"       % ('cpu.efficiency',     n2h (float(info_s['cpu']['efficiency'    ]), su.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
-          # print " SYN %-25s : %s"       % ('cpu.flops_per_core', n2h (float(info_s['cpu']['flops_per_core']), su.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
-          # print " SYN %-25s : %s"       % ('io.write',           n2h (float(info_s['io']['write'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
-          # print " SYN %-25s : %s"       % ('mem.peak',           n2h (float(info_s['mem']['peak'          ]), su.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+          # print " SYN %-25s : %s"       % ('cpu.ops',            n2h (float(info_s['cpu']['ops'           ]), rs.PREFIX_ISO, 'FLOP'  , "%(val)15.2f %(unit)s"))
+          # print " SYN %-25s : %s"       % ('cpu.utilization',    n2h (float(info_s['cpu']['utilization'   ]), rs.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+          # print " SYN %-25s : %s"       % ('cpu.efficiency',     n2h (float(info_s['cpu']['efficiency'    ]), rs.PREFIX_ISO, ''      , "%(val)15.2f %(unit)s"))
+          # print " SYN %-25s : %s"       % ('cpu.flops_per_core', n2h (float(info_s['cpu']['flops_per_core']), rs.PREFIX_ISO, 'FLOP/s', "%(val)15.2f %(unit)s"))
+          # print " SYN %-25s : %s"       % ('io.write',           n2h (float(info_s['io']['write'          ]), rs.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
+          # print " SYN %-25s : %s"       % ('mem.peak',           n2h (float(info_s['mem']['peak'          ]), rs.PREFIX_BIN, 'Byte'  , "%(val)15.2f %(unit)s"))
           # print ' ---------------------------------------------------------------'
           # pp.pprint (info_pro)                                  
           # print ' ---------------------------------------------------------------'

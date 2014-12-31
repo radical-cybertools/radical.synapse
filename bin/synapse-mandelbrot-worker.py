@@ -7,7 +7,6 @@ import time
 import pymongo
 
 import radical.utils as ru
-import synapse.utils as su
 
 ATTEMPTS = 10
 
@@ -23,7 +22,8 @@ def work (master_id, worker_id) :
     """
 
 
-    [host, port, dbname, cname, _] = ru.split_dburl (master_id)
+    [host, port, dbname, cname, _, _, _] = ru.split_dburl (master_id)
+    [host, port, dbname, cname, _, _, _] = ru.split_dburl (master_id)
 
     print "  %s:%d" % (host, port)
     db_client  = pymongo.MongoClient (host=host, port=port)

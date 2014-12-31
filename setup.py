@@ -1,184 +1,135 @@
 
-__author__    = "RADICAL Team"
-__copyright__ = "Copyright 2013, RADICAL Research, Rutgers University"
-__license__   = "MIT"
+__author__    = 'RADICAL Team'
+__email__     = 'radical@rutgers.edu'
+__copyright__ = 'Copyright 2013/14, RADICAL Research, Rutgers University'
+__license__   = 'MIT'
 
 
 """ Setup script. Used by easy_install and pip. """
 
 import os
 import sys
-import subprocess
+import subprocess as sp
 
-from setuptools import setup, Command
+from setuptools import setup, Command, find_packages
 
-srcroot = 'synapse'
-name    = 'Synapse'
-lname   = name.lower()
+name     = 'radical.synapse'
+mod_root = 'radical/synapse'
 
 # ------------------------------------------------------------------------------
 #
 # versioning mechanism:
 #
-#   - short_version:  1.2.3                   - is used for installation
-#   - long_version:   1.2.3-9-g0684b06-devel  - is used as runtime (ru.version)
-#   - both are derived from the last git tag and branch information
-#   - VERSION files are created on demand, with the long_version
+#   - version:          1.2.3            - is used for installation
+#   - version_detail:  v1.2.3-9-g0684b06 - is used for debugging
+#   - version is read from VERSION file in src_root, which then is copied to
+#     module dir, and is getting installed from there.
+#   - version_detail is derived from the git tag, and only available when
+#     installed from git -- this is stored in VERSION.git, in the same
+#     locations, on install.
+#   - both files, VERSION and VERSION.git are used to provide the runtime
+#     version information.
 #
-# can't use radical.utils versioning detection, as radical.utils is only
-# below specified as dependency :/
-def get_version (paths=None):
+def get_version (mod_root):
     """
-    paths:
-        a VERSION file containing the long version is created in every directpry
-        listed in paths.  Those VERSION files are used when they exist to get
-        the version numbers, if they exist prior to calling this method.  If 
-        not, we cd into the first path, try to get version numbers from git tags 
-        in that location, and create the VERSION files in all dirst given in 
-        paths.
+    mod_root
+        a VERSION and VERSION.git file containing the version strings is 
+        created in mod_root, during installation.  Those files are used at 
+        runtime to get the version information.
     """
 
     try:
 
-        if  None == paths :
-            # by default, get version for myself
-            pwd     = os.path.dirname (__file__)
-            root    = "%s/.." % pwd
-            paths = [root, pwd]
+        version        = None
+        version_detail = None
 
-        if  not isinstance (paths, list) :
-            paths = [paths]
+        # get version from './VERSION'
+        src_root = os.path.dirname (__file__)
+        if  not src_root :
+            src_root = '.'
 
-        # if in any of the paths a VERSION file exists, we use the long version
-        # in there.
-        long_version  = None
-        short_version = None
-        branch_name   = None
-
-        for path in paths :
-            try :
-                filename = "%s/VERSION" % path
-                with open (filename) as f :
-                    lines = [line.strip() for line in f.readlines()]
-
-                    if len(lines) >= 1 : long_version  = lines[0]
-                    if len(lines) >= 2 : short_version = lines[1]
-                    if len(lines) >= 3 : branch_name   = lines[2]
-
-                    if  long_version :
-                        print 'reading  %s' % filename
-                        break
-
-            except Exception as e :
-                pass
-
-        # if we didn't find it, get it from git 
-        if  not long_version :
-
-            import subprocess as sp
-            import re
-
-            # make sure we look at the right git repo
-            if  len(paths) :
-                git_cd  = "cd %s ;" % paths[0]
-
-            # attempt to get version information from git
-            p   = sp.Popen ('%s'\
-                            'git describe --tags --always ; ' \
-                            'git branch   --contains | grep -e "^\*"' % git_cd,
-                            stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            out = p.communicate()[0]
-
-            if  p.returncode != 0 or not out :
-
-                # the git check failed -- its likely that we are called from
-                # a tarball, so use ./VERSION instead
-                out=open ("%s/VERSION" % paths[0], 'r').read().strip()
+        with open (src_root + '/VERSION', 'r') as f :
+            version = f.readline ().strip()
 
 
-            pattern = re.compile ('(?P<long>(?P<short>[\d\.]+)\D.*)(\s+\*\s+(?P<branch>\S+))?')
-            match   = pattern.search (out)
+        # attempt to get version detail information from git
+        p   = sp.Popen ('cd %s ; '\
+                        'tag=`git describe --tags --always` 2>/dev/null ; '\
+                        'branch=`git branch | grep -e "^*" | cut -f 2 -d " "` 2>/dev/null ; '\
+                        'echo $tag@$branch'  % src_root,
+                        stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+        version_detail = p.communicate()[0].strip()
 
-            if  match :
-                long_version  = match.group ('long')
-                short_version = match.group ('short')
-                branch_name   = match.group ('branch')
-                print 'inspecting git for version info'
+        if  p.returncode   !=  0  or \
+            version_detail == '@' or \
+            'fatal'        in version_detail :
+            version_detail =  'v%s' % version
 
-            else :
-                import sys
-                sys.stderr.write ("Cannot determine version from git or ./VERSION\n")
-                sys.exit (-1)
-                
-
-            if  branch_name :
-                long_version = "%s-%s" % (long_version, branch_name)
+        print 'version: %s (%s)'  % (version, version_detail)
 
 
         # make sure the version files exist for the runtime version inspection
-        for path in paths :
-            vpath = '%s/VERSION' % path
-            print 'creating %s'  % vpath
-            with open (vpath, 'w') as f :
-                f.write (long_version  + "\n")
-                f.write (short_version + "\n")
-                f.write (branch_name   + "\n")
-    
-        return short_version, long_version, branch_name
+        path = '%s/%s' % (src_root, mod_root)
+        print 'creating %s/VERSION' % path
 
+        with open (path + '/VERSION',     'w') as f : f.write (version        + '\n') 
+        with open (path + '/VERSION.git', 'w') as f : f.write (version_detail + '\n')
+
+        return version, version_detail
 
     except Exception as e :
-        print 'Could not extract/set version: %s' % e
-        import sys
-        sys.exit (-1)
+        raise RuntimeError ('Could not extract/set version: %s' % e)
 
 
-#-----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # get version info -- this will create VERSION and srcroot/VERSION
-root     = os.path.dirname (__file__)
-src_dir = "%s/%s" % (root, srcroot)
-short_version, long_version, branch = get_version ([root, src_dir])
+version, version_detail = get_version (mod_root)
 
 
-#-----------------------------------------------------------------------------
-# check python version. we need > 2.5, <3.x
-if  sys.hexversion < 0x02050000 or sys.hexversion >= 0x03000000:
-    raise RuntimeError("%s requires Python 2.x (2.5 or higher)" % name)
+# ------------------------------------------------------------------------------
+# check python version. we need > 2.6, <3.x
+if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
+    raise RuntimeError('%s requires Python 2.x (2.6 or higher)' % name)
 
 
-#-----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class our_test(Command):
     user_options = []
     def initialize_options (self) : pass
     def finalize_options   (self) : pass
     def run (self) :
         testdir = "%s/tests/" % os.path.dirname(os.path.realpath(__file__))
-        retval  = subprocess.call([sys.executable,
-                                   '%s/run_tests.py'               % testdir,
-                                   '%s/configs/basetests.cfg'      % testdir])
+        retval  = sp.call([sys.executable,
+                          '%s/run_tests.py'               % testdir,
+                          '%s/configs/default.cfg'        % testdir])
         raise SystemExit(retval)
 
 
-#-----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #
 def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+    try :
+        return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+    except Exception :
+        return ''
 
 
-#-----------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 setup_args = {
-    'name'             : name,
-    'version'          : short_version,
-    'description'      : "SYNthetic APplicationS Emulator",
-    'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
-    'author'           : 'RADICAL Group at Rutgers University',
-    'author_email'     : "radical@rutgers.edu",
-    'maintainer'       : "Andre Merzky",
-    'maintainer_email' : "andre@merzky.net",
-    'url'              : "https://www.github.com/saga-project/synapse/",
-    'license'          : "LGPLv3+",
-    'keywords'         : "radical emulate workload",
-    'classifiers'      : [
+    'name'               : name,
+    'namespace_packages' : ['radical'],
+    'version'            : version,
+    'description'        : 'SYNthetic APplicationS Emulator -- A RADICAL Project '
+                           '(http://radical.rutgers.edu/)',
+    'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
+    'author'             : 'RADICAL Group at Rutgers University',
+    'author_email'       : 'radical@rutgers.edu',
+    'maintainer'         : 'Andre Merzky',
+    'maintainer_email'   : 'andre@merzky.net',
+    'url'                : 'https://www.github.com/radical-cybertools/radical.utils/',
+    'license'            : "LGPLv3+",
+    'keywords'           : "radical emulate workload",
+    'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Environment :: Console',
@@ -195,28 +146,33 @@ setup_args = {
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
-    'packages'         : [
-        "synapse",
-        "synapse.utils",
-        "synapse.atoms",
-    ],
-    'scripts'          : ['synapse/synapse_profile.py',
-                          'synapse/synapse_emulate.py',
-                          'synapse/mandelbrot/mandelbrot_dummy.py',
-                          'synapse/mandelbrot/mandelbrot_master.py',
-                          'synapse/mandelbrot/mandelbrot_worker.py'],
-    'package_data'     : {'' : ['*.c', 'VERSION']},
-    'cmdclass'         : {
-        'test'         : our_test,
+    'packages'           : find_packages(),
+    'scripts'            : ['bin/synapse-dumpdb.py',
+                            'bin/synapse-profile.py',
+                            'bin/synapse-emulate.py',
+                            'bin/synapse-mandelbrot-dummy.py',
+                            'bin/synapse-mandelbrot-master.py',
+                            'bin/synapse-mandelbrot-worker.py',
+                            'bin/synapse-mandelbrot-profile.py',
+                            'bin/synapse-mandelbrot-emulate.py'],
+    'package_data'       : {'' : ['*.sh', '*.c', 'VERSION', 'VERSION.git']},
+    'cmdclass'           : {
+        'test'           : our_test,
     },
-    'install_requires' : ['pymongo', 'radical.utils', 'psutil'],
-    'tests_require'    : ['nose'],
-    'zip_safe'         : False,
+    'install_requires'   : [
+        'pymongo', 
+        'radical.utils', 
+        'psutil'
+    ],
+    'extras_require'     : {
+    },
+    'tests_require'      : [],
+    'zip_safe'           : False,
 }
 
-#-----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 setup (**setup_args)
 
-#-----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 

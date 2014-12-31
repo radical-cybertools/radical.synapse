@@ -5,8 +5,7 @@ import sys
 import pprint
 import pymongo
 
-import synapse
-import synapse.utils as su
+import radical.synapse as rs
 
 _DEFAULT_DBURL = 'mongodb://localhost:27017/'
 _DEFAULT_DBURL = 'mongodb://ec2-184-72-89-141.compute-1.amazonaws.com:27017/'
@@ -19,7 +18,7 @@ def dump (url, mode) :
     Connect to mongodb at the given location, and traverse the data bases
     """
 
-    [host, port, dbname, cname, pname] = su.split_dburl (url)
+    [host, port, dbname, cname, pname, _, _] = rs.split_dburl (url)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
 

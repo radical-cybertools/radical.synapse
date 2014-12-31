@@ -8,8 +8,7 @@ import numpy
 import pprint        as pp
 import radical.utils as ru
 
-import synapse.utils as su
-import synapse.atoms as sa
+import synapse as rs
 
 # import pudb 
 # pudb.set_interrupt_handler ()
@@ -19,34 +18,54 @@ host  = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n')
 
 # ------------------------------------------------------------------------------
 #
-def synaptic (load_compute, load_memory, load_storage) :
+def mandel (x, y, z) :
 
-    start = time.time()
+  # print 'mandel: %s %s %s' % (x, y, z)
 
-    # create containers for different system workload types
-    atoms = dict()
-    atoms['c'] = sa.Compute ()
-    atoms['m'] = sa.Memory  ()
-    atoms['s'] = sa.Storage ()
+    start = time.time ()
 
-    # the atoms below are executed concurrently (in their own threads)
-    atoms['c'].run (info={'n'   : load_compute})
-    atoms['m'].run (info={'n'   : load_memory})
-    atoms['s'].run (info={'n'   : load_storage,
-                          'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
+    x_pixels  = x
+    y_pixels  = y
+    iter_max  = z
+    x_min     = -2.0
+    x_max     = +1.0
+    y_min     = -1.5
+    y_max     = +1.5
+    threshold = 1
+    rgb_image = []
 
-    # wait for all atom threads to be done
-    info_c = atoms['c'].wait ()
-    info_m = atoms['m'].wait ()
-    info_s = atoms['s'].wait ()
+    for x in range (x_pixels) :
 
-    for info in [info_c, info_m, info_s] :
-        for line in info['out'] :
-            l = ru.ReString (line)
-            if  l // '^(ru.\S+)\s+:\s+(\S+)$' :
-                info[l.get()[0]] = l.get()[1]
+      # print x
 
-    return {'c':info_c, 'm':info_m, 's':info_s}
+        cx = x * (x_max - x_min) / x_pixels + x_min
+
+        rgb_row = []
+
+        for y in range (y_pixels):
+
+            cy = y * (y_max - y_min) / (y_pixels - 1) + x_min
+
+            c = complex (cx, cy)
+            z = 0
+
+            for i in range (iter_max) :
+                
+                if abs (z) > threshold: 
+                    break 
+
+                z = z * z + c 
+
+            rgb_row.append (["%3d" % i, "%3d" % i, "%3d" % i])
+
+        rgb_image.append (rgb_row)
+
+    with open ("/tmp/mb.dat", "w") as f :
+        f.write (str(rgb_image))
+
+    stop = time.time ()
+
+    return stop - start
 
 
 # ------------------------------------------------------------------------------
@@ -54,19 +73,19 @@ def synaptic (load_compute, load_memory, load_storage) :
 
 def main (cfg_list) :
 
-    n2h = su.number_to_human
+    n2h = rs.number_to_human
 
     for cfg in cfg_list :
         x       = int  (cfg[ 2])
         y       = int  (cfg[ 3])
         z       = int  (cfg[ 4])
-        stress  = int  (cfg[ 5])
-        compute = float(cfg[10])
-        util    = float(cfg[11])
-        eff     = float(cfg[12])
-        load    = float(cfg[13])
-        memory  = float(cfg[14])
-        storage = float(cfg[15])
+        stress  = 0
+        compute = 0
+        util    = 0
+        eff     = 0
+        load    = 0
+        memory  = 0
+        storage = 0
 
         iter_1_time = list()
         iter_1_cpu  = list()
@@ -78,43 +97,43 @@ def main (cfg_list) :
 
         for iter in range (iters) :
 
-            info_emu, ret, out = su.profile_function (synaptic, compute, memory, storage)
+            info_run, ret, out = rs.profile_function (mandel, x, y, z)
 
-            if not 'utilization' in info_emu['cpu'] : info_emu['cpu']['utilization' ] = 0
-            if not 'efficiency'  in info_emu['cpu'] : info_emu['cpu']['efficiency'  ] = 0
-            if not 'load'        in info_emu['cpu'] : info_emu['cpu']['load'        ] = 0
-            if not 'ops'         in info_emu['cpu'] : info_emu['cpu']['ops'         ] = 0
-            if not 'max'         in info_emu['mem'] : info_emu['mem']['max'         ] = 0
-            if not 'write'       in info_emu['io']  : info_emu['io']['write'        ] = 0
+            if not 'utilization' in info_run['cpu'] : info_run['cpu']['utilization' ] = 0
+            if not 'efficiency'  in info_run['cpu'] : info_run['cpu']['efficiency'  ] = 0
+            if not 'load'        in info_run['cpu'] : info_run['cpu']['load'        ] = 0
+            if not 'ops'         in info_run['cpu'] : info_run['cpu']['ops'         ] = 0
+            if not 'max'         in info_run['mem'] : info_run['mem']['max'         ] = 0
+            if not 'write'       in info_run['io']  : info_run['io']['write'        ] = 0
         
-            load_compute = int(float(info_emu['cpu']['ops' ]) / (1024*1024) / 8)
-            load_memory  = int(float(info_emu['mem']['max' ]) / (1024*1024))
-            load_storage = int(float(info_emu['io']['write']) / (1024*1024))
+            load_compute = int(float(info_run['cpu']['ops' ]) / (1024*1024) / 8)
+            load_memory  = int(float(info_run['mem']['max' ]) / (1024*1024))
+            load_storage = int(float(info_run['io']['write']) / (1024*1024))
             
-            load_compute = int(float(info_emu['cpu']['ops' ]) / (1024*1024) / 8)
-            load_memory  = int(float(info_emu['mem']['max' ]) / (1024*1024))
-            load_storage = int(float(info_emu['io']['write']) / (1024*1024))
+            load_compute = int(float(info_run['cpu']['ops' ]) / (1024*1024) / 8)
+            load_memory  = int(float(info_run['mem']['max' ]) / (1024*1024))
+            load_storage = int(float(info_run['io']['write']) / (1024*1024))
             
-            load_id  = 'EMU.%04d' % x
+            load_id  = 'RUN.%04d' % x
             output   = '%-10s %15s %5d %5d %5d %6d %8.2f --------- --------- --------- %9.2f %0.2f %0.2f %5.2f %9.2f %9.2f' % \
                        (host, load_id, x, y, z, stress,
-                        float(info_emu['time']['real']), 
+                        ret, 
                         load_compute, 
-                        info_emu['cpu']['utilization'], 
-                        info_emu['cpu']['efficiency'], 
-                        info_emu['sys']['load'],
+                        info_run['cpu']['utilization'], 
+                        info_run['cpu']['efficiency'], 
+                        info_run['sys']['load'],
                         load_memory, 
                         load_storage
                        )
             print output
 
-            iter_1_time .append(float(info_emu['time']['real']))
+            iter_1_time .append(float(ret))
             iter_1_cpu  .append(float(load_compute))
             iter_1_mem  .append(float(load_memory))
             iter_1_io   .append(float(load_storage))
-            iter_1_util .append(float(info_emu['cpu']['utilization']))
-            iter_1_eff  .append(float(info_emu['cpu']['efficiency']))
-            iter_1_sys  .append(float(info_emu['sys']['load']))
+            iter_1_util .append(float(info_run['cpu']['utilization']))
+            iter_1_eff  .append(float(info_run['cpu']['efficiency']))
+            iter_1_sys  .append(float(info_run['sys']['load']))
 
         iter_1_mean_time = numpy.mean (numpy.array (iter_1_time))
         iter_1_mean_cpu  = numpy.mean (numpy.array (iter_1_cpu ))
@@ -132,7 +151,7 @@ def main (cfg_list) :
         iter_1_std_eff   = numpy.std  (numpy.array (iter_1_eff ))
         iter_1_std_sys   = numpy.std  (numpy.array (iter_1_sys ))
         
-        load_id  = 'MEAN_EMU.%04d' % x
+        load_id  = 'MEAN_RUN.%04d' % x
         mean     = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
                    (host, load_id, x, y, z, stress,
                     iter_1_mean_time, 
@@ -145,7 +164,7 @@ def main (cfg_list) :
                    )
         print mean  
     
-        load_id  = 'STD_EMU.%04d' % x
+        load_id  = 'STD_RUN.%04d' % x
         std      = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
                    (host, load_id, x, y, z, stress, 
                     iter_1_std_time, 
@@ -158,7 +177,7 @@ def main (cfg_list) :
                    )
         print std
     
-        load_id  = 'STAT_EMU.%04d' % x
+        load_id  = 'STAT_RUN.%04d' % x
         stat     = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f --------- --------- --------- --------- --------- --------- %9.2f %9.2f %.2f %.2f %.2f %.2f %5.2f %5.2f %9.2f %9.2f %9.2f %9.2f' % \
                    (host, load_id, x, y, z, stress, 
                     iter_1_mean_time, 

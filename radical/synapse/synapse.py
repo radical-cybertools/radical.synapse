@@ -15,13 +15,17 @@ import multiprocessing as mp
 # import pudb 
 # pudb.set_interrupt_handler ()
 
-import synapse
-import synapse.atoms   as sa
+import radical.synapse
+import atoms as rsa
 
-PROFILE_URL = '%s/synapse_profiles/' % synapse.SYNAPSE_DBURL
+
+SYNAPSE_DBURL = os.environ.get ('SYNAPSE_DBURL', 'mongodb://localhost:27017/synapse_v0_5')
+
+PROFILE_URL = '%s/synapse_profiles/' % SYNAPSE_DBURL
 LOAD        = int (os.environ.get ('LOAD', '0'))
 LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
 LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
+
 
 # ------------------------------------------------------------------------------
 #
@@ -179,12 +183,12 @@ def profile_function (func, *args, **kwargs) :
         # start stress, get it spinning for one min to et a confirmed load
         # measurement, then run our own load, then kill stress.
         if  LOAD > 0 :
-            synapse._logger.info ("creating system load %d" % LOAD)
+            radical.synapse._logger.info ("creating system load %d" % LOAD)
             os.popen ("killall -9 stress 2>&1 > /dev/null")
             os.popen ('stress --cpu %d &' % LOAD)
             time.sleep (60)
 
-        synapse._logger.info ("system load cmd: %s" % (LOAD_CMD))
+        radical.synapse._logger.info ("system load cmd: %s" % (LOAD_CMD))
         load_1  = float(os.popen (LOAD_CMD).read())
         time_1  = time.time()
 
@@ -208,16 +212,16 @@ def profile_function (func, *args, **kwargs) :
         time_2 = time.time()
         load_2 = float(os.popen (LOAD_CMD).read())
         info['sys']['load'] = max(load_1, load_2)
-        synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
-        synapse._logger.info ("app mem     %s: %s" % (LOAD, info['mem']))
+        radical.synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
+        radical.synapse._logger.info ("app mem     %s: %s" % (LOAD, info['mem']))
 
         info['time']['real'] = time_2 - time_1
 
 
         if  LOAD > 0 :
-            synapse._logger.info ("stopping system load")
+            radical.synapse._logger.info ("stopping system load")
             os.popen ("killall -9 stress 2>&1 > /dev/null")
-            synapse._logger.info ("stopped  system load")
+            radical.synapse._logger.info ("stopped  system load")
 
         # send stop signal
         q.put (ret)
@@ -240,9 +244,9 @@ def profile_function (func, *args, **kwargs) :
     # do we have perf?
 
     if  'no perf in' in sp.Popen ("which perf", 
-                                 shell=True,
-                                 stdout=sp.PIPE, 
-                                 stderr=sp.STDOUT).stdout.read () :
+                                  shell=True,
+                                  stdout=sp.PIPE, 
+                                  stderr=sp.STDOUT).stdout.read () :
         prof = None
 
     else :
@@ -318,14 +322,16 @@ def profile_command (command) :
     # start stress, get it spinning for one min to et a confirmed load
     # measurement, then run our own load, then kill stress.
     if  LOAD > 0 :
-        synapse._logger.info ("creating system load %s" % LOAD)
+        radical.synapse._logger.info ("creating system load %s" % LOAD)
         os.popen ("killall -9 stress 2>&1 > /dev/null")
-        os.Popen ('stress --cpu %s &' % LOAD)
+        os.popen ('stress --cpu %s &' % LOAD)
         time.sleep (60)
 
     time_1 = time.time()
     load_1 = float(os.popen (LOAD_CMD).read())
-    synapse._logger.info ("creating system load %s: %s" % (LOAD, info['sys']['load']))
+
+  # pprint.pprint (info)
+  # radical.synapse._logger.info ("creating system load %s: %s" % (LOAD, info['sys']['load']))
 
     # do we have perf?
     if 'no perf in' in sp.Popen ("which perf", 
@@ -348,12 +354,12 @@ def profile_command (command) :
     time_2 = time.time()
     load_2 = float(os.popen (LOAD_CMD).read())
     info['sys']['load'] = max(load_1, load_2)
-    synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
+    radical.synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
 
     if  LOAD > 0 :
-        synapse._logger.info ("stopping system load")
+        radical.synapse._logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
-        synapse._logger.info ("stopped  system load")
+        radical.synapse._logger.info ("stopped  system load")
 
   # pprint.pprint (info)
     ru.dict_merge (info, _parse_perf_output (out))
@@ -396,10 +402,10 @@ def emulate_command (command) :
 
     def emulator (flops, mem, io_in, io_out) :
 
-        app_c = sa.Compute ()
-        app_m = sa.Memory  ()
-        app_s = sa.Storage ()
-     #  app_n = sa.Network ()
+        app_c = rsa.Compute ()
+        app_m = rsa.Memory  ()
+        app_s = rsa.Storage ()
+     #  app_n = rsa.Network ()
 
         # the atoms below are executed concurrently (in their own threads)
         app_c.run (info={'n'   : flops})   # consume  10 GFlop CPY Cycles
@@ -501,7 +507,7 @@ def _parse_perf_output (perf_out) :
     # and go
     for line in perf_out :
 
-        synapse._logger.debug ("perf out: %s" % line)
+        radical.synapse._logger.debug ("perf out: %s" % line)
 
         l = ru.ReString (line)
 
@@ -631,7 +637,7 @@ def store_profile (command, info) :
 
     command_idx = index_command (command)
 
-    host, port, dbname, _, _ = ru.split_dburl (PROFILE_URL)
+    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_URL)
 
   # print 'url       : %s' % PROFILE_URL
   # print 'host      : %s' % host
@@ -665,7 +671,7 @@ def get_profile (command) :
 
     command_idx = index_command (command)
 
-    host, port, dbname, _, _ = ru.split_dburl (PROFILE_URL)
+    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_URL)
 
   # print 'url       : %s' % PROFILE_URL
   # print 'host      : %s' % host
