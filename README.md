@@ -105,7 +105,7 @@ Uses linux command line tools (not always available):
 
         * timing is problematic, needs constant watching, as it disappears with
           the process
-        * works ok if code van be instrumented (`synapse.utils.get_io_usage`)
+        * works ok if code can be instrumented (`synapse.utils.get_io_usage`)
 
     *   complete profile command:
 
