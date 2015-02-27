@@ -319,6 +319,9 @@ def profile_command (command) :
             'net' : dict(), 
             'sys' : dict()}
 
+    if isinstance (command, list):
+        command = ' '.join (command)
+
     # start stress, get it spinning for one min to et a confirmed load
     # measurement, then run our own load, then kill stress.
     if  LOAD > 0 :
