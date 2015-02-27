@@ -14,7 +14,7 @@ import subprocess as sp
 from setuptools import setup, Command, find_packages
 
 name     = 'radical.synapse'
-mod_root = 'radical/synapse'
+mod_root = 'src/radical/synapse'
 
 # ------------------------------------------------------------------------------
 #
@@ -25,18 +25,17 @@ mod_root = 'radical/synapse'
 #   - version is read from VERSION file in src_root, which then is copied to
 #     module dir, and is getting installed from there.
 #   - version_detail is derived from the git tag, and only available when
-#     installed from git -- this is stored in VERSION.git, in the same
-#     locations, on install.
-#   - both files, VERSION and VERSION.git are used to provide the runtime
-#     version information.
+#     installed from git.  That is stored in mod_root/VERSION in the install
+#     tree.
+#   - The VERSION file is used to provide the runtime version information.
 #
 def get_version (mod_root):
     """
     mod_root
-        a VERSION and VERSION.git file containing the version strings is 
-        created in mod_root, during installation.  Those files are used at 
-        runtime to get the version information.
-    """
+        a VERSION file containes the version strings is created in mod_root,
+        during installation.  That file is used at runtime to get the version
+        information.  
+        """
 
     try:
 
@@ -72,10 +71,16 @@ def get_version (mod_root):
         path = '%s/%s' % (src_root, mod_root)
         print 'creating %s/VERSION' % path
 
-        with open (path + '/VERSION',     'w') as f : f.write (version        + '\n') 
-        with open (path + '/VERSION.git', 'w') as f : f.write (version_detail + '\n')
+        sdist_name = "%s-%s.tar.gz" % (name, version)
+        if '--record'  in sys.argv or 'bdist_egg' in sys.argv :   
+           # pip install stage 2      easy_install stage 1
+            os.system ("python setup.py sdist")
+            os.system ("cp 'dist/%s' '%s/%s'" % (sdist_name, mod_root, sdist_name))
 
-        return version, version_detail
+        with open (path + "/SDIST",       "w") as f : f.write (sdist_name     + "\n")
+        with open (path + "/VERSION",     "w") as f : f.write (version_detail + "\n")
+
+        return version, version_detail, sdist_name
 
     except Exception as e :
         raise RuntimeError ('Could not extract/set version: %s' % e)
@@ -83,7 +88,7 @@ def get_version (mod_root):
 
 # ------------------------------------------------------------------------------
 # get version info -- this will create VERSION and srcroot/VERSION
-version, version_detail = get_version (mod_root)
+version, version_detail, sdist_name = get_version (mod_root)
 
 
 # ------------------------------------------------------------------------------
@@ -117,15 +122,14 @@ def read(*rnames):
 # -------------------------------------------------------------------------------
 setup_args = {
     'name'               : name,
-    'namespace_packages' : ['radical'],
     'version'            : version,
     'description'        : 'SYNthetic APplicationS Emulator -- A RADICAL Project '
                            '(http://radical.rutgers.edu/)',
     'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'             : 'RADICAL Group at Rutgers University',
     'author_email'       : 'radical@rutgers.edu',
-    'maintainer'         : 'Andre Merzky',
-    'maintainer_email'   : 'andre@merzky.net',
+    'maintainer'         : 'The RADICAL Group',
+    'maintainer_email'   : 'radical@rutgers.edu',
     'url'                : 'https://www.github.com/radical-cybertools/radical.utils/',
     'license'            : "LGPLv3+",
     'keywords'           : "radical emulate workload",
@@ -141,13 +145,15 @@ setup_args = {
         'Programming Language :: Python :: 2.7',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
-        'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
+        'Topic :: Scientific/Engineering',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
-    'packages'           : find_packages(),
-    'scripts'            : ['bin/radical-synapse-dumpdb.py',
+    'namespace_packages' : ['radical'],
+    'packages'           : find_packages('src'),
+    'package_dir'        : {'': 'src'},
+    'scripts'            : ['bin/radical-synapse-version.py',
                             'bin/radical-synapse-profile.py',
                             'bin/radical-synapse-emulate.py',
                             'bin/radical-synapse-mandelbrot-dummy.py',
@@ -155,7 +161,7 @@ setup_args = {
                             'bin/radical-synapse-mandelbrot-worker.py',
                             'bin/radical-synapse-mandelbrot-profile.py',
                             'bin/radical-synapse-mandelbrot-emulate.py'],
-    'package_data'       : {'' : ['*.sh', '*.c', 'VERSION', 'VERSION.git']},
+    'package_data'       : {'': ['*.sh', '*.json', 'VERSION', 'SDIST', sdist_name]},
     'cmdclass'           : {
         'test'           : our_test,
     },
@@ -167,7 +173,16 @@ setup_args = {
     'extras_require'     : {
     },
     'tests_require'      : [],
+    'test_suite'         : 'radical.synapse.tests',
     'zip_safe'           : False,
+#   'build_sphinx'       : {
+#       'source-dir'     : 'docs/',
+#       'build-dir'      : 'docs/build',
+#       'all_files'      : 1,
+#   },
+#   'upload_sphinx'      : {
+#       'upload-dir'     : 'docs/build/html',
+#   }
 }
 
 # ------------------------------------------------------------------------------
