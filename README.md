@@ -1,6 +1,6 @@
 
-Synapse - SYNthetic APplicationS Emulator 
-=========================================
+Synapse - SYNthetic Application ProfileS and Emulation 
+======================================================
 
 Goal: emulate an applications runtime behavior as realistically as possible
 

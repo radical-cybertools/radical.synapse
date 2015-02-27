@@ -29,23 +29,21 @@ from synapse   import PREFIX_BIN
 
 
 # ------------------------------------------------------------------------------
-
+#
 
 import os
 
-_mod_root = os.path.dirname (__file__)
+import radical.utils        as ru
+import radical.utils.logger as rul
 
-version        = open (_mod_root + "/VERSION",     "r").readline ().strip ()
-version_detail = open (_mod_root + "/VERSION.git", "r").readline ().strip ()
+
+pwd     = os.path.dirname (__file__)
+root    = "%s/.." % pwd
+version, version_detail, version_branch, sdist_name, sdist_path = ru.get_version ([root, pwd])
+
+_logger = rul.logger.getLogger  ('radical.synapse')
+_logger.info ('radical.synapse      version: %s' % version_detail)
 
 
 # ------------------------------------------------------------------------------
-
-_logger = rul.logger.getLogger  ('synapse')
-_logger.info ('synapse         version: %s' % version)
-
-
-# ------------------------------------------------------------------------------
-
-
 
