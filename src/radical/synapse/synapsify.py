@@ -37,14 +37,14 @@ def synapsify (command, mode=NOTHING) :
 
 
     if  mode  == PROFILE :
-        ret = "synapse_profile.py '%s'" % command
+        ret = "radical-synapse-profile.py '%s'" % command
         radical.synapse._logger.debug ("synapsify in : %s" % command)
         radical.synapse._logger.debug ("synapsify out: %s" % ret)
         return ret
 
 
     if  mode  == EMULATE :
-        ret = "synapse_emulate.py '%s'" % command
+        ret = "radical-synapse-emulate.py '%s'" % command
         radical.synapse._logger.debug ("synapsify in : %s" % command)
         radical.synapse._logger.debug ("synapsify out: %s" % ret)
         return ret
