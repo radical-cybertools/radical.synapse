@@ -15,150 +15,14 @@ import multiprocessing as mp
 # import pudb 
 # pudb.set_interrupt_handler ()
 
-import radical.synapse
-import atoms as rsa
+import watcher as rsw
+import utils   as rsu
+import atoms   as rsa
 
 
-SYNAPSE_DBURL = os.environ.get ('SYNAPSE_DBURL', 'mongodb://localhost:27017/synapse_v0_5')
-
-PROFILE_URL = '%s/synapse_profiles/' % SYNAPSE_DBURL
 LOAD        = int (os.environ.get ('LOAD', '0'))
 LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
 LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
-
-
-# ------------------------------------------------------------------------------
-#
-# see http://stackoverflow.com/questions/938733/total-memory-used-by-python-process
-#
-def get_mem_usage () :
-
-    info    = {'mem'     : dict()}
-    scale   = {'kb'      : 1024.0,
-               'mb'      : 1     }
-    keymap  = {'VmPeak:' : 'peak',
-               'VmSize:' : 'size',
-               'VmData:' : 'data',
-               'VmRSS:'  : 'resident',
-               'VmStk:'  : 'stack'}
-
-    with open ('/proc/%d/status'  %  os.getpid ()) as t :
-
-        lines = t.read ().split ('\n')
-
-        for line in lines :
-
-            for key in keymap.keys () :
-
-                i = line.find (key)
-                if  i == -1 :
-                    continue
-
-                v = line[i:].split (None, 3)
-
-                if  len(v) >= 2 :
-                    info['mem'][keymap[key]] = human_to_number ("%s %s" % (v[1], v[2]))
-
-        return info
-
-
-# ------------------------------------------------------------------------------
-#
-def get_io_usage () :
-
-    info   = {'io'           : dict()}
-    keymap = {'read_bytes:'  : 'read' ,
-              'write_bytes:' : 'write'}
-
-    with open ('/proc/%d/io'  %  os.getpid ()) as t :
-
-        text = t.read ()
-
-        for key in keymap.keys () :
-
-            i = text.index (key)
-            v = text[i:].split (None, 3)
-
-            if  len(v) >= 2 :
-                info['io'][keymap[key]] = "%d" % int(v[1])
-
-        return info
-
-
-# ------------------------------------------------------------------------------
-#
-#
-PREFIX_BIN = { 'K' : 1024,
-               'M' : 1024 * 1024,
-               'G' : 1024 * 1024 * 1024,
-               'T' : 1024 * 1024 * 1024 * 1024,
-               'P' : 1024 * 1024 * 1024 * 1024 * 1024,
-               'E' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
-               'Z' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
-               'Y' : 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
-             }
-
-PREFIX_ISO = { 'K' : 1000,
-               'M' : 1000 * 1000,
-               'G' : 1000 * 1000 * 1000,
-               'T' : 1000 * 1000 * 1000 * 1000,
-               'P' : 1000 * 1000 * 1000 * 1000 * 1000,
-               'E' : 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
-               'Z' : 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
-               'Y' : 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000
-             }
-
-
-# ------------------------------------------------------------------------------
-#
-def human_to_number (h, prefix=PREFIX_BIN) :
-
-    rs = ru.ReString (h)
-
-    with rs // '^\s*([\d\.]+)\s*(\D+)\s*$' as match : 
-        if  not match :
-          # print 'incorrect format: %s' % h
-            return float(h)
-
-        p = match[1].upper()[0]
-
-        if  not p in prefix :
-          # print 'unknown prefix: %s' % h
-            return float(h)
-
-        return float(match[0]) * prefix[p]
-
-
-# ------------------------------------------------------------------------------
-#
-def number_to_human (n, prefix=PREFIX_BIN, unit='', template="%(val)f %(unit)s") :
-
-    for key in prefix.keys () :
-
-        hn = n / float(prefix[key])
-        if  hn > 1 and hn < 1000 :
-            return template % {'val' : hn, 'unit' : "%s%s" % (key, unit)}
-
-    return template % {'val' : n, 'unit' : unit}
-
-
-# ------------------------------------------------------------------------------
-#
-def time_to_seconds (t) :
-
-    rs = ru.ReString (t)
-
-    with rs // '^(?:\s*(\d+)\s*[:])+\s*([\d\.]+)\s*$' as match :
-
-        if  not match :
-            return t
-
-        seconds = 0
-        if  len(match) ==  1 : seconds = float(match[0])
-        if  len(match) ==  2 : seconds = float(match[0]) * 60      + float(match[1])
-        if  len(match) ==  3 : seconds = float(match[0]) * 60 * 60 + float(match[1]) * 60 + float(match[2])
-
-        return seconds
 
 
 # ------------------------------------------------------------------------------
@@ -168,14 +32,10 @@ def profile_function (func, *args, **kwargs) :
     # --------------------------------------------------------------------------
     def func_wrapper (func, q, args, kwargs) :
 
-        info = {'io'   : dict(), 
-                'cpu'  : dict(),
-                'mem'  : dict(), 
-                'net'  : dict(), 
-                'sys'  : dict(),
-                'time' : dict()}
+        info = dict()
 
         start_io  = get_io_usage  ()
+      # pprint.pprint (start_io)
 
         # wait for startup signal
         _ = q.get ()
@@ -183,21 +43,23 @@ def profile_function (func, *args, **kwargs) :
         # start stress, get it spinning for one min to et a confirmed load
         # measurement, then run our own load, then kill stress.
         if  LOAD > 0 :
-            radical.synapse._logger.info ("creating system load %d" % LOAD)
+            rsu.logger.info ("creating system load %d" % LOAD)
             os.popen ("killall -9 stress 2>&1 > /dev/null")
             os.popen ('stress --cpu %d &' % LOAD)
             time.sleep (60)
 
-        radical.synapse._logger.info ("system load cmd: %s" % (LOAD_CMD))
+        rsu.logger.info ("system load cmd: %s" % (LOAD_CMD))
         load_1  = float(os.popen (LOAD_CMD).read())
-        time_1  = time.time()
+        time_1  = rsu.timestamp()
 
         # do the deed
         ret = func (*args, **kwargs)
 
-        time_2  = time.time()
+        time_2  = rsu.timestamp()
         end_io  = get_io_usage  ()
         end_mem = get_mem_usage  ()
+
+      # pprint.pprint (end_io)
 
         for key in end_io['io']  :
             s_start   = start_io['io'][key]
@@ -209,19 +71,20 @@ def profile_function (func, *args, **kwargs) :
         for key in end_mem['mem']  :
             info['mem'][key] = human_to_number (end_mem['mem'][key])
 
-        time_2 = time.time()
+        time_2 = rsu.timestamp()
         load_2 = float(os.popen (LOAD_CMD).read())
-        info['sys']['load'] = max(load_1, load_2)
-        radical.synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
-        radical.synapse._logger.info ("app mem     %s: %s" % (LOAD, info['mem']))
+        info['cpu']['load'] = max(load_1, load_2)
+        rsu.logger.info ("system load %s: %s" % (LOAD, info['cpu']['load']))
+        rsu.logger.info ("app mem     %s: %s" % (LOAD, info['mem']))
 
-        info['time']['real'] = time_2 - time_1
+        info['time']['start'] = rsu.time_zero()
+        info['time']['real']  = time_2 - time_1
 
 
         if  LOAD > 0 :
-            radical.synapse._logger.info ("stopping system load")
+            rsu.logger.info ("stopping system load")
             os.popen ("killall -9 stress 2>&1 > /dev/null")
-            radical.synapse._logger.info ("stopped  system load")
+            rsu.logger.info ("stopped  system load")
 
         # send stop signal
         q.put (ret)
@@ -242,7 +105,6 @@ def profile_function (func, *args, **kwargs) :
     proc.start ()
 
     # do we have perf?
-
     if  'no perf in' in sp.Popen ("which perf", 
                                   shell=True,
                                   stdout=sp.PIPE, 
@@ -251,6 +113,7 @@ def profile_function (func, *args, **kwargs) :
 
     else :
         # profile the new process
+        # FIXME: this will miss the process startup...
         prof = sp.Popen ("/bin/sh -c '/usr/bin/time -v perf stat -p %d'" % (proc.pid),
                          stdout     = sp.PIPE,
                          stderr     = sp.STDOUT,
@@ -269,13 +132,7 @@ def profile_function (func, *args, **kwargs) :
 
         # prof should be done now -- let it know.  But first make sure we are
         # listening on the pipes when it dies...
-        def killperf (pid) :
-            try :
-                os.killpg (pid, signal.SIGINT)
-            except :
-                pass
-
-        threading.Timer (2.0, killperf, [prof.pid]).start ()
+        threading.Timer (2.0, _killproc, [prof.pid]).start ()
         out = prof.communicate()[0]
 
       # pprint.pprint (info)
@@ -313,64 +170,81 @@ def profile_function (func, *args, **kwargs) :
 #
 def profile_command (command) :
 
-    info = {'io'  : dict(), 
-            'cpu' : dict(),
-            'mem' : dict(), 
-            'net' : dict(), 
-            'sys' : dict()}
+    info = dict()
 
     if isinstance (command, list):
         command = ' '.join (command)
 
+    print "profile: %s" % command
+
     # start stress, get it spinning for one min to et a confirmed load
     # measurement, then run our own load, then kill stress.
     if  LOAD > 0 :
-        radical.synapse._logger.info ("creating system load %s" % LOAD)
+        rsu.logger.info ("creating system load %s" % LOAD)
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         os.popen ('stress --cpu %s &' % LOAD)
         time.sleep (60)
 
-    time_1 = time.time()
+    time_1 = rsu.timestamp()
     load_1 = float(os.popen (LOAD_CMD).read())
 
   # pprint.pprint (info)
-  # radical.synapse._logger.info ("creating system load %s: %s" % (LOAD, info['sys']['load']))
+  # rsu.logger.info ("creating system load %s: %s" % (LOAD, info['cpu']['load']))
 
-    # do we have perf?
-    if 'no perf in' in sp.Popen ("which perf", 
-                                 shell=True,
-                                 stdout=sp.PIPE, 
-                                 stderr=sp.STDOUT).stdout.read () :
-        perf = ''
-    else :
-        perf = 'perf stat'
+  # # perf stat does not report pid -- so we do it... :/
+  # command = "/bin/sh -c '%s & pid=$!; wait $pid; echo \"	PID: $pid\"'" % command
+
+  # # wrap the command into perf stat
+  # command = "perf stat %s" % command
+
+  # # we also use 'time -v', so wrap once moe
+  # command = "/usr/bin/time -v %s" % command
+
+    print command
+    start = rsu.timestamp()
 
     # run the profiled command in a separate process
-    prof = sp.Popen ("/bin/sh -c '/usr/bin/time -v %s %s'" % (perf, command),
-                     stdout     = sp.PIPE,
-                     stderr     = sp.STDOUT,
-                     shell      = True,
-                     preexec_fn = os.setsid)
-    out      = prof.communicate ()[0]
-    ret      = prof.returncode
+    cmd = sp.Popen (command.split(), 
+                    stdout = sp.PIPE,
+                    stderr = sp.STDOUT)
 
-    time_2 = time.time()
+    watchers = list()
+    watchers.append (rsw.WatcherCPU (cmd.pid))
+    watchers.append (rsw.WatcherIO  (cmd.pid))
+    watchers.append (rsw.WatcherMem (cmd.pid))
+    watchers.append (rsw.WatcherSys (cmd.pid))
+
+    out = cmd.communicate ()[0]
+    ret = cmd.returncode
+
+    stop = rsu.timestamp()
+
+    info['time'] = dict()
+    info['time']['start'] = rsu.time_zero()
+    info['time']['real']  = stop-start
+
+    for watcher in reversed(watchers) :
+        watcher.stop ()
+        watcher.join ()
+        ru.dict_merge (info, watcher.get_data())
+
+
+    time_2 = rsu.timestamp()
     load_2 = float(os.popen (LOAD_CMD).read())
-    info['sys']['load'] = max(load_1, load_2)
-    radical.synapse._logger.info ("system load %s: %s" % (LOAD, info['sys']['load']))
+    info['cpu']['load'] = max(load_1, load_2)
+    rsu.logger.info ("system load %s: %s" % (LOAD, info['cpu']['load']))
 
     if  LOAD > 0 :
-        radical.synapse._logger.info ("stopping system load")
+        rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
-        radical.synapse._logger.info ("stopped  system load")
+        rsu.logger.info ("stopped  system load")
 
-  # pprint.pprint (info)
-    ru.dict_merge (info, _parse_perf_output (out))
-  # pprint.pprint (info)
- 
     cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
     cycles_max  = info['cpu']['frequency'] * info['time']['real']
-    info['cpu']['utilization'] = cycles_used / cycles_max
+    if cycles_max :
+        info['cpu']['utilization'] = cycles_used / cycles_max
+    else:
+        info['cpu']['utilization'] = 0.0
 
   # print "utilization    : %s \n" % info['cpu']['utilization']
   #
@@ -383,7 +257,7 @@ def profile_command (command) :
   # print "stalled_front  : %s " % info['cpu']['cycles_stalled_front']
   # print "stalled_back   : %s " % info['cpu']['cycles_stalled_back']
 
-    store_profile (command, info)
+    rsu.store_profile (command, info)
 
     return info, ret, out
 
@@ -398,10 +272,10 @@ def emulate_command (command) :
     flops      = int(old_info['cpu']['cycles'] / 8 / 1024 / 1024)
     efficiency = int(old_info['cpu']['efficiency'])
     mem        = int(old_info['mem']['max']        / 1024 / 1024)
-  # io_in      = int(old_info['io']['in']) 
-  # io_out     = int(old_info['io']['out'])
-    io_in      = 0
-    io_out     = 0
+    io_in      = int(old_info['i_o']['in']) 
+    io_out     = int(old_info['i_o']['out'])
+  # io_in      = 0
+  # io_out     = 0
 
     def emulator (flops, mem, io_in, io_out) :
 
@@ -469,256 +343,6 @@ def emulate_command (command) :
     return (new_info, ret, None)
 
 
-# ------------------------------------------------------------------------------
-
-def _parse_perf_output (perf_out) :
-
-    info         = dict()
-    info['cpu']  = dict()
-    info['mem']  = dict()
-    info['net']  = dict()
-    info['sys']  = dict()
-    info['time'] = dict()
-
-    if  isinstance (perf_out, basestring) :
-        perf_out = perf_out.split ('\n')
-
-    # prepare to dig data from perf output lines
-    perf_keys  = {# "CPUs utilized"           : "utilization",
-                    "instructions"            : "ops",
-                    "branches"                : "branches",
-                    "branch-misses"           : "branch_misses",
-                    "cycles"                  : "cycles",
-                    "stalled-cycles-frontend" : "cycles_stalled_front",
-                    "stalled-cycles-backend"  : "cycles_stalled_back",
-                    "frontend cycles idle"    : "cycles_idle_front",
-                    "backend  cycles idle"    : "cycles_idle_back",
-                    "insns per cycle"         : "ops_per_cycle"}
-    ored_keys   = '|'.join(perf_keys.keys()).replace (' ', '\s')
-    perf_patstr = r"""
-        ^(?P<lead>.*?\s+)            # lead-in
-        (?P<val>[\d\.,]+)%%?         # value
-        \s+                          # skip
-        (?P<key>%s)                  # key
-        \s*                          # skip
-        (\[(?P<perc>[\d\.]+)%%\])?   # percentage (optional)
-        \s*                          # skip
-        (?P<rest>.*)$                # lead-out
-    """ % ored_keys
-    perf_pat    = re.compile (perf_patstr, re.VERBOSE)
-
-    # and go
-    for line in perf_out :
-
-        radical.synapse._logger.debug ("perf out: %s" % line)
-
-        l = ru.ReString (line)
-
-        while l // (perf_pat) :
-
-            key  = perf_keys[l.get ('key')]
-            val  =           l.get ('val')
-            perc =           l.get ('perc', '-1.0')
-
-            if  not perc :
-                perc = '-1.0'
-
-          # print " ->  %s  %s  %s" % (key, val, perc)
-
-            info['cpu']['%s'      % key] = float(val.replace  (',', ''))
-            info['cpu']['%s_perc' % key] = float(perc.replace (',', ''))
-
-          # print "rest: %s" % l.get ('rest')
-            l = ru.ReString (l.get ('rest'))
-
-        l = ru.ReString (line)
-        if  l // '^\s*User time \(.*?\):\s+([\d\.]+)\s*$' :
-            info["time"]["user"] = float(l.get ()[0].replace(',', ''))
-        if  l // '^\s*System time \(.*?\):\s+([\d\.]+)\s*$' :
-            info["time"]["system"] = float(l.get ()[0].replace(',', ''))
-        if  l // '^\s*Elapsed \(.*?\).*?\(.*?\):\s+([\d\.:]+)\s*$' :
-            info["time"]["real"] = float(time_to_seconds (l.get ()[0].replace(',', '')))
-        if  l // '^\s*Maximum resident set .*?\(.*?\):\s+([\d\.]+)\s*$' :
-            info["mem"]["max"] = int(l.get ()[0].replace(',', ''))*1024
-        if  l // '^\s*Exit status:\s+([\d\.]+)\s*$' :
-            info["sys"]["exit"] = int(l.get ()[0].replace(',', ''))
-
-
-    # must haves
-    if not 'ops'                  in info['cpu'] : info['cpu']['ops'                  ] = 1
-    if not 'peak'                 in info['mem'] : info['mem']['peak'                 ] = 0
-    if not 'max'                  in info['mem'] : info['mem']['max'                  ] = 0
-    if not 'cycles_idle_front'    in info['cpu'] : info['cpu']['cycles_idle_front'    ] = 0
-    if not 'cycles_idle_back'     in info['cpu'] : info['cpu']['cycles_idle_back'     ] = 0
-    if not 'cycles_stalled_front' in info['cpu'] : info['cpu']['cycles_stalled_front' ] = 0
-    if not 'cycles_stalled_back'  in info['cpu'] : info['cpu']['cycles_stalled_back'  ] = 0
-
-  # print "peak:"
-  # print info['mem']['peak']
-  # print info['mem']['max']
-    info['cpu']['efficiency']  = info['cpu']['ops']                       \
-                                 / ( info['cpu']['ops']                   \
-                                   + info['cpu']['cycles_stalled_front']  \
-                                   + info['cpu']['cycles_stalled_back']   \
-                                   )
-                                 
-  # print 'efficiency = %s / (%s + %s + %s) = %s' % (
-  #           info['cpu']['ops'],
-  #           info['cpu']['ops'],
-  #           info['cpu']['cycles_stalled_front'],
-  #           info['cpu']['cycles_stalled_back'],
-  #           info['cpu']['efficiency'])
-
-    # also determine the theoretical number of FLOPS, which is calculated as
-    #   FLOPS = #cores * #cycles/sec * flops/cycle
-    # where flops/cycle are assumed to be 4 (see wikipedia on FLOPS).  We assume
-    # that the watched process uses only one core, so we calculate the number
-    # for one core only, but also report the number of cores.
-    with open ("/proc/cpuinfo") as proc_cpuinfo:
-
-        cpu_freq         = 1 # in Hz
-        num_sockets      = 1
-        cores_per_socket = 1 
-        core_siblings    = 1
-        threads_per_core = 1
-        flops_per_cycle  = 4 # see wikipedia on FLOPS
-        flops_per_core   = flops_per_cycle * cpu_freq
-
-        for line in proc_cpuinfo.readlines ()  :
-
-            if  line.startswith ('model name') :
-                elems = line.split ('@')
-                if  elems[-1].endswith ('Hz\n') :
-                    cpu_freq = max(cpu_freq, human_to_number (elems[-1], prefix=PREFIX_ISO))
-
-            if  line.startswith ('cpu MHz') :
-                elems = line.split (':')
-                cpu_freq = max(cpu_freq, float(elems[-1]) * 1000*1000)
-
-            if  line.startswith ('physical id') :
-                elems = line.split (':')
-                num_sockets = max(num_sockets, int(elems[-1])+1)
-
-            if  line.startswith ('cpu cores') :
-                elems = line.split (':')
-                cores_per_socket = max(cores_per_socket, int(elems[-1]))
-
-            if  line.startswith ('siblings') :
-                elems = line.split (':')
-                core_siblings = max(core_siblings, int(elems[-1]))
-
-        threads_per_core = int(core_siblings / cores_per_socket)
-        flops_per_core   = int(cpu_freq * flops_per_cycle)
-
-  # print "cpu_freq         : %d" % cpu_freq         
-  # print "num_sockets      : %d" % num_sockets      
-  # print "cores_per_socket : %d" % cores_per_socket 
-  # print "core_siblings    : %d" % core_siblings    
-  # print "threads_per_core : %d" % threads_per_core 
-  # print "flops_per_cycle  : %d" % flops_per_cycle  
-  # print "flops_per_core   : %d" % flops_per_core   
-
-    info['cpu']['frequency'        ] = cpu_freq         
-    info['cpu']['num_sockets'      ] = num_sockets      
-    info['cpu']['cores_per_socket' ] = cores_per_socket 
-    info['cpu']['threads_per_core' ] = threads_per_core 
-    info['cpu']['flops_per_cycle'  ] = flops_per_cycle  
-    info['cpu']['flops_per_core'   ] = flops_per_core   
-
-    time_cutoff = float(1.0 / 1000 / 1000)
-    stime = info['time']['system']
-    if  float(stime) < time_cutoff :
-        stime = max(time_cutoff, info['time']['real'])
-        
-  # pprint.pprint (info)
-
-    return info
-
-
-# ------------------------------------------------------------------------------
-def store_profile (command, info) :
-
-    command_idx = index_command (command)
-
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_URL)
-
-  # print 'url       : %s' % PROFILE_URL
-  # print 'host      : %s' % host
-  # print 'port      : %s' % port
-  # print 'database  : %s' % dbname
-
-    db_client  = pymongo.MongoClient (host=host, port=port)
-    database   = db_client[dbname]
-    collection = database['profiles']
-
-    profile    = {'type'     : 'profile', 
-                  'command'  : command, 
-                  'index'    : command_idx, 
-                  'profiles' : list()}
-    results    = collection.find ({'type'  : 'profile', 
-                                   'index' : command_idx})
-
-    if  results.count() :
-        # expand existing profile
-        profile = results[0]
-
-
-    profile['profiles'].append (info)
-
-    collection.save (profile)
-  # print 'profile stored in %s' % [host, port, dbname, 'profiles']
-
-
-# ------------------------------------------------------------------------------
-def get_profile (command) :
-
-    command_idx = index_command (command)
-
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_URL)
-
-  # print 'url       : %s' % PROFILE_URL
-  # print 'host      : %s' % host
-  # print 'port      : %s' % port
-  # print 'database  : %s' % dbname
-
-    db_client  = pymongo.MongoClient (host=host, port=port)
-    database   = db_client[dbname]
-    collection = database['profiles']
-
-    results    = collection.find ({'type'    : 'profile', 
-                                   'command' : command,
-                                   'index'   : command_idx})
-
-    if  not results.count() :
-        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, PROFILE_URL))
-
-
-  # print 'profile retrieved from %s' % [host, port, dbname, 'profiles']
-  # pprint.pprint (results[0])
-    return results[0]
-
-
-# ------------------------------------------------------------------------------
-#
-def index_command (command) :
-    """remove hosts from URLs for cross-site indexing"""
-
-    ret = "%s" % command # deep copy
-
-    if  '://' in command :
-        url_idx   = command.find ('://')
-        host_idx  = command.find ('/', url_idx+3)
-      # print '----'
-      # print command
-      # print url_idx
-      # print host_idx
-      # print command[:url_idx]
-      # print command[host_idx:]
-        ret   = "%s:/%s" % (command[:url_idx], command[host_idx:])
-      # print ret
-      # print '----'
-
-    return ret
 
 
 # ------------------------------------------------------------------------------

@@ -57,7 +57,7 @@ int main (int argc, char** argv)
     fprintf (stdout, "ru.majflt        : %ld\n",     ru.ru_majflt        ); /* page faults (hard page faults) */
     fprintf (stdout, "ru.nswap         : %ld\n",     ru.ru_nswap         ); /* swaps */
     fprintf (stdout, "ru.inblock       : %ld\n",     ru.ru_inblock       ); /* block input operations */
-    fprintf (stdout, "ru.oublock       : %ld\n",     ru.ru_oublock       ); /* block output operations */
+    fprintf (stdout, "ru.outblock      : %ld\n",     ru.ru_oublock       ); /* block output operations */
     fprintf (stdout, "ru.msgsnd        : %ld\n",     ru.ru_msgsnd        ); /* IPC messages sent */
     fprintf (stdout, "ru.msgrcv        : %ld\n",     ru.ru_msgrcv        ); /* IPC messages received */
     fprintf (stdout, "ru.nsignals      : %ld\n",     ru.ru_nsignals      ); /* signals received */

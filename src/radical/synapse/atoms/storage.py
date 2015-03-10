@@ -33,15 +33,22 @@ class Storage (AtomBase) :
     @rus.returns (rus.nothing)
     def run (self, info) : 
 
-        t = "/scratch/synapse/synapse.%p.storage"
-        n = 1
+        mode  = info.get ('mode',  'w')
+        tgt   = info.get ('tgt',   None)
+        size  = info.get ('size',  1024*1024)  # 2^20
+        chunk = info.get ('chunk', 1024*1024)  # 2^20
 
-        if  'tgt' in info : t = info['tgt']
-        if  'n'   in info : n = info['n']
+        if  mode not in ['r', 'w']:
+            raise ValueError ("invalid storage mode '%s'" % mode)
 
-        tgt = t % { 'tmp' : self._tmpdir, 'pid' : self._pid }
+        if  not tgt:
+            if  mode == 'r': raise ValueError ("need input source")
+            else           : tgt = "/tmp/synapse/synapse.%(pid)s.storage"
 
-        self._run (tgt, n)
+        tgt = tgt % { 'tmp' : self._tmpdir, 
+                      'pid' : self._pid   }
+
+        self._run (mode, tgt, size, chunk)
 
 
 #-------------------------------------------------------------------------------

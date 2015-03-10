@@ -1,12 +1,7 @@
 
-__author__    = "Radical.Utils Development Team (Andre Merzky, Ole Weidner)"
+__author__    = "Radical.Utils Development Team (Andre Merzky)"
 __copyright__ = "Copyright 2013, RADICAL@Rutgers"
 __license__   = "MIT"
-
-
-import os
-
-import radical.utils.logger as rul
 
 
 
@@ -21,11 +16,6 @@ from synapse   import profile_function
 from synapse   import profile_command
 from synapse   import emulate_command
 
-from synapse   import get_mem_usage, get_io_usage
-from synapse   import human_to_number
-from synapse   import number_to_human
-from synapse   import PREFIX_ISO
-from synapse   import PREFIX_BIN
 
 
 # ------------------------------------------------------------------------------

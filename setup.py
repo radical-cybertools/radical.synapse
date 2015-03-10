@@ -160,8 +160,9 @@ setup_args = {
                             'bin/radical-synapse-mandelbrot-master.py',
                             'bin/radical-synapse-mandelbrot-worker.py',
                             'bin/radical-synapse-mandelbrot-profile.py',
-                            'bin/radical-synapse-mandelbrot-emulate.py'],
-    'package_data'       : {'': ['*.sh', '*.json', 'VERSION', 'SDIST', sdist_name]},
+                            'bin/radical-synapse-mandelbrot-emulate.py',
+                            'bin/radical-synapse-iotrace.sh'],
+    'package_data'       : {'': ['*.sh', '*.json', 'VERSION', 'SDIST', sdist_name, '*.c']},
     'cmdclass'           : {
         'test'           : our_test,
     },
