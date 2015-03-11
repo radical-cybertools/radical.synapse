@@ -1,28 +1,26 @@
 
 
-import re
 import os
 import time
-import shlex
-import signal
 import pprint
-import pymongo
 import threading
 import radical.utils   as ru
 import subprocess      as sp
 import multiprocessing as mp
 
-# import pudb 
-# pudb.set_interrupt_handler ()
-
 import watcher as rsw
 import utils   as rsu
 import atoms   as rsa
 
+# import pudb 
+# pudb.set_interrupt_handler ()
 
-LOAD        = int (os.environ.get ('LOAD', '0'))
-LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
-LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
+
+# ------------------------------------------------------------------------------
+#
+_LOAD     = int (os.environ.get ('LOAD', '0'))
+_LOAD_CMD = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
+_LOAD_CMD = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
 
 
 # ------------------------------------------------------------------------------
@@ -42,14 +40,14 @@ def profile_function (func, *args, **kwargs) :
 
         # start stress, get it spinning for one min to et a confirmed load
         # measurement, then run our own load, then kill stress.
-        if  LOAD > 0 :
-            rsu.logger.info ("creating system load %d" % LOAD)
+        if  _LOAD > 0 :
+            rsu.logger.info ("creating system load %d" % _LOAD)
             os.popen ("killall -9 stress 2>&1 > /dev/null")
-            os.popen ('stress --cpu %d &' % LOAD)
+            os.popen ('stress --cpu %d &' % _LOAD)
             time.sleep (60)
 
-        rsu.logger.info ("system load cmd: %s" % (LOAD_CMD))
-        load_1  = float(os.popen (LOAD_CMD).read())
+        rsu.logger.info ("system load cmd: %s" % (_LOAD_CMD))
+        load_1  = float(os.popen (_LOAD_CMD).read())
         time_1  = rsu.timestamp()
 
         # do the deed
@@ -72,16 +70,16 @@ def profile_function (func, *args, **kwargs) :
             info['mem'][key] = human_to_number (end_mem['mem'][key])
 
         time_2 = rsu.timestamp()
-        load_2 = float(os.popen (LOAD_CMD).read())
+        load_2 = float(os.popen (_LOAD_CMD).read())
         info['cpu']['load'] = max(load_1, load_2)
-        rsu.logger.info ("system load %s: %s" % (LOAD, info['cpu']['load']))
-        rsu.logger.info ("app mem     %s: %s" % (LOAD, info['mem']))
+        rsu.logger.info ("system load %s: %s" % (_LOAD, info['cpu']['load']))
+        rsu.logger.info ("app mem     %s: %s" % (_LOAD, info['mem']))
 
         info['time']['start'] = rsu.time_zero()
         info['time']['real']  = time_2 - time_1
 
 
-        if  LOAD > 0 :
+        if  _LOAD > 0 :
             rsu.logger.info ("stopping system load")
             os.popen ("killall -9 stress 2>&1 > /dev/null")
             rsu.logger.info ("stopped  system load")
@@ -170,26 +168,27 @@ def profile_function (func, *args, **kwargs) :
 #
 def profile_command (command) :
 
-    info = dict()
 
     if isinstance (command, list):
         command = ' '.join (command)
+
+    info = {'cmd' : command}
 
     print "profile: %s" % command
 
     # start stress, get it spinning for one min to et a confirmed load
     # measurement, then run our own load, then kill stress.
-    if  LOAD > 0 :
-        rsu.logger.info ("creating system load %s" % LOAD)
+    if  _LOAD > 0 :
+        rsu.logger.info ("creating system load %s" % _LOAD)
         os.popen ("killall -9 stress 2>&1 > /dev/null")
-        os.popen ('stress --cpu %s &' % LOAD)
+        os.popen ('stress --cpu %s &' % _LOAD)
         time.sleep (60)
 
     time_1 = rsu.timestamp()
-    load_1 = float(os.popen (LOAD_CMD).read())
+    load_1 = float(os.popen (_LOAD_CMD).read())
 
   # pprint.pprint (info)
-  # rsu.logger.info ("creating system load %s: %s" % (LOAD, info['cpu']['load']))
+  # rsu.logger.info ("creating system load %s: %s" % (_LOAD, info['cpu']['load']))
 
   # # perf stat does not report pid -- so we do it... :/
   # command = "/bin/sh -c '%s & pid=$!; wait $pid; echo \"	PID: $pid\"'" % command
@@ -230,11 +229,11 @@ def profile_command (command) :
 
 
     time_2 = rsu.timestamp()
-    load_2 = float(os.popen (LOAD_CMD).read())
+    load_2 = float(os.popen (_LOAD_CMD).read())
     info['cpu']['load'] = max(load_1, load_2)
-    rsu.logger.info ("system load %s: %s" % (LOAD, info['cpu']['load']))
+    rsu.logger.info ("system load %s: %s" % (_LOAD, info['cpu']['load']))
 
-    if  LOAD > 0 :
+    if  _LOAD > 0 :
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")

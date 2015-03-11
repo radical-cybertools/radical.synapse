@@ -12,9 +12,9 @@ import radical.utils.logger as rul
 # pudb.set_interrupt_handler ()
 
 
-SYNAPSE_DBURL = os.environ.get ('SYNAPSE_DBURL', 'mongodb://localhost:27017/synapse_v0_5')
+_DEFAULT_DBURL = 'mongodb://localhost:27017/synapse_v0_5'
+PROFILE_DBURL  = os.environ.get ('SYNAPSE_DBURL', _DEFAULT_DBURL)
 
-PROFILE_URL = '%s/synapse_profiles/' % SYNAPSE_DBURL
 LOAD        = int (os.environ.get ('LOAD', '0'))
 LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
 LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
@@ -118,11 +118,14 @@ def time_to_seconds (t) :
 # ------------------------------------------------------------------------------
 def store_profile (command, info) :
 
+    # FIXME: this should probably use find_and_modify.  Also, the index should
+    # be a MongoDB index (to ensure uniqueness)
+
     command_idx = index_command (command)
 
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_URL)
+    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_DBURL)
 
-  # print 'url       : %s' % PROFILE_URL
+  # print 'url       : %s' % PROFILE_DBURL
   # print 'host      : %s' % host
   # print 'port      : %s' % port
   # print 'database  : %s' % dbname
@@ -131,16 +134,17 @@ def store_profile (command, info) :
     database   = db_client[dbname]
     collection = database['profiles']
 
-    profile    = {'type'     : 'profile', 
-                  'command'  : command, 
-                  'index'    : command_idx, 
-                  'profiles' : list()}
-    results    = collection.find ({'type'  : 'profile', 
-                                   'index' : command_idx})
+    results    = collection.find ({'type'        : 'profile', 
+                                   'command_idx' : command_idx})
 
     if  results.count() :
         # expand existing profile
         profile = results[0]
+    else:
+        # create new profile
+        profile = {'type'        : 'profile', 
+                   'command_idx' : command_idx, 
+                   'profiles'    : list()}
 
 
     profile['profiles'].append (info)
@@ -154,9 +158,9 @@ def get_profile (command) :
 
     command_idx = index_command (command)
 
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_URL)
+    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_DBURL)
 
-  # print 'url       : %s' % PROFILE_URL
+  # print 'url       : %s' % PROFILE_DBURL
   # print 'host      : %s' % host
   # print 'port      : %s' % port
   # print 'database  : %s' % dbname
@@ -170,7 +174,7 @@ def get_profile (command) :
                                    'index'   : command_idx})
 
     if  not results.count() :
-        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, PROFILE_URL))
+        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, PROFILE_DBURL))
 
 
   # print 'profile retrieved from %s' % [host, port, dbname, 'profiles']
@@ -181,24 +185,20 @@ def get_profile (command) :
 # ------------------------------------------------------------------------------
 #
 def index_command (command) :
-    """remove hosts from URLs for cross-site indexing"""
 
-    ret = "%s" % command # deep copy
+    # for now, only index by executable name.  We assume that this is the first
+    # element of the command -- but if that is a known interpreter, we use the
+    # second element (assuming it is a script name)
+    elems = command.split()
 
-    if  '://' in command :
-        url_idx   = command.find ('://')
-        host_idx  = command.find ('/', url_idx+3)
-      # print '----'
-      # print command
-      # print url_idx
-      # print host_idx
-      # print command[:url_idx]
-      # print command[host_idx:]
-        ret   = "%s:/%s" % (command[:url_idx], command[host_idx:])
-      # print ret
-      # print '----'
+    if elems[0] in ['python', 'sh', 'bash', '/bin/sh', 'time'] :
+        # return the first element which is not an option
+        for elem in elems[1:] :
+            if not elem.startswith ('-') :
+                return elem
 
-    return ret
+    # all others, index by first element
+    return elems[0]
 
 
 # ------------------------------------------------------------------------------

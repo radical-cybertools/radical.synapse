@@ -9,6 +9,7 @@ import threading
 
 from ..utils import timestamp
 
+_SAMPLE_RATE = 0.1
 
 # ------------------------------------------------------------------------------
 #
@@ -52,7 +53,7 @@ class WatcherBase (threading.Thread) :
         while not self._terminate.is_set():
 
             self._sample(now)
-            time.sleep (1)
+            time.sleep (_SAMPLE_RATE)
 
         self._post_process()
 
