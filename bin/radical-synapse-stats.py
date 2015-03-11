@@ -43,6 +43,27 @@ def bson2json (bson_data) :
 
 
 
+# ------------------------------------------------------------------------------
+#
+def get_json (db, dbname, cachedir) :
+
+    records = db.collection_names()
+    ret     = None
+
+    if records:
+        for record in records :
+            ret = bson2json (list(db[record].find ()))
+    else:
+        print 'WARNING: given DB is empty -- try cache'
+        fname = '%s/%s.json' % (cachedir, dbname)
+        try:
+            ret = ru.read_json_str('%s/%s.json' % (cachedir, dbname))
+        except Exception as e:
+            print 'ERROR  : no cache found at %s (%s)' % (fname, e)
+            sys.exit (-1)
+
+    return ret
+
 
 # ------------------------------------------------------------------------------
 #
@@ -272,19 +293,16 @@ def get_stats (docs, events, slothist) :
 
     
 # ------------------------------------------------------------------------------
-def stat_database (mongo, db, dbname, cachedir) :
+def stat_database (db_json) :
 
     print
 
-    records = db.collection_names()
+    for doc in db_json :
 
-    for record in records :
-        docs = db[record].find()
-
-    for doc in docs :
         print "index: %s" % doc['command_idx']
 
         for profile in doc['profiles'] :
+            print profile.keys()
             print "  command: %s" % profile['cmd']
             print "  time   : %s" % profile['time']['real']
             print "  cpu    : %s" % len(profile['cpu']['sequence'])
@@ -294,51 +312,82 @@ def stat_database (mongo, db, dbname, cachedir) :
             print "  mem: %s" % mem['peak']
             print "# %15s  %15s  %15s" % ('time', 'size', 'rss')
             for s in mem['sequence']:
+                if not s[1]: 
+                    continue
                 print '  %15s  %15s  %15s' % (s[0], s[1]['size'], s[1]['rss'])
 
 
 # ------------------------------------------------------------------------------
-def plot_database (mongo, db, dbname, cachedir, term) :
+def plot_database (db_json, dbname, filters, term) :
     """
     plot results :P
     """
 
     print
 
-    records = db.collection_names()
+    dat_mem = open("/tmp/rs.%s.mem.dat" % dbname, 'w')
+    dat_io  = open("/tmp/rs.%s.io.dat"  % dbname, 'w')
+    dat_cpu = open("/tmp/rs.%s.cpu.dat" % dbname, 'w')
 
-    for record in records :
-        docs = db[record].find()
-
-    for doc in docs :
+    for doc in db_json :
         print "index: %s" % doc['command_idx']
 
         for profile in doc['profiles'] :
 
-            perf = profile['time']
-            mem  = profile['mem']
-            cpu  = profile['cpu']
-            io   = profile['i_o']
+            perf = profile.get ('time')
+            mem  = profile.get ('mem')
+            cpu  = profile.get ('cpu')
+            io   = profile.get ('i_o')
+            cmd  = profile.get ('cmd')
 
-            print "  command: %s" % profile['cmd']
-            print "  time   : %s" % profile['time']['real']
-            print "  cpu    : %s" % len(profile['cpu']['sequence'])
-            print "  io     : %s" % len(profile['i_o']['sequence'])
-            print "  mem    : %s" % mem['peak']
 
-            dat = open("/tmp/rs.%s.mem.dat" % dbname, "w")
-            dat.write("# %15s  %15s  %15s\n" % ('time', 'size', 'rss'))
-            for s in mem['sequence']:
-                dat.write('  %15s  %15s  %15s\n' 
-                         % (s[0], s[1]['size'], s[1]['rss']))
-            dat.close()
+            accept = False
 
-            dat = open("/tmp/rs.%s.io.dat" % dbname, "w")
-            dat.write("# %15s  %15s  %15s\n" % ('time', 'read', 'write'))
-            for s in io['sequence']:
-                dat.write('  %15s  %15s  %15s\n' 
-                         % (s[0], s[1]['read'], s[1]['write']))
-            dat.close()
+            if not filters:
+                accept = True
+            else:
+                for f in filters :
+                    if f in cmd:
+                        accept = True
+
+            if not accept:
+              # print "ignore %s" % cmd
+                continue
+
+          # print "  command: %s" % cmd
+          # print "  time   : %s" % perf['real']
+            print "%s %s" % (perf['real'], cmd)
+
+            if mem:
+                dat_mem.write("# %15s  %15s  %15s\n" % ('time', 'size', 'rss'))
+                for s in mem['sequence']:
+                    if not s or not s[1]:
+                        continue
+                    dat_mem.write('  %15s  %15s  %15s\n' 
+                             % (s[0], s[1]['size'], s[1]['rss']))
+                dat_mem.write("\n")
+
+            if io:
+                dat_io.write("# %15s  %15s  %15s\n" % ('time', 'read', 'write'))
+                for s in io['sequence']:
+                    if not s or not s[1]:
+                        continue
+                    dat_io.write('  %15s  %15s  %15s\n' 
+                             % (s[0], s[1]['read'], s[1]['write']))
+                dat_io.write("\n")
+
+            if cpu:
+                dat_cpu.write("# %15s  %15s  %15s\n" % ('time', 'read', 'write'))
+                for s in cpu['sequence']:
+                    if not s or not s[1]:
+                        continue
+                    dat_cpu.write('  %15s  %15s\n' 
+                             % (s[0], s[1]['threads']))
+                dat_cpu.write("\n")
+
+    dat_mem.close()
+    dat_io .close()
+    dat_cpu.close()
 
     sys.exit()
 
@@ -863,6 +912,7 @@ if __name__ == '__main__' :
     parser.add_option('-c', '--cachedir',  dest='cachedir')
     parser.add_option('-t', '--terminal',  dest='term')
     parser.add_option('-h', '--help',      dest='help', action="store_true")
+    parser.add_option('-f', '--filter',    dest='filters')
 
     options, args = parser.parse_args ()
 
@@ -887,7 +937,11 @@ if __name__ == '__main__' :
     dbname   = options.dbname
     term     = options.term
     cachedir = options.cachedir
+    filters  = options.filters
 
+    if  not filters:
+        filters = ''
+    filters = filters.split(',')
 
     if  not term :
         term = "pdf,png"
@@ -900,12 +954,13 @@ if __name__ == '__main__' :
 
     url = ru.Url (options.url)
 
+    mongo, db, dbname, cname, pname = ru.mongodb_connect (str(url), url)
+
     print "modes   : %s" % mode
     print "db url  : %s" % url
+    print "db name : %s" % dbname
     print "cachedir: %s" % cachedir
-    mongo, db, _, cname, pname = ru.mongodb_connect (str(url), url)
-
-    print dbname
+    print "filter  : %s" % filters
 
 
     for m in mode.split (',') :
@@ -913,15 +968,22 @@ if __name__ == '__main__' :
         if  m not in ['list', 'dump', 'tree', 'hist', 'sort', 'stat', 'plot', 'help'] : 
             usage ("Unsupported mode '%s'" % m)
 
-        if   m == 'list' : list_databases (mongo, db, dbname, cachedir)
-        elif m == 'tree' : tree_database  (mongo, db, dbname, cachedir) 
-        elif m == 'dump' : dump_database  (mongo, db, dbname, cachedir)
-        elif m == 'sort' : sort_database  (mongo, db, dbname, cachedir)
-        elif m == 'hist' : hist_database  (mongo, db, dbname, cachedir)
-        elif m == 'stat' : stat_database  (mongo, db, dbname, cachedir)
-        elif m == 'plot' : plot_database  (mongo, db, dbname, cachedir, term)
-        elif m == 'help' : usage (noexit=True)
-        else             : usage ("unknown mode '%s'" % mode)
+        if  m in ['list']:
+            # that is the only mode which does not need any db content
+            list_databases (mongo, db, dbname, cachedir)
+
+        else:
+            import json
+            db_json = get_json (db, dbname, cachedir)
+
+            if   m == 'tree' : tree_database  (db_json, dbname, filters) 
+            elif m == 'dump' : dump_database  (db_json, dbname, filters)
+            elif m == 'sort' : sort_database  (db_json, dbname, filters)
+            elif m == 'hist' : hist_database  (db_json, dbname, filters)
+            elif m == 'stat' : stat_database  (db_json, dbname, filters)
+            elif m == 'plot' : plot_database  (db_json, dbname, filters, term)
+            elif m == 'help' : usage (noexit=True)
+            else             : usage ("unknown mode '%s'" % mode)
 
     # ------------------------------------------------------------------------------------
     mongo.disconnect ()
