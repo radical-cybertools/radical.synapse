@@ -48,10 +48,10 @@ class WatcherBase (threading.Thread) :
     def run (self) :
 
         self._pre_process()
-        now = timestamp()
 
         while not self._terminate.is_set():
 
+            now = timestamp()
             self._sample(now)
             time.sleep (_SAMPLE_RATE)
 
