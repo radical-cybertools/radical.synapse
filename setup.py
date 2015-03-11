@@ -64,21 +64,32 @@ def get_version (mod_root):
             'fatal'        in version_detail :
             version_detail =  'v%s' % version
 
-        print 'version: %s (%s)'  % (version, version_detail)
+        print 'version: %s (%s)' % (version, version_detail)
 
 
         # make sure the version files exist for the runtime version inspection
         path = '%s/%s' % (src_root, mod_root)
         print 'creating %s/VERSION' % path
+        with open (path + "/VERSION", "w") as f : f.write (version_detail + "\n")
 
-        sdist_name = "%s-%s.tar.gz" % (name, version)
+        sdist_name = "%s-%s.tar.gz" % (name, version_detail)
+        sdist_name = sdist_name.replace ('/', '-')
+        sdist_name = sdist_name.replace ('@', '-')
+        sdist_name = sdist_name.replace ('#', '-')
         if '--record'  in sys.argv or 'bdist_egg' in sys.argv :   
            # pip install stage 2      easy_install stage 1
-            os.system ("python setup.py sdist")
-            os.system ("cp 'dist/%s' '%s/%s'" % (sdist_name, mod_root, sdist_name))
+           # NOTE: pip install will untar the sdist in a tmp tree.  In that tmp
+           # tree, we won't be able to derive git version tags -- so we pack the
+           # formerly derived version as ./VERSION
+            os.system ("mv VERSION VERSION.bak")        # backup version
+            os.system ("cp %s/VERSION VERSION" % path)  # use full version instead
+            os.system ("python setup.py sdist")         # build sdist
+            os.system ("cp 'dist/%s' '%s/%s'" % \
+                    (sdist_name, mod_root, sdist_name)) # copy into tree
+            os.system ("mv VERSION.bak VERSION")        # restore version
 
-        with open (path + "/SDIST",       "w") as f : f.write (sdist_name     + "\n")
-        with open (path + "/VERSION",     "w") as f : f.write (version_detail + "\n")
+        print 'creating %s/SDIST' % path
+        with open (path + "/SDIST", "w") as f : f.write (sdist_name + "\n")
 
         return version, version_detail, sdist_name
 
@@ -155,14 +166,16 @@ setup_args = {
     'package_dir'        : {'': 'src'},
     'scripts'            : ['bin/radical-synapse-version.py',
                             'bin/radical-synapse-profile.py',
+                            'bin/radical-synapse-stats.py',
                             'bin/radical-synapse-emulate.py',
                             'bin/radical-synapse-mandelbrot-dummy.py',
                             'bin/radical-synapse-mandelbrot-master.py',
                             'bin/radical-synapse-mandelbrot-worker.py',
                             'bin/radical-synapse-mandelbrot-profile.py',
                             'bin/radical-synapse-mandelbrot-emulate.py',
-                            'bin/radical-synapse-iotrace.sh'],
-    'package_data'       : {'': ['*.sh', '*.json', 'VERSION', 'SDIST', sdist_name, '*.c']},
+                            'bin/radical-synapse-iotrace.sh'
+                           ],
+    'package_data'       : {'': ['*.sh', '*.json', '*.gz', 'VERSION', 'SDIST', sdist_name, '*.c']},
     'cmdclass'           : {
         'test'           : our_test,
     },

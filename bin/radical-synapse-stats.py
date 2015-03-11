@@ -16,6 +16,7 @@ _DEFAULT_DBURL = 'mongodb://localhost:27017/synapse_montage_01'
 if  'RADICAL_SYNAPSE_DBURL' in os.environ :
     _DEFAULT_DBURL = os.environ['RADICAL_SYNAPSE_DBURL']
 
+
 _DEFAULT_DBURL = str(ru.Url(_DEFAULT_DBURL))
 
 
@@ -99,7 +100,7 @@ def list_databases (mongo, db, dbname, cachedir) :
         print 'no databases at %s' % mongo
 
     else :
-        print "Database records:"
+        print "Databases:"
         for dbname in dbnames :
             if dbname not in ['local'] :
                 print "  %s" % dbname
@@ -761,7 +762,9 @@ def handle_coll (mongo, db, mode, cname, pname) :
         name = doc['_id']
 
         if  mode == 'list' and not pname :
-            print " | | +-- doc  %s" % name
+            print " | | +-- doc  %s  [%3s] [%s] " \
+                    % (name, len(doc['profiles'][0]['mem']['sequence']), 
+                       doc['command_idx'])
 
         elif  mode == 'remove' :
             if (not pname) or (str(name)==str(pname)) :
@@ -791,6 +794,10 @@ def handle_doc (collection, mode, doc) :
 
     elif  mode == 'tree' :
         print " | | +-- doc  %s" % (name)
+        pprint.pprint (doc)
+        print " | | +-- doc  %s  [%3s] [%s] " \
+                % (name, len(doc['profiles'][0]['mem']['sequences']), 
+                   doc['command_idx'])
         for key in doc :
             print " | | | +-- %s" % (key)
 
@@ -843,16 +850,8 @@ if __name__ == '__main__' :
     if  not options.mode :
         usage ("No mode specified")
 
-    if  options.url : 
-        default_dburl = options.url
-    else :
-        if  'RADICAL_PILOT_DBURL' in os.environ : 
-            default_dburl = os.environ['RADICAL_PILOT_DBURL']
-        else :
-            default_dburl = _DEFAULT_DBURL 
-
-    if  not options.url :
-        options.url = default_dburl
+    if  not options.url : 
+        options.url = _DEFAULT_DBURL
 
 
     mode     = options.mode 
@@ -876,7 +875,9 @@ if __name__ == '__main__' :
     print "modes   : %s" % mode
     print "db url  : %s" % url
     print "cachedir: %s" % cachedir
-    mongo, db, dbname, cname, pname = ru.mongodb_connect (str(url), default_dburl)
+    mongo, db, _, cname, pname = ru.mongodb_connect (str(url), url)
+
+    print dbname
 
 
     for m in mode.split (',') :
