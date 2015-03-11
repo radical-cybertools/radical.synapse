@@ -19,6 +19,30 @@ if  'RADICAL_SYNAPSE_DBURL' in os.environ :
 
 _DEFAULT_DBURL = str(ru.Url(_DEFAULT_DBURL))
 
+# ------------------------------------------------------------------------------
+#
+def bson2json (bson_data) :
+
+    # thanks to
+    # http://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
+
+    import json
+    from   bson.objectid import ObjectId
+
+    class MyJSONEncoder (json.JSONEncoder) :
+        def default (self, o):
+            if  isinstance (o, ObjectId) :
+                return str (o)
+            if  isinstance (o, datetime.datetime) :
+                seconds  = time.mktime (o.timetuple ())
+                seconds += (o.microsecond / 1000000.0) 
+                return seconds
+            return json.JSONEncoder.default (self, o)
+
+    return ru.parse_json (MyJSONEncoder ().encode (bson_data))
+
+
+
 
 # ------------------------------------------------------------------------------
 #
@@ -726,20 +750,24 @@ def handle_database (mongo, db, mode, dbname, cachedir, pname) :
 
     cnames = db.collection_names()
 
-    for name in cnames :
+    for cname in cnames :
+
+        with open('./coll_%s.json' % cname, 'w') as dat:
+            json = bson2json (list(db[cname].find ()))
+            dat.write (pprint.pformat(json))
 
         if  mode == 'list' and not cname :
-            print " | +-- coll %s" % name
+            print " | +-- coll %s" % cname
 
         elif  mode == 'remove' and not pname :
             try :
-                db.drop_collection (name)
-                print "  removed collection %s" % name
+                db.drop_collection (cname)
+                print "  removed collection %s" % cname
             except :
                 pass # ignore errors
 
         else :
-            handle_coll (mongo, db, mode, name, pname)
+            handle_coll (mongo, db, mode, cname, pname)
 
 
 
