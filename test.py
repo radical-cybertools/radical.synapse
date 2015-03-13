@@ -6,20 +6,20 @@ import time
 
 from   pprint import pprint
 
-import synapse
-import synapse.atoms as sa
-import synapse.utils as su
+import radical.synapse       as rs
+import radical.synapse.atoms as sa
 
 def sleep (delay) :
     time.sleep (delay)
 
-command = synapse.synapsify ('sleep 10', synapse.NOTHING)
-command = synapse.synapsify ('sleep 10', synapse.PROFILE)
-command = synapse.synapsify ('sleep 10', synapse.EMULATE)
+command = rs.synapsify ('sleep 10', rs.NOTHING)
+command = rs.synapsify ('sleep 10', rs.PROFILE)
+command = rs.synapsify ('sleep 10', rs.EMULATE)
 
-info, ret, out = su.profile_function (sleep, 10 ); pprint (info)
-info, ret, out = su.profile_command  ('sleep 10'); pprint (info)
-info, ret, out = su.emulate_command  ('sleep 10'); pprint (info)
+info, ret, out = rs.profile_function (sleep, 1 ); pprint (info)
+info, ret, out = rs.profile_command  ('python '); pprint (info)
+info, ret, out = rs.profile_command  ('sleep 10'); pprint (info)
+info, ret, out = rs.emulate_command  ('sleep 10'); pprint (info)
 
 sys.exit (0)
 
@@ -118,12 +118,12 @@ with open ('%s/synapse/experiments/%s.dat' % (home, host), 'a') as f :
              (host, load_id, time.time() - start, 
              load_instances, load_compute, load_memory, load_storage)
 
-#   print output
+    print output
     f.write ("%s\n" % output)
 
-    time.sleep (10)
+#   time.sleep (10)
     _ = os.popen ('ps -ef | grep -i "/tmp/synapse/" | grep -v grep | cut -c 8-15 | xargs -r kill -9')
 
-#   print su.get_mem_usage ()
-#   print su.get_io_usage  ()
+    print rs.get_mem_usage ()
+    print rs.get_io_usage  ()
 

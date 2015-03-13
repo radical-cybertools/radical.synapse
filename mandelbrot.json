@@ -1,0 +1,18 @@
+
+{
+  "type"           : "application_instance",
+  "name"           : "mandelbrot",
+  "id"             : "mb_123",
+  "components"     : 
+  [
+    { 
+      "id"         : "workers",
+      "type"       : ["task", "concurrent"], 
+      "card"       : 10,
+      "exe"        : "mb_worker",
+      "args"       : "--app_id=my_mb_123",
+      "conditions" : "mem:8192",
+    }
+  ],
+}
+
