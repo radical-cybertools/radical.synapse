@@ -9,9 +9,7 @@ import radical.pilot       as rp
 import radical.pilot.utils as rpu
 
 
-_DEFAULT_DBURL = 'mongodb://user:password@localhost:27017/radicalpilot/'
-_DEFAULT_DBURL = 'mongodb://user:password@ec2-184-72-89-141.compute-1.amazonaws.com:27017/radicalpilot/'
-_DEFAULT_DBURL = 'mongodb://localhost:27017/synapse_montage_01'
+_DEFAULT_DBURL = 'mongodb://localhost:27017/'
 
 if  'RADICAL_SYNAPSE_DBURL' in os.environ :
     _DEFAULT_DBURL = os.environ['RADICAL_SYNAPSE_DBURL']
@@ -325,20 +323,40 @@ def plot_database (db_json, dbname, filters, term) :
 
     print
 
+    print "/tmp/rs.%s.mem.dat" % dbname
+    print "/tmp/rs.%s.io.dat"  % dbname
+    print "/tmp/rs.%s.cpu.dat" % dbname
+
     dat_mem = open("/tmp/rs.%s.mem.dat" % dbname, 'w')
     dat_io  = open("/tmp/rs.%s.io.dat"  % dbname, 'w')
     dat_cpu = open("/tmp/rs.%s.cpu.dat" % dbname, 'w')
 
-    for doc in db_json :
-        print "index: %s" % doc['command_idx']
+    dat_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  (%s)\n" 
+            % ('id', 'threads', 'flops', 'efficiency', 'utilization', 'runtime', 
+                'read_total', 'write_total', 'mem_total', 'rss_total', 'load', ''))
 
-        for profile in doc['profiles'] :
+    for doc in db_json :
+
+        idx = doc['command_idx']
+        print "\nindex: %s" % idx
+
+        profile_id=0
+
+        for profile in sorted(doc['profiles'], key=lambda x:x['time']['real']):
+      # for profile in doc['profiles'] :
+
+            profile_id += 1
 
             perf = profile.get ('time')
             mem  = profile.get ('mem')
             cpu  = profile.get ('cpu')
             io   = profile.get ('i_o')
             cmd  = profile.get ('cmd')
+
+            read_total  = 0
+            write_total = 0
+            mem__total  = 0
+            rss_total   = 0
 
 
             accept = False
@@ -356,38 +374,61 @@ def plot_database (db_json, dbname, filters, term) :
 
           # print "  command: %s" % cmd
           # print "  time   : %s" % perf['real']
-            print "%s %s" % (perf['real'], cmd)
+          # print "%s %s" % (perf['real'], cmd)
 
             if mem:
-                dat_mem.write("# %15s  %15s  %15s\n" % ('time', 'size', 'rss'))
+                dat_mem.write("# %15s  %15s  %15s (%s)\n" % ('time', 'size', 'rss', idx))
                 for s in mem['sequence']:
                     if not s or not s[1]:
                         continue
+                    print 'm',
                     dat_mem.write('  %15s  %15s  %15s\n' 
                              % (s[0], s[1]['size'], s[1]['rss']))
+                    mem_total  = max(read_total,s[1]['size'])
+                    rss_total = max(write_total,s[1]['rss'])
                 dat_mem.write("\n")
 
             if io:
-                dat_io.write("# %15s  %15s  %15s\n" % ('time', 'read', 'write'))
+                dat_io.write("# %15s  %15s  %15s (%s)\n" % ('time', 'read', 'write', idx))
                 for s in io['sequence']:
                     if not s or not s[1]:
                         continue
+                    print 'i',
                     dat_io.write('  %15s  %15s  %15s\n' 
-                             % (s[0], s[1]['read'], s[1]['write']))
+                             % (s[0], s[1]['read']/1024, s[1]['write']/1024))
+
+                    read_total  = max(read_total,s[1]['read'])
+                    write_total = max(write_total,s[1]['write'])
                 dat_io.write("\n")
 
             if cpu:
-                dat_cpu.write("# %15s  %15s  %15s\n" % ('time', 'read', 'write'))
-                for s in cpu['sequence']:
-                    if not s or not s[1]:
-                        continue
-                    dat_cpu.write('  %15s  %15s\n' 
-                             % (s[0], s[1]['threads']))
-                dat_cpu.write("\n")
+              # dat_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s (%s)\n" 
+              #         % ('id', 'threads', 'flops', 'efficiency', 'utilization', 'runtime', idx))
+                flops   = int(cpu['ops'] / perf['real'])
+                effic   = float(cpu['efficiency'])
+                utili   = float(cpu['utilization'])
+                threads = cpu['sequence'][0][1]['threads']
+                real    = perf['real']
+                load    = cpu['load']*100
+
+              # FIXME:
+              # for s in cpu['sequence']:
+              #     if not s or not s[1]:
+              #         continue
+              #     print 'c',
+              #     dat_cpu.write('  %15s  %15s  %15d  %15.2f  %15.2f\n' 
+              #              % (s[0], s[1]['threads'], flops, effic, utili))
+                if utili > 0.0:
+                    dat_cpu.write('  %15d  %15s  %15d  %15.2f  %15.2f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f\n' 
+                            % (profile_id, threads, flops, effic, utili, real, 
+                                read_total, write_total, mem_total, rss_total,
+                                load))
+             #  dat_cpu.write("\n")
 
     dat_mem.close()
     dat_io .close()
     dat_cpu.close()
+    print
 
     sys.exit()
 
