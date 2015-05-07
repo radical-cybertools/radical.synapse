@@ -2,6 +2,7 @@
 
 import os
 import sys
+import numpy
 import pprint
 import pymongo
 import radical.utils       as ru
@@ -331,16 +332,28 @@ def plot_database (db_json, dbname, filters, term) :
     dat_io  = open("/tmp/rs.%s.io.dat"  % dbname, 'w')
     dat_cpu = open("/tmp/rs.%s.cpu.dat" % dbname, 'w')
 
-    dat_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  (%s)\n" 
-            % ('id', 'threads', 'flops', 'efficiency', 'utilization', 'runtime', 
-                'read_total', 'write_total', 'mem_total', 'rss_total', 'load', ''))
+    dat_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  (%s)\n" 
+            % ('id', 'threads', 'ops', 'efficiency', 'utilization', 'runtime', 
+                'read_total', 'write_total', 'mem_total', 'rss_total', 'load',
+                'fpc', ''))
+
+    stats = dict()
 
     for doc in db_json :
 
-        idx = doc['command_idx']
-        print "\nindex: %s" % idx
 
-        profile_id=0
+        idx        = doc['command_idx']
+        profile_id = 0
+
+      # print "\nindex: %s" % idx
+
+        if idx not in stats:
+            stats[idx] = dict()
+            stats[idx]['utili']    = list()
+            stats[idx]['effic']    = list()
+            stats[idx]['ops']      = list()
+            stats[idx]['flops']    = list()
+            stats[idx]['runtimes'] = list()
 
         for profile in sorted(doc['profiles'], key=lambda x:x['time']['real']):
       # for profile in doc['profiles'] :
@@ -381,7 +394,7 @@ def plot_database (db_json, dbname, filters, term) :
                 for s in mem['sequence']:
                     if not s or not s[1]:
                         continue
-                    print 'm',
+                  # print 'm',
                     dat_mem.write('  %15s  %15s  %15s\n' 
                              % (s[0], s[1]['size'], s[1]['rss']))
                     mem_total  = max(read_total,s[1]['size'])
@@ -393,7 +406,7 @@ def plot_database (db_json, dbname, filters, term) :
                 for s in io['sequence']:
                     if not s or not s[1]:
                         continue
-                    print 'i',
+                  # print 'i',
                     dat_io.write('  %15s  %15s  %15s\n' 
                              % (s[0], s[1]['read']/1024, s[1]['write']/1024))
 
@@ -402,14 +415,29 @@ def plot_database (db_json, dbname, filters, term) :
                 dat_io.write("\n")
 
             if cpu:
+
               # dat_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s (%s)\n" 
-              #         % ('id', 'threads', 'flops', 'efficiency', 'utilization', 'runtime', idx))
+              #         % ('id', 'threads', 'ops', 'efficiency', 'utilization', 'runtime', idx))
                 flops   = int(cpu['ops'] / perf['real'])
+                ops     = int(cpu['ops'])
                 effic   = float(cpu['efficiency'])
                 utili   = float(cpu['utilization'])
-                threads = cpu['sequence'][0][1]['threads']
                 real    = perf['real']
                 load    = cpu['load']*100
+                fpc     = cpu['flops_per_core']
+                fpc     = 13600000000/4/4
+
+                stats[idx]['ops']     .append (ops)
+                stats[idx]['utili']   .append (utili)
+                stats[idx]['effic']   .append (effic)
+                stats[idx]['flops']   .append (flops)
+                stats[idx]['runtimes'].append (real)
+
+                if cpu['sequence']:
+                    threads = cpu['sequence'][0][1]['threads']
+                else:
+                    threads = 1
+
 
               # FIXME:
               # for s in cpu['sequence']:
@@ -419,16 +447,62 @@ def plot_database (db_json, dbname, filters, term) :
               #     dat_cpu.write('  %15s  %15s  %15d  %15.2f  %15.2f\n' 
               #              % (s[0], s[1]['threads'], flops, effic, utili))
                 if utili > 0.0:
-                    dat_cpu.write('  %15d  %15s  %15d  %15.2f  %15.2f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f\n' 
-                            % (profile_id, threads, flops, effic, utili, real, 
+                    dat_cpu.write('  %15d  %15s  %15d  %15.2f  %15.2f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f\n' 
+                            % (profile_id, threads, ops, effic, utili, real, 
                                 read_total, write_total, mem_total, rss_total,
-                                load))
-             #  dat_cpu.write("\n")
-
+                                load, fpc))
+              # dat_cpu.write("\n")
+             
     dat_mem.close()
     dat_io .close()
     dat_cpu.close()
-    print
+  # print
+
+    print " |  %15s  |  %10s  |  %10s  |  %10s  |  %15s  |  %15s  |  %15s  |  %15s  |" % \
+            ('name', '#tasks', 'rtime (s)', 'stdev', 'flops', 'stdev', 'ops', 'stdev')
+    for idx, stat in stats.iteritems():
+
+        tmp   = numpy.array (stat['runtimes'])
+        n     = len(tmp)
+
+        if n >= 1 : rt  = numpy.mean  (tmp)
+        if n >  1 : rts = numpy.std   (tmp)
+        if n <= 1 : rts = 0
+        if n <  1 : rt  = 0
+
+        tmp   = numpy.array (stat['flops'])
+        n     = len(tmp)
+
+        if n >= 1 : fl  = numpy.mean  (tmp)
+        if n >  1 : fls = numpy.std   (tmp)
+        if n <= 1 : fls = 0
+        if n <  1 : fl  = 0
+
+        tmp   = numpy.array (stat['ops'])
+        n     = len(tmp)
+        if n >= 1 : ops  = numpy.mean  (tmp)
+        if n >  1 : opss = numpy.std   (tmp)
+        if n <= 1 : opss = 0
+        if n <  1 : ops  = 0
+
+        t_e   = numpy.array (stat['effic'])
+        t_e_m = min(numpy.mean (t_e), 0.34290)
+
+        t_u   = numpy.array (stat['utili'])
+        t_u_m = numpy.mean (t_u)
+      # t_u_m = 1
+
+        fpc   = 13600000000/4
+        pred_list = list()
+        for _ops in stat['ops']:
+            pred_list.append (_ops / t_e_m / t_u_m / fpc)
+        pred  = numpy.mean (numpy.array(pred_list))
+        preds = numpy.std  (numpy.array(pred_list))
+        pred  = ops / t_e_m / t_u_m / fpc
+
+        print " |  %15s  |  %10d  |  %10.2f  |  %10.3f  |  %15.2f  |  %15.3f  |  %16.3f  |  %15.3f  |  %9.3f  |  %9.3f  |  %9.3f  |  %9.3f  | " % \
+                (idx, n, rt, rts, fl, fls, ops, opss, pred, preds,
+                        numpy.mean(t_e), numpy.mean(t_u))
 
     sys.exit()
 
