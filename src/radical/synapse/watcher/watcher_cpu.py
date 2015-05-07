@@ -113,7 +113,7 @@ class WatcherCPU (wb.WatcherBase) :
     def _pre_process (self): 
 
         self._data['cpu'] = dict()
-        perf_cmd   = "sh -c 'perf stat -v -p %d & PID=$!; echo $PID > /tmp/synapse/pid.$PPID; wait $PID'" % (self._pid)
+        perf_cmd   = "sh -c 'perf stat -v -p %d & PID=$!; echo $PID > /tmp/synapse_pid.$PPID; wait $PID'" % (self._pid)
         self._proc = sp.Popen (perf_cmd,
                                stdout = sp.PIPE,
                                stderr = sp.STDOUT, 
@@ -126,8 +126,8 @@ class WatcherCPU (wb.WatcherBase) :
 
         # proc should be done now -- let it know.  But first make sure we are
         # listening on the pipes when it dies...
-        perf_pid = int(open ('/tmp/synapse/pid.%s' % self._proc.pid, 'r').read().strip())
-        os.unlink ('/tmp/synapse/pid.%s' % self._proc.pid)
+        perf_pid = int(open ('/tmp/synapse_pid.%s' % self._proc.pid, 'r').read().strip())
+        os.unlink ('/tmp/synapse_pid.%s' % self._proc.pid)
 
         threading.Timer (1.0, os.kill, [perf_pid, signal.SIGINT]).start ()
         out = self._proc.communicate()[0]
