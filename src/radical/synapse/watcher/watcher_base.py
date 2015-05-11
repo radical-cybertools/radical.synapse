@@ -23,6 +23,7 @@ class WatcherBase (threading.Thread) :
         self._terminate = threading.Event()
         self._pid       = pid
         self._data      = dict()
+        self._config    = dict()
 
         self.start ()
 
@@ -47,7 +48,9 @@ class WatcherBase (threading.Thread) :
     #
     def run (self) :
 
-        self._pre_process()
+        self._config['sample_rate'] = _SAMPLE_RATE
+
+        self._pre_process(self._config)
 
         while not self._terminate.is_set():
 
