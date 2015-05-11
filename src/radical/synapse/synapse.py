@@ -238,13 +238,6 @@ def profile_command (command) :
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")
 
-    cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
-    cycles_max  = info['cpu']['frequency'] * info['time']['real']
-    if cycles_max :
-        info['cpu']['utilization'] = cycles_used / cycles_max
-    else:
-        info['cpu']['utilization'] = 0.0
-
   # print "utilization    : %s \n" % info['cpu']['utilization']
   #
   # print "cycles_max     : %s " % cycles_max

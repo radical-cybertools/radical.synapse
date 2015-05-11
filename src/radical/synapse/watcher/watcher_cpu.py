@@ -153,7 +153,7 @@ def _parse_perf_sample (perf_out) :
 
         l = ru.ReString (line)
 
-      # print "line: %s" % line
+        print "line: %s" % line
 
         while l // (perf_pat) :
 
@@ -165,7 +165,7 @@ def _parse_perf_sample (perf_out) :
             if  not perc :
                 perc = '-1.0'
 
-          # print " ->  %s  %s  %s" % (key, val, perc)
+            print " ->  %s  %s  %s  %s" % (time, key, val, perc)
 
             info['%s'      % key] = float(val.replace  (',', ''))
             info['%s_perc' % key] = float(perc.replace (',', ''))
@@ -214,16 +214,16 @@ class WatcherCPU (wb.WatcherBase) :
 
         self._data['cpu'] = dict()
 
-        sample_cmd  = "sh -c 'perf stat -v -p -I %d %d & PID=$!; " % (rate, self._pid) \
-                    + "echo $PID > /tmp/synapse_pid.cpu_sample.$PPID; " \
+        sample_cmd  = "sh -c 'perf stat -I %d -p %d & PID=$!; " % (rate, self._pid) \
+                    + "echo $PID > /tmp/synapse.pid.cpu_sample.$PPID; " \
                     + "wait $PID'" 
         print sample_cmd
-        self._ptot  = sp.Popen (sample_cmd,
+        self._psam  = sp.Popen (sample_cmd,
                                 stdout = sp.PIPE,
                                 stderr = sp.STDOUT,
                                 shell  = True)
         total_cmd   = "sh -c 'perf stat -v -p %d & PID=$!; " % (self._pid) \
-                    + "echo $PID > /tmp/synapse_pid.cpu_total.$PPID; " \
+                    + "echo $PID > /tmp/synapse.pid.cpu_total.$PPID; " \
                     + "wait $PID'" 
         print total_cmd
         self._ptot  = sp.Popen (total_cmd,
@@ -236,27 +236,44 @@ class WatcherCPU (wb.WatcherBase) :
     #
     def _post_process (self):
 
-        # proc should be done now -- let it know.  But first make sure we are
-        # listening on the pipes when it dies...
-        perf_pid = int(open ('/tmp/synapse_pid.cpu_total.%s' % self._ptot.pid, 'r').read().strip())
-        os.unlink ('/tmp/synapse_pid.%s' % self._ptot.pid)
+        try:
 
-        threading.Timer (1.0, os.kill, [perf_pid, signal.SIGINT]).start ()
-        out = self._ptot.communicate()[0]
+            # proc should be done now -- let it know.  But first make sure we are
+            # listening on the pipes when it dies...
+            print      '/tmp/synapse.pid.cpu_total.%s' % self._ptot.pid
+            perf_pid = int(open ('/tmp/synapse.pid.cpu_total.%s' % self._ptot.pid, 'r').read().strip())
+            os.unlink ('/tmp/synapse.pid.cpu_total.%s' % self._ptot.pid)
 
-        ru.dict_merge (self._data['cpu'], _parse_perf_total (out))
+            threading.Timer (1.0, os.kill, [perf_pid, signal.SIGINT]).start ()
+            out = self._ptot.communicate()[0]
 
-        # now do the same for the sampling counters
-        perf_pid = int(open ('/tmp/synapse_pid.cpu_sample.%s' % self._ptot.pid, 'r').read().strip())
-        os.unlink ('/tmp/synapse_pid.%s' % self._ptot.pid)
-
-        threading.Timer (1.0, os.kill, [perf_pid, signal.SIGINT]).start ()
-        out = self._ptot.communicate()[0]
-
-        ru.dict_merge (self._data['cpu'], _parse_perf_sample (out))
+            ru.dict_merge (self._data['cpu'], _parse_perf_total (out))
 
 
-        self._data['i_o']['sequence'].append ([now, item])
+            # now do the same for the sampling counters
+            print      '/tmp/synapse.pid.cpu_sample.%s' % self._psam.pid
+            perf_pid = int(open ('/tmp/synapse.pid.cpu_sample.%s' % self._psam.pid, 'r').read().strip())
+            os.unlink ('/tmp/synapse.pid.cpu_sample.%s' % self._psam.pid)
+
+            threading.Timer (1.0, os.kill, [perf_pid, signal.SIGINT]).start ()
+            out = self._psam.communicate()[0]
+
+            ru.dict_merge (self._data['cpu'], _parse_perf_sample (out))
+
+
+          # cycles_used = self._data['ops'] / self._data['flops_per_cycle']
+          # cycles_max  = self._data['frequency'] * self._data]['real']
+          # if cycles_max :
+          #     self._data['utilization'] = cycles_used / cycles_max
+          # else:
+          #     self._data['utilization'] = 0.0
+
+
+        except Exception as e:
+
+            print "Exception in postprocess: %s" % e
+
+
 
 # ------------------------------------------------------------------------------
 
