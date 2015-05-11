@@ -43,7 +43,7 @@ class Storage (AtomBase) :
 
         if  not tgt:
             if  mode == 'r': raise ValueError ("need input source")
-            else           : tgt = "/tmp/synapse/synapse.%(pid)s.storage"
+            else           : tgt = "/tmp/synapse_storage.%(pid)s"
 
         tgt = tgt % { 'tmp' : self._tmpdir, 
                       'pid' : self._pid   }
