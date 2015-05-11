@@ -20,7 +20,7 @@ class WatcherMem (wb.WatcherBase) :
 
         wb.WatcherBase.__init__(self, pid)
 
-    def _pre_process  (self): 
+    def _pre_process  (self, config): 
 
         self._f = open('/proc/%s/status' % self._pid, 'r')
         self._data['mem']             = dict()

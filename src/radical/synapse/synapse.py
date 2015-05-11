@@ -12,7 +12,7 @@ import watcher as rsw
 import utils   as rsu
 import atoms   as rsa
 
-# import pudb 
+# import pudb
 # pudb.set_interrupt_handler ()
 
 
@@ -96,16 +96,16 @@ def profile_function (func, *args, **kwargs) :
     q = mp.Queue ()
 
     # run the func in a separate process, but wrap into the wrapper
-    proc = mp.Process (target = func_wrapper, 
-                       args   = (func, q), 
-                       kwargs = {'args'   : args, 
+    proc = mp.Process (target = func_wrapper,
+                       args   = (func, q),
+                       kwargs = {'args'   : args,
                                  'kwargs' : kwargs})
     proc.start ()
 
     # do we have perf?
-    if  'no perf in' in sp.Popen ("which perf", 
+    if  'no perf in' in sp.Popen ("which perf",
                                   shell=True,
-                                  stdout=sp.PIPE, 
+                                  stdout=sp.PIPE,
                                   stderr=sp.STDOUT).stdout.read () :
         prof = None
 
@@ -150,7 +150,7 @@ def profile_function (func, *args, **kwargs) :
 
       # print "utilization    : %s \n" % info['cpu']['utilization']
       #
-      # print "cycles_max     : %s " % cycles_max 
+      # print "cycles_max     : %s " % cycles_max
       # print "frequency      : %s " % info['cpu']['frequency']
       # print "time           : %s \n" % info['time']['real']
       #
@@ -161,7 +161,7 @@ def profile_function (func, *args, **kwargs) :
 
       # don't return any stdout, thus the None
 
-    return (info, ret, None)  
+    return (info, ret, None)
 
 
 # ------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ def profile_command (command) :
     start = rsu.timestamp()
 
     # run the profiled command in a separate process
-    cmd = sp.Popen (command.split(), 
+    cmd = sp.Popen (command.split(),
                     stdout = sp.PIPE,
                     stderr = sp.STDOUT)
 
@@ -247,7 +247,7 @@ def profile_command (command) :
 
   # print "utilization    : %s \n" % info['cpu']['utilization']
   #
-  # print "cycles_max     : %s " % cycles_max 
+  # print "cycles_max     : %s " % cycles_max
   # print "frequency      : %s " % info['cpu']['frequency']
   # print "time           : %s \n" % info['time']['real']
   #
@@ -271,7 +271,7 @@ def emulate_command (command) :
     flops      = int(old_info['cpu']['cycles'] / 8 / 1024 / 1024)
     efficiency = int(old_info['cpu']['efficiency'])
     mem        = int(old_info['mem']['max']        / 1024 / 1024)
-    io_in      = int(old_info['i_o']['in']) 
+    io_in      = int(old_info['i_o']['in'])
     io_out     = int(old_info['i_o']['out'])
   # io_in      = 0
   # io_out     = 0
@@ -331,7 +331,7 @@ def emulate_command (command) :
                                        + new_info['cpu']['cycles_stalled_front']  \
                                        + new_info['cpu']['cycles_stalled_back']   \
                                        )
-                                 
+
    #print 'efficiency = %s / (%s + %s + %s) = %s' % (
    #          new_info['cpu']['ops'],
    #          new_info['cpu']['ops'],

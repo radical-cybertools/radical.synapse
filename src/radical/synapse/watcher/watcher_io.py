@@ -19,19 +19,19 @@ class WatcherIO (wb.WatcherBase) :
 
         wb.WatcherBase.__init__(self, pid)
 
-    
+
     # --------------------------------------------------------------------------
     #
-    def _pre_process  (self): 
+    def _pre_process  (self, config):
 
         self._f = open('/proc/%s/io' % self._pid, 'r')
         self._data['i_o']             = dict()
         self._data['i_o']['sequence'] = list()
 
-    
+
     # --------------------------------------------------------------------------
     #
-    def _post_process (self): 
+    def _post_process (self):
 
         self._f.close()
 
@@ -44,7 +44,7 @@ class WatcherIO (wb.WatcherBase) :
             self._f.seek(0,0)
             data = self._f.read()
         except Exception as e:
-            self.stop() 
+            self.stop()
             return
 
         item = dict()
@@ -54,7 +54,7 @@ class WatcherIO (wb.WatcherBase) :
             if not ':' in line:
                 continue
             key, val = line.split (':', 1)
-            if  key.strip() in keys : 
+            if  key.strip() in keys :
                 item[keys[key]] = human_to_number (val)
 
 

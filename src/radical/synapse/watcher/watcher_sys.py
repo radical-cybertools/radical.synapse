@@ -22,7 +22,7 @@ class WatcherSys (wb.WatcherBase) :
 
     # --------------------------------------------------------------------------
     #
-    def _pre_process (self): 
+    def _pre_process (self, config): 
 
         self._data['cpu'] = dict()
 
