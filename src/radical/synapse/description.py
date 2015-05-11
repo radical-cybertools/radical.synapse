@@ -42,7 +42,7 @@ import atoms as rsa
 # with open ('%s/synapse/experiments/%s.dat' % (home, host), 'a') as f :
 # 
 #     _     = os.popen ('sync')
-# #   _     = os.popen ('rm -rf /tmp/synapse/')
+# #   _     = os.popen ('rm -f /tmp/synapse_*')
 # #   _     = os.popen ('sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"')
 # 
 #     start = time.time()
@@ -135,7 +135,7 @@ import atoms as rsa
 #     f.write ("%s\n" % output)
 # 
 #     time.sleep (10)
-#     _ = os.popen ('ps -ef | grep -i "/tmp/synapse/" | grep -v grep | cut -c 8-15 | xargs -r kill -9')
+#     _ = os.popen ('ps -ef | grep -i "/tmp/synapse_" | grep -v grep | cut -c 8-15 | xargs -r kill -9')
 # 
 # #   print su.get_mem_usage ()
 # #   print su.get_io_usage  ()
