@@ -10,6 +10,7 @@ import threading
 from ..utils import timestamp
 
 _SAMPLE_RATE = 0.1
+_SAMPLE_RATE = 0.5
 
 # ------------------------------------------------------------------------------
 #
@@ -48,20 +49,26 @@ class WatcherBase (threading.Thread) :
     #
     def run (self) :
 
-        self._config['sample_rate'] = _SAMPLE_RATE
+        try:
 
-        self._pre_process(self._config)
+            self._config['sample_rate'] = _SAMPLE_RATE
 
-        while not self._terminate.is_set():
+            self._pre_process(self._config)
 
-            now = timestamp()
-            self._sample(now)
-            time.sleep (_SAMPLE_RATE)
+            while not self._terminate.is_set():
 
-        self._post_process()
+                now = timestamp()
+                self._sample(now)
+                time.sleep (_SAMPLE_RATE)
 
-      # print " ----- %s -----" % self.__class__
-      # pprint.pprint (self._data)
+            self._post_process()
+
+          # print " ----- %s -----" % self.__class__
+          # pprint.pprint (self._data)
+
+        except Exception as e:
+            print "Exception in watcher: %s" % e
+          # raise
 
 
     # --------------------------------------------------------------------------

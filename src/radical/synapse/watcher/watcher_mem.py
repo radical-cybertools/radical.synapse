@@ -64,8 +64,8 @@ class WatcherMem (wb.WatcherBase) :
             key, val = line.split (':', 1)
             if   key.strip() in memk        : item[memk[key]]              = human_to_number (val)
             elif key.strip() in glob        : self._data['mem'][glob[key]] = human_to_number (val)
-            elif key.strip() in ['Threads'] :
-                self._data['cpu']['sequence'].append([now,{'threads': int(val)}])
+          # elif key.strip() in ['Threads'] :
+          #     self._data['cpu']['sequence'].append([now,{'threads': int(val)}])
 
         self._data['mem']['sequence'].append ([now, item])
 
