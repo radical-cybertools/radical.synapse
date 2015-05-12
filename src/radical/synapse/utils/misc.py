@@ -13,16 +13,16 @@ import radical.utils.logger as rul
 
 
 _DEFAULT_DBURL = 'mongodb://localhost:27017/synapse_v0_5'
-PROFILE_DBURL  = os.environ.get ('SYNAPSE_DBURL', _DEFAULT_DBURL)
+PROFILE_DBURL  = os.environ.get ('RADICAL_SYNAPSE_DBURL', _DEFAULT_DBURL)
 
-LOAD        = int (os.environ.get ('LOAD', '0'))
+LOAD        = int (os.environ.get ('RADICAL_SYNAPSE_LOAD', '0'))
 LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
 LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
 
 
 # ------------------------------------------------------------------------------
 #
-logger = ru.logger.getLogger  ('radical.synapse')
+logger = rul.getLogger  ('radical.synapse')
 
 
 # ------------------------------------------------------------------------------
@@ -122,6 +122,8 @@ def store_profile (command, info) :
     # be a MongoDB index (to ensure uniqueness)
 
     command_idx = index_command (command)
+
+    print 'dburl: %s' % PROFILE_DBURL
 
     [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_DBURL)
 

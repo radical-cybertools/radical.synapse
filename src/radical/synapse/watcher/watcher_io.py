@@ -19,6 +19,9 @@ class WatcherIO (wb.WatcherBase) :
 
         wb.WatcherBase.__init__(self, pid)
 
+        self._old_sample = dict()
+        self._tot_sample = dict()
+
 
     # --------------------------------------------------------------------------
     #
@@ -35,6 +38,10 @@ class WatcherIO (wb.WatcherBase) :
 
         self._f.close()
 
+        # use the values from tot_sample as global total
+        for key,val in self._tot_sample.iteritems():
+            self._data['i_o'][key] = val
+
 
     # --------------------------------------------------------------------------
     #
@@ -43,22 +50,41 @@ class WatcherIO (wb.WatcherBase) :
         try:
             self._f.seek(0,0)
             data = self._f.read()
+
         except Exception as e:
-            self.stop()
+            # FIXME: use log
+            print "i_o data source is gone (%s)" % e
             return
 
-        item = dict()
-        keys = {'rchar' : 'read',
-                'wchar' : 'write'}
+        sample = dict()
+        keys   = {'rchar' : 'read',
+                  'wchar' : 'write'}
+
         for line in data.split('\n'):
             if not ':' in line:
                 continue
             key, val = line.split (':', 1)
             if  key.strip() in keys :
-                item[keys[key]] = human_to_number (val)
+                sample[keys[key]] = human_to_number (val)
 
 
-        self._data['i_o']['sequence'].append ([now, item])
+        # keep the max vals in tot_sample
+        for key,val in sample.iteritems():
+            self._tot_sample[key] = max(self._tot_sample.get(key, 0), val)
+
+
+        # we don't want abs values but incremental changes
+        for key in sample:
+
+            val = sample[key]
+            old = self._old_sample.get(key)
+
+            if old:
+                sample[key] = val - old
+
+            self._old_sample[key] = val
+
+        self._data['i_o']['sequence'].append ([now, sample])
 
 
 # ------------------------------------------------------------------------------

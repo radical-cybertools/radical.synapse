@@ -10,8 +10,8 @@ if len(sys.argv) < 2 :
 
 info, ret, out = radical.synapse.profile_command (sys.argv[1:])
 
-pprint.pprint (info)
 print out
+pprint.pprint (info)
 
 sys.exit (ret)
 
