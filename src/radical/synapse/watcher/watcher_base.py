@@ -4,13 +4,14 @@ __copyright__ = "Copyright 2015, RADICAL@Rutgers"
 __license__   = "MIT"
 
 
+import os
 import time
 import threading
 
 from ..utils import timestamp
 
-_SAMPLE_RATE = 0.1
-_SAMPLE_RATE = 0.5
+# number of samples per second
+_SAMPLE_RATE = 1
 
 # ------------------------------------------------------------------------------
 #
@@ -33,9 +34,25 @@ class WatcherBase (threading.Thread) :
     #
     # This is the API which watcher implementations overload.
     #
-    def _pre_process  (self)      : pass
-    def _post_process (self)      : pass
-    def _sample       (self, now) : pass
+    def _pre_process  (self)       : pass
+    def _post_process (self)       : pass
+    def _sample       (self, now)  : pass
+    def _finalize     (self, info) : pass
+
+
+    # --------------------------------------------------------------------------
+    #
+    def finalize (self, info) :
+
+        try:
+            self._finalize (info)
+
+        except Exception as e:
+            
+            import traceback
+            traceback.print_exc()
+
+            print "Exception in finalize: %s" % e
 
 
     # --------------------------------------------------------------------------
@@ -51,7 +68,10 @@ class WatcherBase (threading.Thread) :
 
         try:
 
-            self._config['sample_rate'] = _SAMPLE_RATE
+            self._config['sample_rate'] = float(os.environ.get('RADICAL_SYNAPSE_SAMPLERATE', _SAMPLE_RATE))
+
+            # sample rate is samples per minute
+            sleeptime = 1/self._config['sample_rate']
 
             self._pre_process(self._config)
 
@@ -59,7 +79,7 @@ class WatcherBase (threading.Thread) :
 
                 now = timestamp()
                 self._sample(now)
-                time.sleep (_SAMPLE_RATE)
+                time.sleep (sleeptime)
 
             self._post_process()
 
@@ -67,8 +87,11 @@ class WatcherBase (threading.Thread) :
           # pprint.pprint (self._data)
 
         except Exception as e:
+
+            import traceback
+            traceback.print_exc()
+
             print "Exception in watcher: %s" % e
-          # raise
 
 
     # --------------------------------------------------------------------------

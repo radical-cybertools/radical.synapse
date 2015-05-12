@@ -134,9 +134,9 @@ def tree_database (mongo, db, dbname, cachedir) :
 #
 def list_databases (mongo, db, dbname, cachedir) :
 
-    if  dbname :
-        print "invalid dbname parameter on 'list'"
-        sys.exit (-1)
+  # if  dbname :
+  #     print "invalid dbname parameter on 'list'"
+  #     sys.exit (-1)
 
     dbnames = mongo.database_names ()
 
@@ -322,41 +322,58 @@ def plot_database (db_json, dbname, filters, term) :
     plot results :P
     """
 
-    print
+    dat_tot_mem = open("/tmp/rs_%s.mem.tot.dat" % dbname, 'w')
+    dat_tot_io  = open("/tmp/rs_%s.io.tot.dat"  % dbname, 'w')
+    dat_tot_cpu = open("/tmp/rs_%s.cpu.tot.dat" % dbname, 'w')
+                                       
+    dat_inc_mem = open("/tmp/rs_%s.mem.inc.dat" % dbname, 'w')
+    dat_inc_io  = open("/tmp/rs_%s.io.inc.dat"  % dbname, 'w')
+    dat_inc_cpu = open("/tmp/rs_%s.cpu.inc.dat" % dbname, 'w')
+                                       
+    dat_acc_mem = open("/tmp/rs_%s.mem.acc.dat" % dbname, 'w')
+    dat_acc_io  = open("/tmp/rs_%s.io.acc.dat"  % dbname, 'w')
+    dat_acc_cpu = open("/tmp/rs_%s.cpu.acc.dat" % dbname, 'w')
 
-    print "/tmp/rs.%s.mem.dat" % dbname
-    print "/tmp/rs.%s.io.dat"  % dbname
-    print "/tmp/rs.%s.cpu.dat" % dbname
+    dat_tot_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s\n" 
+            % ('id', 'runtime', 'ops', 'flops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
+    dat_inc_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s\n" 
+            % ('id', 'runtime', 'ops', 'flops', 'efficiency', 'utilization'))
+    dat_acc_cpu.write("# %15s  %15s  %15s\n" 
+            % ('id', 'runtime', 'ops'))
 
-    dat_mem = open("/tmp/rs.%s.mem.dat" % dbname, 'w')
-    dat_io  = open("/tmp/rs.%s.io.dat"  % dbname, 'w')
-    dat_cpu = open("/tmp/rs.%s.cpu.dat" % dbname, 'w')
+    dat_tot_io.write ("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'read', 'write'))
+    dat_inc_io.write ("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'read', 'write'))
+    dat_acc_io.write ("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'read', 'write'))
+    dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'rss',  'size', 'peak'))
+    dat_inc_mem.write("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'rss',  'size'))
+    dat_acc_mem.write("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'rss',  'size'))
 
-    dat_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  (%s)\n" 
-            % ('id', 'threads', 'ops', 'efficiency', 'utilization', 'runtime', 
-                'read_total', 'write_total', 'mem_total', 'rss_total', 'load',
-                'fpc', ''))
-
-    stats = dict()
+    # some boundaries we want to let gnuplot know about
+    max_time      = 0.0
+    max_runtime   = 0.0
+    max_tot_mem   = 0.0
+    max_inc_mem   = 0.0
+    max_load      = 0.0
+    max_tot_read  = 0.0
+    max_tot_write = 0.0
+    max_tot_io    = 0.0
+    max_inc_read  = 0.0
+    max_inc_write = 0.0
+    max_inc_io    = 0.0
+    max_tot_flops = 0.0
+    max_tot_ops   = 0.0
+    max_inc_flops = 0.0
+    max_inc_ops   = 0.0
 
     for doc in db_json :
-
 
         idx        = doc['command_idx']
         profile_id = 0
 
       # print "\nindex: %s" % idx
 
-        if idx not in stats:
-            stats[idx] = dict()
-            stats[idx]['utili']    = list()
-            stats[idx]['effic']    = list()
-            stats[idx]['ops']      = list()
-            stats[idx]['flops']    = list()
-            stats[idx]['runtimes'] = list()
-
-        for profile in sorted(doc['profiles'], key=lambda x:x['time']['real']):
       # for profile in doc['profiles'] :
+        for profile in sorted(doc['profiles'], key=lambda x:x['time']['real']):
 
             profile_id += 1
 
@@ -365,12 +382,6 @@ def plot_database (db_json, dbname, filters, term) :
             cpu  = profile.get ('cpu')
             io   = profile.get ('i_o')
             cmd  = profile.get ('cmd')
-
-            read_total  = 0
-            write_total = 0
-            mem__total  = 0
-            rss_total   = 0
-
 
             accept = False
 
@@ -389,517 +400,181 @@ def plot_database (db_json, dbname, filters, term) :
           # print "  time   : %s" % perf['real']
           # print "%s %s" % (perf['real'], cmd)
 
+            real = perf['real']
+
+            max_runtime = max(max_runtime, real)
+
             if mem:
-                dat_mem.write("# %15s  %15s  %15s (%s)\n" % ('time', 'size', 'rss', idx))
+
+              # dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'rss',  'size', 'peak'))
+                dat_tot_mem.write("  %15s  %15.2f  %15d  %15d  %15d\n"
+                        % (profile_id, real, mem['rss'], mem['size'], mem['peak']))
+
+                max_tot_mem = max(max_tot_mem, mem['rss'])
+                max_tot_mem = max(max_tot_mem, mem['size'])
+                max_tot_mem = max(max_tot_mem, mem['peak'])
+
+                acc_mem_size = 0.0
+                acc_mem_rss  = 0.0
+
+                dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
+                        % (profile_id, 0.0, acc_mem_rss, acc_mem_size))
+
                 for s in mem['sequence']:
-                    if not s or not s[1]:
+
+                    if not s[1]:
                         continue
+
                   # print 'm',
-                    dat_mem.write('  %15s  %15s  %15s\n' 
-                             % (s[0], s[1]['size'], s[1]['rss']))
-                    mem_total  = max(read_total,s[1]['size'])
-                    rss_total = max(write_total,s[1]['rss'])
-                dat_mem.write("\n")
+                    dat_inc_mem.write("  %15s  %15.2f  %15d  %15d\n"
+                            % (profile_id, s[0], s[1]['rss'], s[1]['size']))
+
+                    max_inc_mem = max(max_inc_mem, s[1]['rss'])
+                    max_inc_mem = max(max_inc_mem, s[1]['size'])
+
+                    acc_mem_rss  += s[1]['rss']
+                    acc_mem_size += s[1]['size']
+
+                    dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
+                            % (profile_id, s[0], acc_mem_rss, acc_mem_size))
+
+                dat_inc_mem.write("\n")
+                dat_acc_mem.write("\n")
+
 
             if io:
-                dat_io.write("# %15s  %15s  %15s (%s)\n" % ('time', 'read', 'write', idx))
-                for s in io['sequence']:
-                    if not s or not s[1]:
-                        continue
-                  # print 'i',
-                    dat_io.write('  %15s  %15s  %15s\n' 
-                             % (s[0], s[1]['read']/1024, s[1]['write']/1024))
 
-                    read_total  = max(read_total,s[1]['read'])
-                    write_total = max(write_total,s[1]['write'])
-                dat_io.write("\n")
+                if not 'read' in io:
+                    continue
+
+              # dat_tot_io.write("# %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'read', 'write'))
+                dat_tot_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
+                        % (profile_id, real, io['read'], io['write']))
+
+                max_tot_read  = max(max_tot_read,  io['read'])
+                max_tot_write = max(max_tot_write, io['write'])
+                max_tot_io    = max(max_tot_read,  max_tot_write)
+
+                acc_io_read  = 0.0
+                acc_io_write = 0.0
+
+                dat_acc_io.write("  %15s  %15.2f  %15d  %15d\n"
+                        % (profile_id, 0.0, acc_io_read, acc_io_write))
+
+                for s in io['sequence']:
+
+                  # print 'i',
+                    dat_inc_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
+                            % (profile_id, s[0], s[1]['read'], s[1]['write']))
+
+                    max_inc_read  = max(max_inc_read,  s[1]['read'])
+                    max_inc_write = max(max_inc_write, s[1]['write'])
+                    max_inc_io    = max(max_inc_read,  max_inc_write)
+
+                    acc_io_read  += s[1]['read']
+                    acc_io_write += s[1]['write']
+
+                    dat_acc_io.write("  %15s  %15.2f  %15d  %15d\n"
+                            % (profile_id, s[0], acc_io_read, acc_io_write))
+
+                dat_inc_io.write("\n")
+                dat_acc_io.write("\n")
+
 
             if cpu:
 
-              # dat_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s (%s)\n" 
-              #         % ('id', 'threads', 'ops', 'efficiency', 'utilization', 'runtime', idx))
-                flops   = int(cpu['ops'] / perf['real'])
-                ops     = int(cpu['ops'])
+                mega    = 1024*1024
+
+                flops   = int(cpu['ops'] / mega / real)
+                ops     = int(cpu['ops'] / mega)
                 effic   = float(cpu['efficiency'])
                 utili   = float(cpu['utilization'])
-                real    = perf['real']
-                load    = cpu['load']*100
+                load    = cpu['load']
                 fpc     = cpu['flops_per_core']
-                fpc     = 13600000000/4/4
+                threads = cpu.get('threads', 1)
+              # fpc     = 13600000000/4/4
 
-                stats[idx]['ops']     .append (ops)
-                stats[idx]['utili']   .append (utili)
-                stats[idx]['effic']   .append (effic)
-                stats[idx]['flops']   .append (flops)
-                stats[idx]['runtimes'].append (real)
+                max_tot_flops = max(max_tot_flops, flops)
+                max_tot_ops   = max(max_tot_ops  , ops  )
+                max_load      = max(max_load     , load )
 
-                if cpu['sequence']:
-                    threads = cpu['sequence'][0][1]['threads']
-                else:
-                    threads = 1
+                print "%s - %s" % (ops, max_tot_ops)
 
+                # ('id', 'runtime', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
+                dat_tot_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.3f  %15.2f  %15d  %15d\n' \
+                        % (profile_id, real, ops, flops, effic, utili, load, fpc, threads))
 
-              # FIXME:
-              # for s in cpu['sequence']:
-              #     if not s or not s[1]:
-              #         continue
-              #     print 'c',
-              #     dat_cpu.write('  %15s  %15s  %15d  %15.2f  %15.2f\n' 
-              #              % (s[0], s[1]['threads'], flops, effic, utili))
-                if utili > 0.0:
-                    dat_cpu.write('  %15d  %15s  %15d  %15.2f  %15.2f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f  %15.3f\n' 
-                            % (profile_id, threads, ops, effic, utili, real, 
-                                read_total, write_total, mem_total, rss_total,
-                                load, fpc))
-              # dat_cpu.write("\n")
+                acc_cpu_ops   = 0.0
+                dat_acc_cpu.write('  %15d  %15.2f  %15d\n' \
+                        % (profile_id, 0.0, acc_cpu_ops))
+
+                for s in cpu['sequence']:
+
+                  # print 'c',
+                    ts      = s[0]
+                    sample  = s[1]
+                    real    = sample.get('real', 0)
+                    threads = sample.get('threads', 1)
+                    ops     = sample.get('ops', 0)
+                    utili   = sample.get('utilization', 0)
+                    effic   = sample.get('efficiency', 0)
+                    flops   = sample.get('flops', 0)
+
+                    if not real or not ops:
+                        print "warning: no time diff between samples? %s" % sample
+                        continue
+
+                    max_inc_ops   = max(max_inc_ops  , ops  )
+                    max_inc_flops = max(max_inc_flops, flops)
+
+                    # ('id', 'runtime', 'ops', 'efficiency', 'utilization'))
+                    dat_inc_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.2f\n' \
+                            % (profile_id, ts, ops, flops, effic, utili))
+
+                    acc_cpu_ops += ops
+                    dat_acc_cpu.write('  %15d  %15.2f  %15d\n' \
+                            % (profile_id, ts, acc_cpu_ops))
+
+                dat_inc_cpu.write("\n")
+                dat_acc_cpu.write("\n")
              
-    dat_mem.close()
-    dat_io .close()
-    dat_cpu.close()
-  # print
+    dat_tot_mem.close()
+    dat_tot_io .close()
+    dat_tot_cpu.close()
+
+    dat_inc_mem.close()
+    dat_inc_io .close()
+    dat_inc_cpu.close()
+
+    dat_acc_mem.close()
+    dat_acc_io .close()
+    dat_acc_cpu.close()
+
+    max_runtime = max(max_runtime, 1)
+
+    f = ru.round_upper_bound
+    bounds  = ""
+    bounds += " -e max_time='\"%d\"'"      % max_runtime
+    bounds += " -e max_runtime='\"%d\"'"   % f(max_runtime   * 1.1)
+    bounds += " -e max_tot_mem='\"%d\"'"   % f(max_tot_mem   * 1.1)
+    bounds += " -e max_inc_mem='\"%d\"'"   % f(max_inc_mem   * 1.1)
+    bounds += " -e max_load='\"%d\"'"      % f(max_load      * 1.1)
+    bounds += " -e max_tot_read='\"%d\"'"  % f(max_tot_read  * 1.1)
+    bounds += " -e max_tot_write='\"%d\"'" % f(max_tot_write * 1.1)
+    bounds += " -e max_tot_io='\"%d\"'"    % f(max_tot_io    * 1.1)
+    bounds += " -e max_inc_read='\"%d\"'"  % f(max_inc_read  * 1.1)
+    bounds += " -e max_inc_write='\"%d\"'" % f(max_inc_write * 1.1)
+    bounds += " -e max_inc_io='\"%d\"'"    % f(max_inc_io    * 1.1)
+    bounds += " -e max_tot_flops='\"%d\"'" % f(max_tot_flops * 1.1)
+    bounds += " -e max_tot_ops='\"%d\"'"   % f(max_tot_ops   * 1.1)
+    bounds += " -e max_inc_flops='\"%d\"'" % f(max_inc_flops * 1.1)
+    bounds += " -e max_inc_ops='\"%d\"'"   % f(max_inc_ops   * 1.1)
+    bounds += " -e max_tasks='\"%d\"'"     % profile_id
+
+
+    os.system("gnuplot -e experiment='\"%s\"' %s %s/radical-synapse-stats.plot" \
+            % (dbname, bounds, os.path.dirname(__file__)))
 
-    print " |  %15s  |  %10s  |  %10s  |  %10s  |  %15s  |  %15s  |  %15s  |  %15s  |" % \
-            ('name', '#tasks', 'rtime (s)', 'stdev', 'flops', 'stdev', 'ops', 'stdev')
-    for idx, stat in stats.iteritems():
-
-        tmp   = numpy.array (stat['runtimes'])
-        n     = len(tmp)
-
-        if n >= 1 : rt  = numpy.mean  (tmp)
-        if n >  1 : rts = numpy.std   (tmp)
-        if n <= 1 : rts = 0
-        if n <  1 : rt  = 0
-
-        tmp   = numpy.array (stat['flops'])
-        n     = len(tmp)
-
-        if n >= 1 : fl  = numpy.mean  (tmp)
-        if n >  1 : fls = numpy.std   (tmp)
-        if n <= 1 : fls = 0
-        if n <  1 : fl  = 0
-
-        tmp   = numpy.array (stat['ops'])
-        n     = len(tmp)
-        if n >= 1 : ops  = numpy.mean  (tmp)
-        if n >  1 : opss = numpy.std   (tmp)
-        if n <= 1 : opss = 0
-        if n <  1 : ops  = 0
-
-        t_e   = numpy.array (stat['effic'])
-        t_e_m = min(numpy.mean (t_e), 0.34290)
-
-        t_u   = numpy.array (stat['utili'])
-        t_u_m = numpy.mean (t_u)
-      # t_u_m = 1
-
-        fpc   = 13600000000/4
-        pred_list = list()
-        for _ops in stat['ops']:
-            pred_list.append (_ops / t_e_m / t_u_m / fpc)
-        pred  = numpy.mean (numpy.array(pred_list))
-        preds = numpy.std  (numpy.array(pred_list))
-        pred  = ops / t_e_m / t_u_m / fpc
-
-        print " |  %15s  |  %10d  |  %10.2f  |  %10.3f  |  %15.2f  |  %15.3f  |  %16.3f  |  %15.3f  |  %9.3f  |  %9.3f  |  %9.3f  |  %9.3f  | " % \
-                (idx, n, rt, rts, fl, fls, ops, opss, pred, preds,
-                        numpy.mean(t_e), numpy.mean(t_u))
-
-    sys.exit()
-
-
-
-
-    docs      = rpu.get_database_docs     (mongo, db, dbname, cachedir=cachedir)
-    events    = rpu.get_database_events   (mongo, db, dbname, cachedir=cachedir)
-
-    if  not events :
-        print "no records found in database %s" % dbname
-        sys.exit (-1)
-
-    start      = events[0][4]
-    pids       = list()
-    maxtime    = 0.0
-    maxslots   = 0
-    nodesize   = 0
-    slots      = list()
-    hosts      = list()
-    delete_me  = list()
-    maxqueue   = 0
-
-    # some data cleanup
-    for doc in docs['pilot'] :
-        if  not doc['nodes'] :
-            doc['nodes'] = list()
-        if  not doc['cores_per_node'] :
-            doc['cores_per_node'] = 1
-
-    # the plots look nicer if the largest pilots are plotted first, and smaller
-    # ones are overlayed.  Thus we sort the pilot docs by by size (reversed).
-    # Pilot's of same sizes are ordered as-is.
-    pilot_sizes = list()
-    for doc in docs['pilot'] :
-        cores = len(doc['nodes']) * int(doc['cores_per_node'])
-        pilot_sizes.append (cores)
-
-
-    pilot_docs = list()
-    for pilot_size in sorted (pilot_sizes, reverse=True) :
-        for doc in docs['pilot'] :
-            cores = len(doc['nodes']) * int(doc['cores_per_node'])
-            if  cores == pilot_size :
-                if  doc not in pilot_docs :
-                    pilot_docs.append (doc)
-
-    for pilot in pilot_docs :
-
-        pid = str(pilot['_id'])
-        pids.append (pid)
-        hosts.append (ru.Url (pilot['sandbox']).host.split('.')[0])
-
-        with open ("/tmp/rp.%s.pilot.states.%s.dat" % (dbname, pid), "w") as dat :
-            for event in pilot['statehistory'] :
-                etag    = _EVENT_ENCODING['pilot'].get (event['state'], 0)
-                seconds = ru.time_diff (start, event['timestamp'])
-                maxtime = max (maxtime, seconds)
-                dat.write (" %10.2f  %-25s\n" % (seconds, etag))
-            dat.write ("\n")
-            delete_me.append (dat.name)
-            
-        with open ("/tmp/rp.%s.pilot.callbacks.%s.dat" % (dbname, pid), "w") as dat :
-            if  'callbackhistory' in pilot :
-                for event in pilot['callbackhistory'] :
-                    etag    = _EVENT_ENCODING['pilot'].get (event['state'], 0)
-                    seconds = ru.time_diff (start, event['timestamp'])
-                    maxtime = max (maxtime, seconds)
-                    dat.write ("%10.2f  %-25s\n" % (seconds, etag))
-                dat.write ("\n")
-            else :
-                print 'no pilot callbacks'
-            delete_me.append (dat.name)
-
-            
-        with open ("/tmp/rp.%s.unit.states.%s.dat" % (dbname, pid), "w") as dat :
-
-            for unit_id in pilot['unit_ids'] :
-
-                for unit in docs['unit'] :
-                    if  unit_id == str(unit['_id']) :
-                        for event in unit['statehistory'] :
-                            etag    = _EVENT_ENCODING['unit'].get (event['state'], 0)
-                            seconds = ru.time_diff (start, event['timestamp'])
-                            maxtime = max (maxtime, seconds)
-                            dat.write (" %10.2f  %-25s\n" % (seconds, etag))
-                        dat.write ("\n")
-            delete_me.append (dat.name)
-            
-        with open ("/tmp/rp.%s.unit.callbacks.%s.dat" % (dbname, pid), "w") as dat :
-            for unit_id in pilot['unit_ids'] :
-                for unit in docs['unit'] :
-                    if  unit_id == str(unit['_id']) :
-                        if  'callbackhistory' in unit :
-                            for event in unit['callbackhistory'] :
-                                etag    = _EVENT_ENCODING['unit'].get (event['state'], 0)
-                                seconds = ru.time_diff (start, event['timestamp'])
-                                maxtime = max (maxtime, seconds)
-                                dat.write (" %10.2f  %-25s\n" % (seconds, etag))
-                            dat.write ("\n")
-            delete_me.append (dat.name)
-
-            
-        with open ("/tmp/rp.%s.pilot.queue.%s.dat" % (dbname, pid), "w") as dat :
-
-            queue_size = 0
-            queued     = list()
-            dequeued   = list()
-
-            dat.write ("%10.2f  %6d\n" % (0, queue_size))
-
-
-            for event in events :
-                if  event[0] == 'state' and \
-                    event[1] == 'unit'  and \
-                    event[3] ==  pid    :
-                    uid = event[2]
-
-                    if  _EVENT_ENCODING['unit'][event[5]] > _EVENT_ENCODING['unit'][rp.NEW] :
-                        if  not uid in queued :
-                            queued.append (uid)
-                            seconds     = ru.time_diff (start, event[4])
-                            queue_size += 1
-                            maxqueue    = max (maxqueue, queue_size)
-                            dat.write ("%10.2f  %6d\n" % (seconds, queue_size))
-
-                    if  _EVENT_ENCODING['unit'][event[5]] > _EVENT_ENCODING['unit'][rp.EXECUTING] :
-                        if  not uid in dequeued :
-                            dequeued.append (uid)
-                            seconds     = ru.time_diff (start, event[4])
-                            queue_size -= 1
-                            dat.write ("%10.2f  %6d\n" % (seconds, queue_size))
-
-
-        with open ("/tmp/rp.%s.pilot.slots.%s.dat" % (dbname, pid), "w") as dat :
-
-            slothist = slothists[pid]
-            slotnum  = len(slothist['slots'])
-            maxslots = max(slotnum,maxslots)
-
-            slots.append (slotnum)
-
-            slot_idx = 0
-            for slot in slothist['slots'] :
-
-                slot_idx += 1
-                used = False
-
-                for entry in slothist['slot_infos'][slot] :
-
-                    busy_start = ru.time_diff (start, entry[0])
-                    busy_stop  = ru.time_diff (start, entry[1])
-
-                    dat.write ("%10.2f  %6d\n" % (busy_start, slot_idx))
-                    dat.write ("%10.2f  %6d\n" % (busy_stop,  slot_idx))
-                    dat.write ("\n")
-
-                dat.write ("\n")
-
-            delete_me.append (dat.name)
-
-    pilotnum = len(pids)
-
-    timetics = 10
-    for i in range(1,10) :
-        if  maxtime  > 1*(10**i) :
-            timetics = 1*(10**(i-1))
-        if  maxtime  > 2*(10**i) :
-            timetics = 2*(10**(i-1))
-        if  maxtime  > 5*(10**i) :
-            timetics = 5*(10**(i-1))
-
-  # mtimetics = 10
-
-    plotfile = "%s/radicalpilot-stats.plot" % os.path.dirname (__file__)
-    plotname = os.environ.get ('RP_PLOTNAME', None)
-
-    # if maxslots and maxqueue differ by max 25% then we use the same scale.  If
-    # maxslots is larger we also use the same scale.
-    max_scale  = max(maxslots, maxqueue)
-    min_scale  = min(maxslots, maxqueue)
-    mean_scale = (maxslots+maxqueue)/2
-    scale_25   = 0.25 * mean_scale
-
-    if  maxslots > maxqueue :
-        slotsscale = maxslots+(nodesize/2)
-        queuescale = maxslots+(nodesize/2)
-
-    elif (mean_scale + scale_25) > max_scale and \
-        (mean_scale - scale_25) < min_scale :
-        slotsscale = maxslots+(nodesize/2)
-        queuescale = maxslots+(nodesize/2)
-
-    else :
-        slotsscale = maxslots+(nodesize/2)
-        queuescale = maxqueue+(nodesize/2)
-
-    slotsscale = int(max(slotsscale, maxslots*1.1))
-    queuescale = int(max(queuescale, maxqueue*1.1))
-
-    terms = " ".join (term.split (','))
-
-                                         
-    cmd  = "gnuplot -e  maxtime=%d "        % int(maxtime+10)
-    cmd +=        " -e  timetics=%d "       % timetics
-  # cmd +=        " -e  mtimetics=%d "      % mtimetics
-    cmd +=        " -e  maxslots=%d "       % maxslots
-    cmd +=        " -e  maxqueue=%d "       % maxqueue
-    cmd +=        " -e  slotsscale=%d "     % slotsscale
-    cmd +=        " -e  queuescale=%d "     % queuescale
-    cmd +=        " -e  'slotnum_list=\""
-    for idx,pid in enumerate(pids) :
-        cmd +=    "%d "     % (slots[idx])
-    cmd +=        "\"'"
-    cmd +=        " -e  nodesize=%d "       % nodesize
-    cmd +=        " -e 'dbname=\"%s\"' "    % dbname
-    cmd +=        " -e 'sname=\"%s\"' "     % session_name
-    cmd +=        " -e 'terms=\"%s\"' "     % terms
-    cmd +=        " -e 'plottitle=\"RADICAL-Pilot\\n============="
-    if plotname :
-        cmd +=    "\\n[%s]" % plotname
-    cmd +=        "\\nPilot and Unit Event Traces\\nSession %s\"' " % session_name
-    cmd +=        " -e  pilot_num=%d "       % len(pids)
-    cmd +=        " -e  'pilot_name_list=\""
-    for idx,pid in enumerate(pids) :
-        cmd +=    "%s[%d] " % (hosts[idx], slots[idx])
-    cmd +=        "\"'"
-    cmd +=        " -e  'pilot_id_list=\""
-    for idx,pid in enumerate(pids) :
-        cmd +=    "%s "       % (pids[idx])
-    cmd +=        "\"'"
-    cmd +=        "     %s "                        % plotfile
-
-  # print cmd
-    print "\nplotting..."
-    os.system (cmd) 
-
-    if  plotname :
-        os.system ("mv %s.png %s.png" % (dbname, plotname))
-        os.system ("mv %s.pdf %s.pdf" % (dbname, plotname))
-
-    for filename in delete_me :
-      # print "removing %s" % filename
-        try :
-          # os.remove (filename)
-            pass
-        except Exception as e :
-            print "Error removing %s: %s" % (filename, str(e))
-
-    DO_SPLOTS = False
-    if  not DO_SPLOTS :
-        return
-
-
-    # --------------------------------------------------------------------------
-    #
-    # also do splots
-    #
-    entity_states = dict ()
-
-    BEGIN  = ">"
-    END    = "<"
-    ONCE   = "!"
-    COLORS = {rp.NEW                     : ' 1',
-              rp.UNSCHEDULED             : ' 2',
-              rp.PENDING_INPUT_STAGING   : ' 3',
-              rp.STAGING_INPUT           : ' 4',
-              rp.PENDING_EXECUTION       : ' 5',
-              rp.SCHEDULING              : ' 6',
-              "Allocating"               : ' 8',
-              rp.EXECUTING               : ' 8',
-              rp.PENDING_OUTPUT_STAGING  : ' 9',
-              rp.STAGING_OUTPUT          : '10',
-              rp.DONE                    : '11',
-              rp.CANCELED                : '12',
-              rp.FAILED                  : '13'}
-
-    for pilot in docs['pilot'] :
-
-        this_pid = str(pilot['_id'])
-
-        with open ("/tmp/rp.%s.pilot.slots.%s.sdat" % (dbname, pid), "w") as dat :
-
-            for e in events :
-
-                etype   = e[0]
-                otype   = e[1]
-                uid     = e[2]
-                pid     = e[3]
-                ts      = e[4]
-                state   = e[5]
-                doc     = e[6]
-
-                if  pid != this_pid :
-                    continue
-
-                if  otype == 'unit' :
-
-                    if 'slots' in doc :
-                        slots = doc['slots']
-                    else :
-                        pprint.pprint (doc)
-                        slots = '?'
-
-                    color = COLORS[state]
-
-                    for slot in slots :
-
-                        if  not uid in entity_states :
-                            
-                            if  state not in [rp.EXECUTING] :
-                                continue
-
-                            entity_states[uid] = state
-                          # print      "%s %s%s %s"   % (ts, BEGIN, slot, COLORS[state])
-                            dat.write ("%s %s%s %s\n" % (ts, BEGIN, slot, COLORS[state]))
-
-                        else :
-                            old_state = entity_states[uid]
-                          # print      "%s %s%s %s"   % (ts, END,   slot, COLORS[old_state])
-                            dat.write ("%s %s%s %s\n" % (ts, END,   slot, COLORS[old_state]))
-
-                            entity_states[uid] = state
-                          # print      "%s %s%s %s"   % (ts, BEGIN, slot, COLORS[state])
-                            dat.write ("%s %s%s %s\n" % (ts, BEGIN, slot, COLORS[state]))
-
-
-    for pilot in docs['pilot'] :
-
-        this_pid = str(pilot['_id'])
-
-        with open ("/tmp/rp.%s.pilot.units.%s.sdat" % (dbname, pid), "w") as dat :
-
-            entity_states = dict()
-            idxs          = list()
-
-            # index the units by the start of their EXECUTING state
-            for e in events :
-
-                etype = e[0]
-                otype = e[1]
-                uid   = e[2]
-                pid   = e[3]
-                ts    = e[4]
-                state = e[5]
-                doc   = e[6]
-
-                if  pid != this_pid :
-                    continue
-
-                if  otype == 'unit' :
-                    if  state in [rp.EXECUTING] :
-                        idxs.append (uid)
-
-            for idx_id in idxs :
-
-                for e in events :
-
-                    etype = e[0]
-                    otype = e[1]
-                    uid   = e[2]
-                    pid   = e[3]
-                    ts    = e[4]
-                    state = e[5]
-                    doc   = e[6]
-
-                    if  idx_id != uid :
-                        continue
-
-                    if  pid != this_pid :
-                        continue
-
-                    if  otype == 'unit' :
-
-                        if 'slots' in doc :
-                            slots = doc['slots']
-                        else :
-                            slots = '?'
-
-                        for slot in slots :
-
-                            if  not uid in entity_states :
-
-                                entity_states[uid] = state
-
-                              # print      "%s %s%s %s"   % (ts, BEGIN, uid, COLORS[state])
-                                dat.write ("%s %s%s %s\n" % (ts, BEGIN, uid, COLORS[state]))
-
-                            else :
-
-                                old_state = entity_states[uid]
-                              # print      "%s %s%s %s"   % (ts, END,   uid, COLORS[old_state])
-                                dat.write ("%s %s%s %s\n" % (ts, END,   uid, COLORS[old_state]))
-
-                                entity_states[uid] = state
-                              # print      "%s %s%s %s"   % (ts, BEGIN, uid, COLORS[state])
-                                dat.write ("%s %s%s %s\n" % (ts, BEGIN, uid, COLORS[state]))
 
 
 # ------------------------------------------------------------------------------
@@ -1091,17 +766,15 @@ if __name__ == '__main__' :
             import json
             db_json = get_json (db, dbname, cachedir)
 
-            if   m == 'tree' : tree_database  (db_json, dbname, filters) 
-            elif m == 'dump' : dump_database  (db_json, dbname, filters)
-            elif m == 'sort' : sort_database  (db_json, dbname, filters)
-            elif m == 'hist' : hist_database  (db_json, dbname, filters)
-            elif m == 'stat' : stat_database  (db_json, dbname, filters)
+            if   m == 'tree' : tree_database  (db_json, dbname, filters, cachedir) 
+            elif m == 'dump' : dump_database  (db_json, dbname, filters, cachedir)
+            elif m == 'sort' : sort_database  (db_json, dbname, filters, cachedir)
+            elif m == 'hist' : hist_database  (db_json, dbname, filters, cachedir)
+            elif m == 'stat' : stat_database  (db_json, dbname, filters, cachedir)
             elif m == 'plot' : plot_database  (db_json, dbname, filters, term)
             elif m == 'help' : usage (noexit=True)
             else             : usage ("unknown mode '%s'" % mode)
 
-    # ------------------------------------------------------------------------------------
-    mongo.disconnect ()
 
 # ------------------------------------------------------------------------------
 

@@ -20,20 +20,18 @@ class WatcherMem (wb.WatcherBase) :
 
         wb.WatcherBase.__init__(self, pid)
 
+        self._old_sample = dict()
+        self._tot_sample = dict()
+
+
     def _pre_process  (self, config): 
 
         self._f = open('/proc/%s/status' % self._pid, 'r')
         self._data['mem']             = dict()
         self._data['mem']['sequence'] = list()
-        self._data['cpu']             = dict()
-        self._data['cpu']['sequence'] = list()
 
-        try:
-            self._f.seek(0,0)
-            data = self._f.read()
-        except Exception as e:
-            self.stop() 
-            return
+        self._f.seek(0,0)
+        data = self._f.read()
 
     
     # --------------------------------------------------------------------------
@@ -41,6 +39,10 @@ class WatcherMem (wb.WatcherBase) :
     def _post_process (self): 
 
         self._f.close()
+
+        # use the values from tot_sample as global total
+        for key,val in self._tot_sample.iteritems():
+            self._data['mem'][key] = val
 
 
     # --------------------------------------------------------------------------
@@ -50,24 +52,43 @@ class WatcherMem (wb.WatcherBase) :
         try:
             self._f.seek(0,0)
             data = self._f.read()
+
         except Exception as e:
-            self.stop() 
+            # FIXME: use log
+            print "mem data source is gone (%s)" % e
             return
 
-        item = dict()
-        memk = {'VmSize' : 'size', 
-                'VmRSS'  : 'rss'}
-        glob = {'VmPeak' : 'peak'}
+        sample = dict()
+        memk   = {'VmSize' : 'size', 
+                  'VmRSS'  : 'rss'}
+        glob   = {'VmPeak' : 'peak'}
+
         for line in data.split('\n'):
             if not ':' in line:
                 continue
             key, val = line.split (':', 1)
-            if   key.strip() in memk        : item[memk[key]]              = human_to_number (val)
-            elif key.strip() in glob        : self._data['mem'][glob[key]] = human_to_number (val)
-          # elif key.strip() in ['Threads'] :
-          #     self._data['cpu']['sequence'].append([now,{'threads': int(val)}])
+            if   key.strip() in memk : sample[memk[key]]            = human_to_number (val)
+            elif key.strip() in glob : self._data['mem'][glob[key]] = human_to_number (val)
 
-        self._data['mem']['sequence'].append ([now, item])
+
+        # keep the max vals in tot_sample
+        for key,val in sample.iteritems():
+            self._tot_sample[key] = max(self._tot_sample.get(key, 0), val)
+
+
+        # we don't want abs values but incremental changes
+        for key in sample:
+
+            val = sample[key]
+            old = self._old_sample.get(key)
+
+            if old:
+                sample[key] = val - old
+
+            self._old_sample[key] = val
+
+
+        self._data['mem']['sequence'].append ([now, sample])
 
 
 # ------------------------------------------------------------------------------

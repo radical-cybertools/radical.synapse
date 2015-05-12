@@ -133,13 +133,7 @@ def profile_function (func, *args, **kwargs) :
         threading.Timer (2.0, _killproc, [prof.pid]).start ()
         out = prof.communicate()[0]
 
-      # pprint.pprint (info)
-      # pprint.pprint (_parse_perf_output (out))
         ru.dict_merge (info, _parse_perf_output (out), policy='overwrite')
-      # print '~~~~~~~~~~~~~~~~~~'
-      # pprint.pprint (info)
-      # print '~~~~~~~~~~~~~~~~~~'
-
 
         cycles_used = info['cpu']['ops'] / info['cpu']['flops_per_cycle']
         cycles_max  = info['cpu']['frequency'] * info['time']['real']
@@ -147,17 +141,6 @@ def profile_function (func, *args, **kwargs) :
         cycles_max = max (1, cycles_max) # make sure its nonzero...
 
         info['cpu']['utilization'] = cycles_used / cycles_max
-
-      # print "utilization    : %s \n" % info['cpu']['utilization']
-      #
-      # print "cycles_max     : %s " % cycles_max
-      # print "frequency      : %s " % info['cpu']['frequency']
-      # print "time           : %s \n" % info['time']['real']
-      #
-      # print "cycles_used    : %s " % cycles_used
-      # print "cycles         : %s " % info['cpu']['cycles']
-      # print "stalled_front  : %s " % info['cpu']['cycles_stalled_front']
-      # print "stalled_back   : %s " % info['cpu']['cycles_stalled_back']
 
       # don't return any stdout, thus the None
 
@@ -199,7 +182,6 @@ def profile_command (command) :
   # # we also use 'time -v', so wrap once moe
   # command = "/usr/bin/time -v %s" % command
 
-    print command
     start = rsu.timestamp()
 
     # run the profiled command in a separate process
@@ -227,27 +209,20 @@ def profile_command (command) :
         watcher.join ()
         ru.dict_merge (info, watcher.get_data())
 
+    # allow watchers to finalize some stuff, now having data from other watchers
+    # available
+    for watcher in reversed(watchers) :
+        watcher.finalize(info)
 
     time_2 = rsu.timestamp()
     load_2 = float(os.popen (_LOAD_CMD).read())
     info['cpu']['load'] = max(load_1, load_2)
     rsu.logger.info ("system load %s: %s" % (_LOAD, info['cpu']['load']))
-
+   
     if  _LOAD > 0 :
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")
-
-  # print "utilization    : %s \n" % info['cpu']['utilization']
-  #
-  # print "cycles_max     : %s " % cycles_max
-  # print "frequency      : %s " % info['cpu']['frequency']
-  # print "time           : %s \n" % info['time']['real']
-  #
-  # print "cycles_used    : %s " % cycles_used
-  # print "cycles         : %s " % info['cpu']['cycles']
-  # print "stalled_front  : %s " % info['cpu']['cycles_stalled_front']
-  # print "stalled_back   : %s " % info['cpu']['cycles_stalled_back']
 
     rsu.store_profile (command, info)
 
