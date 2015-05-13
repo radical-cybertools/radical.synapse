@@ -53,7 +53,7 @@ class WatcherIO (wb.WatcherBase) :
 
         except Exception as e:
             # FIXME: use log
-            print "i_o data source is gone (%s)" % e
+          # print "i_o data source is gone (%s)" % e
             return
 
         sample = dict()

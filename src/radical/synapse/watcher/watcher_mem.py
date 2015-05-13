@@ -55,7 +55,7 @@ class WatcherMem (wb.WatcherBase) :
 
         except Exception as e:
             # FIXME: use log
-            print "mem data source is gone (%s)" % e
+          # print "mem data source is gone (%s)" % e
             return
 
         sample = dict()
