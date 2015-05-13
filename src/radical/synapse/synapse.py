@@ -173,6 +173,13 @@ def emulate (command) :
         info_m = app_m.wait ()
         info_s = app_s.wait ()
      #  info_n = app_n.wait ()
+       
+        print "-------------------------------"
+
+        info_c = app_c.stop ()
+        info_m = app_m.stop ()
+        info_s = app_s.stop ()
+     #  info_n = app_n.stop ()
 
       # time_c = float(info_c['timer'])
       # time_m = float(info_m['timer'])
