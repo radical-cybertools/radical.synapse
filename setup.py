@@ -167,6 +167,7 @@ setup_args = {
     'scripts'            : ['bin/radical-synapse-version.py',
                             'bin/radical-synapse-profile.py',
                             'bin/radical-synapse-stats.py',
+                            'bin/radical-synapse-stats.plot',
                             'bin/radical-synapse-emulate.py',
                             'bin/radical-synapse-mandelbrot-dummy.py',
                             'bin/radical-synapse-mandelbrot-master.py',
