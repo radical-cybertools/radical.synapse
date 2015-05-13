@@ -7,19 +7,41 @@ import time
 from   pprint import pprint
 
 import radical.synapse       as rs
-import radical.synapse.atoms as sa
+import radical.synapse.atoms as rsa
+
+
+def func ():
+    c = rsa.Storage ()
+    m = rsa.Memory ()
+    s = rsa.Storage ()
+    
+    for i in range (3):
+        c.run ({'n' : 1000})
+        m.run ({'n' : 1000})
+        s.run ({'n' : 1000})
+        i = c.wait ()
+        i = m.wait ()
+        i = s.wait ()
+    
+    c.stop()
+    m.stop()
+    s.stop()
+
+rs.emulate ('sleep 10')
+
 
 def sleep (delay) :
     time.sleep (delay)
+
+info, ret, out = rs.profile ('sleep 10');         
+pprint (info)
 
 command = rs.synapsify ('sleep 10', rs.NOTHING)
 command = rs.synapsify ('sleep 10', rs.PROFILE)
 command = rs.synapsify ('sleep 10', rs.EMULATE)
 
-info, ret, out = rs.profile (function=sleep, 1 ); pprint (info)
-info, ret, out = rs.profile (command='python '); pprint (info)
-info, ret, out = rs.profile (command='sleep 10'); pprint (info)
-info, ret, out = rs.emulate ('sleep 10'); pprint (info)
+info, ret, out = rs.emulate ('sleep 10');         
+pprint (info)
 
 sys.exit (0)
 
@@ -47,10 +69,10 @@ with open ('%s/synapse/experiments/%s.dat' % (home, host), 'a') as f :
     for i in range (0, load_instances) :
 
         app = dict()
-        app['c'] = sa.Compute ()
-        app['m'] = sa.Memory  ()
-        app['s'] = sa.Storage ()
-      # app['n'] = sa.Network ()
+        app['c'] = rsa.Compute ()
+        app['m'] = rsa.Memory  ()
+        app['s'] = rsa.Storage ()
+      # app['n'] = rsa.Network ()
 
         apps.append (app)
 
