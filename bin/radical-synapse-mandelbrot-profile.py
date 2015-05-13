@@ -97,7 +97,7 @@ def main (cfg_list) :
 
         for iter in range (iters) :
 
-            info_run, ret, out = rs.profile_function (mandel, x, y, z)
+            info_run, ret, out = rs.profile (mandel, x, y, z)
 
             if not 'utilization' in info_run['cpu'] : info_run['cpu']['utilization' ] = 0
             if not 'efficiency'  in info_run['cpu'] : info_run['cpu']['efficiency'  ] = 0

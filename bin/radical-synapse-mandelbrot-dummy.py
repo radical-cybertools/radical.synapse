@@ -179,7 +179,7 @@ for stress in range(12,13) :
     
             for iter in range (iters) :
     
-                info_pro, ret, out = rs.profile_function (mandel, x, y, z)
+                info_pro, ret, out = rs.profile (mandel, x, y, z)
     
                 load_compute = float(info_pro['cpu']['ops' ]) / (1024*1024) / 8
                 load_memory  = float(info_pro['mem']['peak']) / (1024*1024)
@@ -287,7 +287,7 @@ for stress in range(12,13) :
     
             for iter in range (iters) :
     
-                info_s, ret, out = rs.profile_function (synaptic, x, y, z,
+                info_s, ret, out = rs.profile (synaptic, x, y, z,
                         iter_1_mean_cpu, iter_1_mean_mem, iter_1_mean_io)
     
               # print "#####################"

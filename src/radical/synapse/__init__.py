@@ -12,9 +12,8 @@ from synapsify import NOTHING
 from synapsify import PROFILE
 from synapsify import EMULATE
 
-from synapse   import profile_function
-from synapse   import profile_command
-from synapse   import emulate_command
+from synapse   import profile
+from synapse   import emulate
 
 
 

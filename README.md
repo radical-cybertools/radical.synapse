@@ -13,7 +13,7 @@ code.  Parameterization can be static, dynamic, according to some distribution,
 etc.
 
 Initial parameters are obtained by profiling applications
-(`synapse.utils.profile_function`).  Synapse runs are also profiled again, to
+(`radical.synapse.profile`).  Synapse runs are also profiled again, to
 verify correct emulation -- see [figure 1][experiments/synapse_mandelbrot_boskop.png]
 
 Figure 1: Mandelbrot as master-worker implementation -- measure TTC on a single

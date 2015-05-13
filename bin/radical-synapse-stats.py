@@ -10,13 +10,8 @@ import radical.pilot       as rp
 import radical.pilot.utils as rpu
 
 
-_DEFAULT_DBURL = 'mongodb://localhost:27017/'
+_DEFAULT_DBURL = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-if  'RADICAL_SYNAPSE_DBURL' in os.environ :
-    _DEFAULT_DBURL = os.environ['RADICAL_SYNAPSE_DBURL']
-
-
-_DEFAULT_DBURL = str(ru.Url(_DEFAULT_DBURL))
 
 # ------------------------------------------------------------------------------
 #
@@ -498,7 +493,7 @@ def plot_database (db_json, dbname, filters, term) :
                 max_tot_ops   = max(max_tot_ops  , ops  )
                 max_load      = max(max_load     , load )
 
-                print "%s - %s" % (ops, max_tot_ops)
+              # print "%s - %s" % (ops, max_tot_ops)
 
                 # ('id', 'runtime', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
                 dat_tot_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.3f  %15.2f  %15d  %15d\n' \
