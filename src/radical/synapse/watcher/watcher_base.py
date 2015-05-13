@@ -79,6 +79,7 @@ class WatcherBase (threading.Thread) :
 
                 now = timestamp()
                 self._sample(now)
+                
                 time.sleep (sleeptime)
 
             self._post_process()

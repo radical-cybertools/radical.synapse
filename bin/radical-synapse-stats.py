@@ -360,179 +360,188 @@ def plot_database (db_json, dbname, filters, term) :
     max_inc_flops = 0.0
     max_inc_ops   = 0.0
 
-    for doc in db_json :
+    profile_id = 0
+    for doc in sorted(db_json, key=lambda x:x['profile']['time']['real']):
 
-        idx        = doc['command_idx']
-        profile_id = 0
+        # FIXME: make flag
+        mode_tag = 'emu'  # plot emulated runs
+        mode_tag = 'pro'  # plot profiled runs
 
-      # print "\nindex: %s" % idx
-
-      # for profile in doc['profiles'] :
-        for profile in sorted(doc['profiles'], key=lambda x:x['time']['real']):
-
-            profile_id += 1
-
-            perf = profile.get ('time')
-            mem  = profile.get ('mem')
-            cpu  = profile.get ('cpu')
-            io   = profile.get ('i_o')
-            cmd  = profile.get ('cmd')
-
-            accept = False
-
-            if not filters:
-                accept = True
-            else:
-                for f in filters :
-                    if f in cmd:
-                        accept = True
-
-            if not accept:
-              # print "ignore %s" % cmd
+        if mode_tag == 'pro' :
+            if doc['emulated']:
                 continue
 
-          # print "  command: %s" % cmd
-          # print "  time   : %s" % perf['real']
-          # print "%s %s" % (perf['real'], cmd)
+        if mode_tag == 'emu' :
+            if not doc['emulated']:
+                continue
 
-            real = perf['real']
+        profile     = doc['profile']
+        profile_id += 1
 
-            max_runtime = max(max_runtime, real)
+        perf = profile.get ('time')
+        mem  = profile.get ('mem')
+        cpu  = profile.get ('cpu')
+        io   = profile.get ('i_o')
+        cmd  = profile.get ('cmd')
 
-            if mem:
+        accept = False
 
-              # dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'rss',  'size', 'peak'))
-                dat_tot_mem.write("  %15s  %15.2f  %15d  %15d  %15d\n"
-                        % (profile_id, real, mem['rss'], mem['size'], mem['peak']))
+        if not filters:
+            accept = True
+        else:
+            for f in filters :
+                if f in cmd:
+                    accept = True
 
-                max_tot_mem = max(max_tot_mem, mem['rss'])
-                max_tot_mem = max(max_tot_mem, mem['size'])
-                max_tot_mem = max(max_tot_mem, mem['peak'])
+        if not accept:
+          # print "ignore %s" % cmd
+            continue
 
-                acc_mem_size = 0.0
-                acc_mem_rss  = 0.0
+      # print "  command: %s" % cmd
+      # print "  time   : %s" % perf['real']
+      # print "%s %s" % (perf['real'], cmd)
 
-                dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
-                        % (profile_id, 0.0, acc_mem_rss, acc_mem_size))
+        real = perf['real']
 
-                for s in mem['sequence']:
+        max_runtime = max(max_runtime, real)
 
-                    if not s[1]:
-                        continue
+        if mem:
 
-                  # print 'm',
-                    dat_inc_mem.write("  %15s  %15.2f  %15d  %15d\n"
-                            % (profile_id, s[0], s[1]['rss'], s[1]['size']))
+            if not 'rss' in mem:
+                continue
 
-                    max_inc_mem = max(max_inc_mem, s[1]['rss'])
-                    max_inc_mem = max(max_inc_mem, s[1]['size'])
+          # dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'rss',  'size', 'peak'))
+            dat_tot_mem.write("  %15s  %15.2f  %15d  %15d  %15d\n"
+                    % (profile_id, real, mem['rss'], mem['size'], mem['peak']))
 
-                    acc_mem_rss  += s[1]['rss']
-                    acc_mem_size += s[1]['size']
+            max_tot_mem = max(max_tot_mem, mem['rss'])
+            max_tot_mem = max(max_tot_mem, mem['size'])
+            max_tot_mem = max(max_tot_mem, mem['peak'])
 
-                    dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
-                            % (profile_id, s[0], acc_mem_rss, acc_mem_size))
+            acc_mem_size = 0.0
+            acc_mem_rss  = 0.0
 
-                dat_inc_mem.write("\n")
-                dat_acc_mem.write("\n")
+            dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
+                    % (profile_id, 0.0, acc_mem_rss, acc_mem_size))
 
+            for s in mem['sequence']:
 
-            if io:
-
-                if not 'read' in io:
+                if not s[1]:
                     continue
 
-              # dat_tot_io.write("# %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'read', 'write'))
-                dat_tot_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
-                        % (profile_id, real, io['read'], io['write']))
+              # print 'm',
+                dat_inc_mem.write("  %15s  %15.2f  %15d  %15d\n"
+                        % (profile_id, s[0], s[1]['rss'], s[1]['size']))
 
-                max_tot_read  = max(max_tot_read,  io['read'])
-                max_tot_write = max(max_tot_write, io['write'])
-                max_tot_io    = max(max_tot_read,  max_tot_write)
+                max_inc_mem = max(max_inc_mem, s[1]['rss'])
+                max_inc_mem = max(max_inc_mem, s[1]['size'])
 
-                acc_io_read  = 0.0
-                acc_io_write = 0.0
+                acc_mem_rss  += s[1]['rss']
+                acc_mem_size += s[1]['size']
+
+                dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
+                        % (profile_id, s[0], acc_mem_rss, acc_mem_size))
+
+            dat_inc_mem.write("\n")
+            dat_acc_mem.write("\n")
+
+
+        if io:
+
+            if not 'read' in io:
+                continue
+
+          # dat_tot_io.write("# %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'read', 'write'))
+            dat_tot_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
+                    % (profile_id, real, io['read'], io['write']))
+
+            max_tot_read  = max(max_tot_read,  io['read'])
+            max_tot_write = max(max_tot_write, io['write'])
+            max_tot_io    = max(max_tot_read,  max_tot_write)
+
+            acc_io_read  = 0.0
+            acc_io_write = 0.0
+
+            dat_acc_io.write("  %15s  %15.2f  %15d  %15d\n"
+                    % (profile_id, 0.0, acc_io_read, acc_io_write))
+
+            for s in io['sequence']:
+
+              # print 'i',
+                dat_inc_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
+                        % (profile_id, s[0], s[1]['read'], s[1]['write']))
+
+                max_inc_read  = max(max_inc_read,  s[1]['read'])
+                max_inc_write = max(max_inc_write, s[1]['write'])
+                max_inc_io    = max(max_inc_read,  max_inc_write)
+
+                acc_io_read  += s[1]['read']
+                acc_io_write += s[1]['write']
 
                 dat_acc_io.write("  %15s  %15.2f  %15d  %15d\n"
-                        % (profile_id, 0.0, acc_io_read, acc_io_write))
+                        % (profile_id, s[0], acc_io_read, acc_io_write))
 
-                for s in io['sequence']:
-
-                  # print 'i',
-                    dat_inc_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
-                            % (profile_id, s[0], s[1]['read'], s[1]['write']))
-
-                    max_inc_read  = max(max_inc_read,  s[1]['read'])
-                    max_inc_write = max(max_inc_write, s[1]['write'])
-                    max_inc_io    = max(max_inc_read,  max_inc_write)
-
-                    acc_io_read  += s[1]['read']
-                    acc_io_write += s[1]['write']
-
-                    dat_acc_io.write("  %15s  %15.2f  %15d  %15d\n"
-                            % (profile_id, s[0], acc_io_read, acc_io_write))
-
-                dat_inc_io.write("\n")
-                dat_acc_io.write("\n")
+            dat_inc_io.write("\n")
+            dat_acc_io.write("\n")
 
 
-            if cpu:
+        if cpu:
 
-                mega    = 1024*1024
+            mega    = 1024*1024
 
-                flops   = int(cpu['ops'] / mega / real)
-                ops     = int(cpu['ops'] / mega)
-                effic   = float(cpu['efficiency'])
-                utili   = float(cpu['utilization'])
-                load    = cpu['load']
-                fpc     = cpu['flops_per_core']
-                threads = cpu.get('threads', 1)
-              # fpc     = 13600000000/4/4
+            flops   = int(cpu['ops'] / mega / real)
+            ops     = int(cpu['ops'] / mega)
+            effic   = float(cpu['efficiency'])
+            utili   = float(cpu['utilization'])
+            load    = cpu['load']
+            fpc     = cpu['flops_per_core']
+            threads = cpu.get('threads', 1)
+          # fpc     = 13600000000/4/4
 
-                max_tot_flops = max(max_tot_flops, flops)
-                max_tot_ops   = max(max_tot_ops  , ops  )
-                max_load      = max(max_load     , load )
+            max_tot_flops = max(max_tot_flops, flops)
+            max_tot_ops   = max(max_tot_ops  , ops  )
+            max_load      = max(max_load     , load )
 
-              # print "%s - %s" % (ops, max_tot_ops)
+          # print "%s - %s" % (ops, max_tot_ops)
 
-                # ('id', 'runtime', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
-                dat_tot_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.3f  %15.2f  %15d  %15d\n' \
-                        % (profile_id, real, ops, flops, effic, utili, load, fpc, threads))
+            # ('id', 'runtime', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
+            dat_tot_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.3f  %15.2f  %15d  %15d\n' \
+                    % (profile_id, real, ops, flops, effic, utili, load, fpc, threads))
 
-                acc_cpu_ops   = 0.0
+            acc_cpu_ops   = 0.0
+            dat_acc_cpu.write('  %15d  %15.2f  %15d\n' \
+                    % (profile_id, 0.0, acc_cpu_ops))
+
+            for s in cpu['sequence']:
+
+              # print 'c',
+                ts      = s[0]
+                sample  = s[1]
+                real    = sample.get('real', 0)
+                threads = sample.get('threads', 1)
+                ops     = sample.get('ops', 0)
+                utili   = sample.get('utilization', 0)
+                effic   = sample.get('efficiency', 0)
+                flops   = sample.get('flops', 0)
+
+                if not real or not ops:
+                    print "warning: no time diff between samples? %s" % sample
+                    continue
+
+                max_inc_ops   = max(max_inc_ops  , ops  )
+                max_inc_flops = max(max_inc_flops, flops)
+
+                # ('id', 'runtime', 'ops', 'efficiency', 'utilization'))
+                dat_inc_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.2f\n' \
+                        % (profile_id, ts, ops, flops, effic, utili))
+
+                acc_cpu_ops += ops
                 dat_acc_cpu.write('  %15d  %15.2f  %15d\n' \
-                        % (profile_id, 0.0, acc_cpu_ops))
+                        % (profile_id, ts, acc_cpu_ops))
 
-                for s in cpu['sequence']:
-
-                  # print 'c',
-                    ts      = s[0]
-                    sample  = s[1]
-                    real    = sample.get('real', 0)
-                    threads = sample.get('threads', 1)
-                    ops     = sample.get('ops', 0)
-                    utili   = sample.get('utilization', 0)
-                    effic   = sample.get('efficiency', 0)
-                    flops   = sample.get('flops', 0)
-
-                    if not real or not ops:
-                        print "warning: no time diff between samples? %s" % sample
-                        continue
-
-                    max_inc_ops   = max(max_inc_ops  , ops  )
-                    max_inc_flops = max(max_inc_flops, flops)
-
-                    # ('id', 'runtime', 'ops', 'efficiency', 'utilization'))
-                    dat_inc_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.2f\n' \
-                            % (profile_id, ts, ops, flops, effic, utili))
-
-                    acc_cpu_ops += ops
-                    dat_acc_cpu.write('  %15d  %15.2f  %15d\n' \
-                            % (profile_id, ts, acc_cpu_ops))
-
-                dat_inc_cpu.write("\n")
-                dat_acc_cpu.write("\n")
-             
+            dat_inc_cpu.write("\n")
+            dat_acc_cpu.write("\n")
+         
     dat_tot_mem.close()
     dat_tot_io .close()
     dat_tot_cpu.close()
@@ -567,8 +576,8 @@ def plot_database (db_json, dbname, filters, term) :
     bounds += " -e max_tasks='\"%d\"'"     % profile_id
 
 
-    os.system("gnuplot -e experiment='\"%s\"' %s %s/radical-synapse-stats.plot" \
-            % (dbname, bounds, os.path.dirname(__file__)))
+    os.system("gnuplot -e experiment='\"%s_%s\"' %s %s/radical-synapse-stats.plot" \
+            % (dbname, mode_tag, bounds, os.path.dirname(__file__)))
 
 
 
