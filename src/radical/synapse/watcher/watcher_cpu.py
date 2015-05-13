@@ -307,7 +307,7 @@ class WatcherCPU (wb.WatcherBase) :
     
             l = ru.ReString (line)
     
-            print "line: %s" % line
+          # print "line: %s" % line
     
             while l // (perf_pat) :
     

@@ -12,10 +12,9 @@ if len(sys.argv) < 2 :
     sys.exit (0)
 
 info, ret, out = radical.synapse.profile (' '.join (sys.argv[1:]))
-# info, ret, out = radical.synapse.profile (time.sleep, 10)
 
-print out
-pprint.pprint (info)
+# print out           # FIXME: make flag
+pprint.pprint (info)  # FIXME: make flag
 
 sys.exit (ret)
 
