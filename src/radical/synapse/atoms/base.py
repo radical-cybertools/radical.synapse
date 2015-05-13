@@ -33,20 +33,15 @@ class AtomBase (object) :
     def __init__  (self, atype) :
 
 
-        self.atype  = atype
-        self.aid    = ru.generate_id ("%-10s" % atype)
-        self.logger = rul.getLogger (self.aid)
+        self._atype = atype
+        self._pid   = os.getpid ()
+        self._uid   = ru.generate_id ("%-10s" % self._atype)
+        self.logger = rul.getLogger ("radical.synapse.%s" % self._uid)
 
 
         # storage for temporary data and statistics
-        self.info    = None
-        self._proc   = None
-        self._uid    = os.getuid ()
-        self._pid    = os.getpid ()
-     #  self._tmpdir = "/tmp/synapse_%d_%d" % (self._uid, self._pid)
-        self._tmpdir = "/tmp/"             # FIXME
      #  self._tmpdir = "/scratch/synapse/" # FIXME
-
+        self._tmpdir = "/tmp/"             # FIXME
 
         try:
             os.makedirs (self._tmpdir)
@@ -56,7 +51,7 @@ class AtomBase (object) :
             else: raise
 
         # create our C-based workload script in tmp space
-        self._exe = "%s/synapse_%s"  %  (self._tmpdir, atype)
+        self._exe = "%s/synapse_%s"  %  (self._tmpdir, self._atype)
 
         # already have the tool?
         if  not os.path.isfile (self._exe) :
@@ -64,7 +59,7 @@ class AtomBase (object) :
             # if not, we compile it on the fly...
             # Note that the program below will actually, for each flop, also create
             # 3 INTEGER OPs and 1 Branching instruction.
-            code = open (os.path.dirname(__file__) + '/synapse_%s.c' % atype).read ()
+            code = open (os.path.dirname(__file__) + '/synapse_%s.c' % self._atype).read ()
 
             p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._exe,
                                   shell=True,
@@ -74,52 +69,13 @@ class AtomBase (object) :
             (pout, perr) = p.communicate (code)
 
             if  p.returncode :
-                raise Exception("Couldn't create %s: %s : %s" % (atype, pout, perr))
+                raise Exception("Couldn't create %s: %s : %s" % (self._atype, pout, perr))
 
+        # start worker process
+        self._work_queue   = multiprocessing.Queue ()
+        self._result_queue = multiprocessing.Queue ()
 
-    # --------------------------------------------------------------------------
-    #
-    @rus.takes   ('AtomBase')
-    @rus.returns (rus.nothing)
-    def work (self, *args) :
-
-        cmd = self._exe
-        for arg in args :
-            cmd += ' %s' % str(arg)
-
-      # print "start %-10s (%s) (%s)" % (self.atype, self.aid, cmd)
-
-        t_start = time.time ()
-
-        mem = 0
-      # p = subprocess.Popen ("/usr/bin/time -v perf stat %s" % cmd,
-        p = subprocess.Popen ("%s" % cmd, 
-                              shell=True,
-                              stdin=subprocess.PIPE, 
-                              stdout=subprocess.PIPE, 
-                              stderr=subprocess.PIPE)
-
-        pout, perr = p.communicate ()
-
-        info = {'timer'    : float("%3.2f" % (time.time () - t_start)),
-                'exitcode' : int(p.returncode), 
-                'out'      : pout.split ('\n'), 
-                'err'      : perr.split ('\n')}
-
-      # import pprint
-      # pprint.pprint (info)
-
-        self._queue.put (info)
-
-
-    # --------------------------------------------------------------------------
-    #
-    @rus.takes   ('AtomBase')
-    @rus.returns (rus.nothing)
-    def _run (self, *args) : 
-
-        self._queue = multiprocessing.Queue ()
-        self._proc  = multiprocessing.Process (target=self.work, args=args)
+        self._proc  = multiprocessing.Process (target=self.work)
         self._proc.start ()
 
 
@@ -129,23 +85,75 @@ class AtomBase (object) :
     @rus.returns (basestring)
     def __str__  (self) :
 
-        return self.aid
+        return self._uid
 
 
     # --------------------------------------------------------------------------
     #
     @rus.takes   ('AtomBase')
-    @rus.returns (float)
+    @rus.returns (rus.nothing)
+    def work (self) :
+
+        while True :
+
+            data = self._work_queue.get ()
+
+            if data == None:
+                # signal to finish
+                return
+
+            args = data
+            cmd  = self._exe
+            for arg in args:
+                cmd += " %s" % str(arg)
+
+          # print "start %-10s (%s) (%s)" % (self._atype, self._uid, cmd)
+
+            t_start = time.time ()
+            proc    = subprocess.Popen ("%s" % cmd, 
+                                        shell=True,
+                                        stdin=subprocess.PIPE, 
+                                        stdout=subprocess.PIPE, 
+                                        stderr=subprocess.PIPE)
+
+            pout, perr = proc.communicate ()
+            info       = {'timer' : float("%3.2f" % (time.time () - t_start)),
+                          'ret'   : int(proc.returncode), 
+                          'out'   : pout, 
+                          'err'   : perr}
+
+            self._result_queue.put (info)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('AtomBase')
+    @rus.returns (rus.nothing)
+    def _run (self, *args) : 
+
+        self._work_queue.put (args)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('AtomBase')
+    @rus.returns (dict)
     def wait (self) :
+
+        return self._result_queue.get ()
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('AtomBase')
+    @rus.returns (rus.nothing)
+    def stop (self) :
+
+        self._work_queue.put (None) # signal finish
 
         if  self._proc :
             self._proc.join ()
 
-        if  not self.info :
-            self.info = self._queue.get ()
 
-        return self.info
-
-
-
+# ------------------------------------------------------------------------------
 

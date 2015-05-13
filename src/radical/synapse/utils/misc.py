@@ -156,7 +156,7 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
         dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if not dburl:
-        raise ValueError ("need dburl for storing profiles")
+        raise ValueError ("need dburl to retrieve profiles")
 
     command_idx = index_command (command, tags)
 
