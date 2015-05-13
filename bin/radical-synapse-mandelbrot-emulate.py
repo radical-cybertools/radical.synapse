@@ -78,7 +78,7 @@ def main (cfg_list) :
 
         for iter in range (iters) :
 
-            info_emu, ret, out = rs.profile_function (synaptic, compute, memory, storage)
+            info_emu, ret, out = rs.profile (synaptic, compute, memory, storage)
 
             if not 'utilization' in info_emu['cpu'] : info_emu['cpu']['utilization' ] = 0
             if not 'efficiency'  in info_emu['cpu'] : info_emu['cpu']['efficiency'  ] = 0

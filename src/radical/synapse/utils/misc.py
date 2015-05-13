@@ -12,9 +12,6 @@ import radical.utils.logger as rul
 # pudb.set_interrupt_handler ()
 
 
-_DEFAULT_DBURL = 'mongodb://localhost:27017/synapse_v0_5'
-PROFILE_DBURL  = os.environ.get ('RADICAL_SYNAPSE_DBURL', _DEFAULT_DBURL)
-
 LOAD        = int (os.environ.get ('RADICAL_SYNAPSE_LOAD', '0'))
 LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
 LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
@@ -116,91 +113,81 @@ def time_to_seconds (t) :
 
 
 # ------------------------------------------------------------------------------
-def store_profile (command, info) :
+def store_profile (profile, tags=None, dburl=None, emulated=False) :
 
-    # FIXME: this should probably use find_and_modify.  Also, the index should
-    # be a MongoDB index (to ensure uniqueness)
+    if not dburl:
+        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    command_idx = index_command (command)
+    if not dburl:
+        raise ValueError ("need dburl for storing profiles")
 
-    print 'dburl: %s' % PROFILE_DBURL
+    if not tags:
+        tags = dict()
+        if 'RADICAL_SYNAPSE_TAGS' in os.environ:
+            for elem in os.environ['RADICAL_SYNAPSE_TAGS'].split(','):
+                key, val  = elem.split(':', 1)
+                tags[key] = val
 
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_DBURL)
+    command_idx = index_command (profile['cmd'], tags)
 
-  # print 'url       : %s' % PROFILE_DBURL
-  # print 'host      : %s' % host
-  # print 'port      : %s' % port
-  # print 'database  : %s' % dbname
+    print 'store profile at %s' % dburl
+
+    [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
     database   = db_client[dbname]
     collection = database['profiles']
 
-    results    = collection.find ({'type'        : 'profile', 
-                                   'command_idx' : command_idx})
+    # create new profile
+    doc = {'type'        : 'synapse_profile', 
+           'emulated'    : emulated,
+           'command_idx' : command_idx, 
+           'command'     : profile['cmd'], 
+           'tags'        : tags, 
+           'profile'     : profile}
 
-    if  results.count() :
-        # expand existing profile
-        profile = results[0]
-    else:
-        # create new profile
-        profile = {'type'        : 'profile', 
-                   'command_idx' : command_idx, 
-                   'profiles'    : list()}
-
-
-    profile['profiles'].append (info)
-
-    collection.save (profile)
-  # print 'profile stored in %s' % [host, port, dbname, 'profiles']
+    collection.insert (doc)
 
 
 # ------------------------------------------------------------------------------
-def get_profile (command) :
+def get_profiles (command, tags=None, dburl=None, emulated=False) :
 
-    command_idx = index_command (command)
+    if not dburl:
+        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (PROFILE_DBURL)
+    if not dburl:
+        raise ValueError ("need dburl for storing profiles")
 
-  # print 'url       : %s' % PROFILE_DBURL
-  # print 'host      : %s' % host
-  # print 'port      : %s' % port
-  # print 'database  : %s' % dbname
+    command_idx = index_command (command, tags)
+
+    [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
 
     db_client  = pymongo.MongoClient (host=host, port=port)
     database   = db_client[dbname]
     collection = database['profiles']
 
-    results    = collection.find ({'type'    : 'profile', 
-                                   'command' : command,
-                                   'index'   : command_idx})
+    # FIXME: eval tags
+
+    results = collection.find ({'type'        : 'synapse_profile', 
+                                'emulated'    : emulated,
+                                'command_idx' : command_idx})
 
     if  not results.count() :
-        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, PROFILE_DBURL))
+        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, dburl))
 
+    ret = list(results)
 
-  # print 'profile retrieved from %s' % [host, port, dbname, 'profiles']
-  # pprint.pprint (results[0])
-    return results[0]
+    print 'retrieved %d profiles from %s' % (len(ret), dburl)
+  # pprint.pprint (ret)
+
+    return ret
 
 
 # ------------------------------------------------------------------------------
 #
-def index_command (command) :
+def index_command (command, tags=None) :
 
-    # for now, only index by executable name.  We assume that this is the first
-    # element of the command -- but if that is a known interpreter, we use the
-    # second element (assuming it is a script name)
-    elems = command.split()
-
-    if elems[0] in ['python', 'sh', 'bash', '/bin/sh', 'time'] :
-        # return the first element which is not an option
-        for elem in elems[1:] :
-            if not elem.startswith ('-') :
-                return elem
-
-    # all others, index by first element
-    return elems[0]
+    return str(command)
 
 
 # ------------------------------------------------------------------------------

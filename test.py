@@ -16,10 +16,10 @@ command = rs.synapsify ('sleep 10', rs.NOTHING)
 command = rs.synapsify ('sleep 10', rs.PROFILE)
 command = rs.synapsify ('sleep 10', rs.EMULATE)
 
-info, ret, out = rs.profile_function (sleep, 1 ); pprint (info)
-info, ret, out = rs.profile_command  ('python '); pprint (info)
-info, ret, out = rs.profile_command  ('sleep 10'); pprint (info)
-info, ret, out = rs.emulate_command  ('sleep 10'); pprint (info)
+info, ret, out = rs.profile (function=sleep, 1 ); pprint (info)
+info, ret, out = rs.profile (command='python '); pprint (info)
+info, ret, out = rs.profile (command='sleep 10'); pprint (info)
+info, ret, out = rs.emulate ('sleep 10'); pprint (info)
 
 sys.exit (0)
 
