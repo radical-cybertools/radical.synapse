@@ -13,7 +13,7 @@
 
 
 #define CHUNKSIZE  (1024 * 1024)  /* 2^20 */
-#define RUSAGE     0
+#define PROFILE    0
 
 int main (int argc, char** argv)
 {
@@ -23,13 +23,13 @@ int main (int argc, char** argv)
         return -1;
     }
 
+    size_t n = atol   (argv[1]);
+    char*  c = malloc (n * sizeof(char));
+
     /* *********************************
      * 1 loop iter allocates 1 MByte
      */
-    n = n / CHUNKSIZE
-
-    size_t n = atol   (argv[1]) * CHUNKSIZE;
-    char*  c = malloc (n * sizeof(char));
+    n = n / CHUNKSIZE;
 
     /* make sure the memory actually got allocated */
     unsigned long int i = 0;

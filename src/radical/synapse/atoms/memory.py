@@ -29,15 +29,13 @@ class Memory (AtomBase) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Memory', dict)
+    @rus.takes   ('Memory', list)
     @rus.returns (rus.nothing)
-    def run (self, info) : 
+    def run (self, vals) : 
 
-        n = 1
+        size = vals[0]
 
-        if 'n' in info : n = info['n']
-
-        return self._run (n)
+        return self._run (size)
 
 
 #-------------------------------------------------------------------------------
