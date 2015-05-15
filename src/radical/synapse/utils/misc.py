@@ -121,6 +121,8 @@ def store_profile (profile, tags=None, dburl=None, emulated=False) :
     if not dburl:
         raise ValueError ("need dburl for storing profiles")
 
+    dburl = ru.Url (dburl)
+
     if not tags:
         tags = dict()
         if 'RADICAL_SYNAPSE_TAGS' in os.environ:
@@ -130,15 +132,7 @@ def store_profile (profile, tags=None, dburl=None, emulated=False) :
 
     command_idx = index_command (profile['cmd'], tags)
 
-    print 'store profile at %s' % dburl
 
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
-
-    db_client  = pymongo.MongoClient (host=host, port=port)
-    database   = db_client[dbname]
-    collection = database['profiles']
-
-    # create new profile
     doc = {'type'        : 'synapse_profile', 
            'emulated'    : emulated,
            'command_idx' : command_idx, 
@@ -146,7 +140,45 @@ def store_profile (profile, tags=None, dburl=None, emulated=False) :
            'tags'        : tags, 
            'profile'     : profile}
 
-    collection.insert (doc)
+
+    print 'store profile at %s' % dburl
+
+    if dburl.schema == 'mongodb':
+
+        [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
+
+        db_client  = pymongo.MongoClient (host=host, port=port)
+        database   = db_client[dbname]
+        collection = database['profiles']
+
+        collection.insert (doc)
+
+
+    elif dburl.schema == 'file':
+
+        path = dburl.path
+
+        if not os.path.isdir (path):
+            raise ValueError ("dburl must point to an existing dir")
+
+        name = command_idx.split()[0]
+        if tags:
+            for tag in sorted(tags):
+                name += "_%s" % tags[tag]
+
+        full = "%s/synapse_profile_%s.json" % (path, name)
+        test = full
+
+        idx  = 0
+        while os.path.exists (test):
+            test = "%s.%03d" % (full, idx)
+            idx += 1
+
+        full = test
+
+        os.system ('mkdir -p "%s/"' % path) 
+        ru.write_json (doc, full)
+
 
 
 # ------------------------------------------------------------------------------
@@ -158,27 +190,66 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
     if not dburl:
         raise ValueError ("need dburl to retrieve profiles")
 
+    dburl = ru.Url (dburl)
+
     command_idx = index_command (command, tags)
 
-    [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
+    if dburl.schema == 'mongodb':
 
-    db_client  = pymongo.MongoClient (host=host, port=port)
-    database   = db_client[dbname]
-    collection = database['profiles']
+        [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
 
-    # FIXME: eval tags
+        db_client  = pymongo.MongoClient (host=host, port=port)
+        database   = db_client[dbname]
+        collection = database['profiles']
 
-    results = collection.find ({'type'        : 'synapse_profile', 
-                                'emulated'    : emulated,
-                                'command_idx' : command_idx})
+        # FIXME: eval partial tags
 
-    if  not results.count() :
-        raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, dburl))
+        results = collection.find ({'type'        : 'synapse_profile', 
+                                    'tags'        : tags,
+                                    'emulated'    : emulated,
+                                    'command_idx' : command_idx})
 
-    ret = list(results)
+        if  not results.count() :
+            raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, dburl))
+
+        ret = list(results)
+
+
+    elif dburl.schema == 'file':
+
+        path = dburl.path
+
+        if not os.path.isdir (path):
+            raise ValueError ("dburl must point to an existing dir")
+
+        name = command_idx.split()[0]
+        if tags: 
+            for tag in sorted(tags):
+                name += "_%s" % tags[tag]
+
+        full = "%s/synapse_profile_%s.json" % (path, name)
+        test = full
+
+        if not os.path.exists (full):
+            raise LookupError ("No matching profile at %s" % full)
+
+        idx  = 0
+        ret  = list()
+        while os.path.exists (test):
+
+            doc = ru.read_json_str (test)
+            if doc['command'] == command:
+                ret.append (doc)
+                print doc['command']
+
+            test = "%s.%03d" % (full, idx)
+            idx += 1
 
     print 'retrieved %d profiles from %s' % (len(ret), dburl)
   # pprint.pprint (ret)
+
+    if not len(ret):
+        raise LookupError ("No matching profile at %s" % full)
 
     return ret
 
