@@ -118,87 +118,101 @@ def profile (command, *args, **kwargs) :
     return info, ret, out
 
 
+_CPU = 0
+_MEM = 1
+_STO = 2
+
+# ------------------------------------------------------------------------------
+#
+def _emulator (samples) :
+
+    atoms = dict()
+
+    # create atoms for all sample types
+    atoms[_CPU] = rsa.Compute ()
+    atoms[_MEM] = rsa.Memory  ()
+    atoms[_STO] = rsa.Storage ()
+
+ #  app_n = rsa.Network ()
+
+    # the atoms below are executed concurrently (in their own threads)
+    app_c.run (info={'n'   : cpu_ops})   # consume  n CPU Ooperations
+    app_m.run (info={'n'   : mem_size})  # allocate n Byte memory
+    app_s.run (info={'n'   : io_write,   # write    n Byte to disk
+                     'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
+ #  app_n.run (info={'type'   : 'server', # communicate a 1 MByte message
+ #                   'mode'   : 'read',
+ #                   'port'   : 10000,
+ #                   'n'      : 100})
+ #  time.sleep (1)
+ #  app_n.run (info={'type'   : 'client',
+ #                   'mode'   : 'write',
+ #                   'host'   : 'localhost',
+ #                   'port'   : 10000,
+ #                   'n'      : 100})
+
+  # # all are started -- now wait for completion and collect times
+  # time_c = 0.0
+  # time_m = 0.0
+  # time_s = 0.0
+ ## time_n = 0.0
+
+    info_c = app_c.wait ()
+    info_m = app_m.wait ()
+    info_s = app_s.wait ()
+ #  info_n = app_n.wait ()
+   
+    print "-------------------------------"
+
+    info_c = app_c.stop ()
+    info_m = app_m.stop ()
+    info_s = app_s.stop ()
+ #  info_n = app_n.stop ()
+
+  # time_c = float(info_c['timer'])
+  # time_m = float(info_m['timer'])
+  # time_s = float(info_s['timer'])
+ ## time_n = float(info_n['timer'])
+
+  # host   = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
+  # output = '%-10s %10s ------- %7.2f %7.2f %7.2f %5d %5d %5d %5d' % \
+  #         (host, "", time_c, time_m, time_s,
+  #          0, cpu_flops, mem_size, io_write)
+
+  # print output
+  # f.write ("%s\n" % output)
+
+
+
 # ------------------------------------------------------------------------------
 #
 def emulate (command) :
 
     # FIXME: average vals over all retrieved profiles
-    old_profs = rsu.get_profiles (command)
-    old_info  = old_profs[0]['profile']
+    profs = rsu.get_profiles (command)
+    prof  = profs[0]['profile']
 
-    # pprint.pprint (old_prof)
+    pprint.pprint (prof)
 
-    pro_cpu_flops  =   int(old_info['cpu'].get('ops'       , 0) or 0)
-    pro_cpu_effic  = float(old_info['cpu'].get('efficiency', 0) or 0)
-    pro_mem_peak   =   int(old_info['mem'].get('peak'      , 0) or 0)
-    pro_io_read    =   int(old_info['i_o'].get('read'      , 0) or 0)
-    pro_io_write   =   int(old_info['i_o'].get('write'     , 0) or 0)
+    # get time series to emulate (all types of operations are mixed)
+    samples  = list()
+    samples += [[_CPU, x[0], [x[1].get('ops',        0),
+                              x[1].get('efficiency', 0)]] for x in prof['cpu']['sequence']]
+    samples += [[_MEM, x[0], [x[1].get('size',       0)]] for x in prof['mem']['sequence']]
+    samples += [[_STO, x[0], [x[1].get('read',       0), 
+                              x[1].get('write',      0)]] for x in prof['i_o']['sequence']]
 
-    emu_cpu_flops  = pro_cpu_flops / 4 / 1024 / 1024
-    emu_cpu_effic  = pro_cpu_effic
-    emu_mem_peak   = pro_mem_peak / 1024 / 1024
-    emu_io_read    = pro_io_read  
-    emu_io_write   = pro_io_write 
+    # sort samples by time
+    samples = sorted (samples, key=lambda x: x[1])
 
-    def emulator (emu_cpu_flops, emu_mem_peak, emu_io_read, emu_io_write) :
-
-        app_c = rsa.Compute ()
-        app_m = rsa.Memory  ()
-        app_s = rsa.Storage ()
-     #  app_n = rsa.Network ()
-
-        # the atoms below are executed concurrently (in their own threads)
-        app_c.run (info={'n'   : emu_cpu_flops})   # consume  10 GFlop CPY Cycles
-        app_m.run (info={'n'   : emu_mem_peak})     # allocate  5 GByte memory
-        app_s.run (info={'n'   : emu_io_write,   # write     2 GByte to disk
-                         'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
-     #  app_n.run (info={'type'   : 'server', # communicate a 1 MByte message
-     #                   'mode'   : 'read',
-     #                   'port'   : 10000,
-     #                   'n'      : 100})
-     #  time.sleep (1)
-     #  app_n.run (info={'type'   : 'client',
-     #                   'mode'   : 'write',
-     #                   'host'   : 'localhost',
-     #                   'port'   : 10000,
-     #                   'n'      : 100})
-
-      # # all are started -- now wait for completion and collect times
-      # time_c = 0.0
-      # time_m = 0.0
-      # time_s = 0.0
-     ## time_n = 0.0
-
-        info_c = app_c.wait ()
-        info_m = app_m.wait ()
-        info_s = app_s.wait ()
-     #  info_n = app_n.wait ()
-       
-        print "-------------------------------"
-
-        info_c = app_c.stop ()
-        info_m = app_m.stop ()
-        info_s = app_s.stop ()
-     #  info_n = app_n.stop ()
-
-      # time_c = float(info_c['timer'])
-      # time_m = float(info_m['timer'])
-      # time_s = float(info_s['timer'])
-     ## time_n = float(info_n['timer'])
-
-      # host   = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
-      # output = '%-10s %10s ------- %7.2f %7.2f %7.2f %5d %5d %5d %5d' % \
-      #         (host, "", time_c, time_m, time_s,
-      #          0, cpu_flops, mem_peak, io_write)
-
-      # print output
-      # f.write ("%s\n" % output)
+    pprint.pprint (samples)
+    sys.exit()
 
     # let the profiler know that we run an emulation, so that the profile is not
     # stored as 'application run'.
     os.environ['_RADICAL_SYNAPSE_EMULATED'] = 'TRUE'
 
-    new_info, ret, _ = profile (emulator, emu_cpu_flops, emu_mem_peak, emu_io_read, emu_io_write)
+    new_info, ret, _ = profile (_emulator, samples)
 
     new_info['cpu']['efficiency']  = new_info['cpu']['ops']                       \
                                      / ( new_info['cpu']['ops']                   \

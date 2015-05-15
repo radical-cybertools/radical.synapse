@@ -39,7 +39,7 @@ class Compute (AtomBase) :
         if 'n' in info : n = info['n']
 
         # remove a empirical overhead
-        n -= int(n/100*OVERHEAD)
+      # n -= int(n/100*OVERHEAD)
         self._run (n)
 
 
