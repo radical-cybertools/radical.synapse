@@ -29,26 +29,25 @@ class Storage (AtomBase) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Storage', dict)
+    @rus.takes   ('Storage', list)
     @rus.returns (rus.nothing)
-    def run (self, info) : 
+    def run (self, vals) : 
 
-        mode  = info.get ('mode',  'w')
-        tgt   = info.get ('tgt',   None)
-        size  = info.get ('size',  1024*1024)  # 2^20
-        chunk = info.get ('chunk', 1024*1024)  # 2^20
+        read  = vals[0]
+        write = vals[1]
 
-        if  mode not in ['r', 'w']:
-            raise ValueError ("invalid storage mode '%s'" % mode)
+        if  read: 
+            # not yet supported
+          # raise ValueError ("need input source (%s)" % read)
+            read = 0 # FIXME
 
-        if  not tgt:
-            if  mode == 'r': raise ValueError ("need input source")
-            else           : tgt = "/tmp/synapse_storage.%(pid)s"
+        src = "/tmp/synapse_storage.%(pid)s.in"
+        tgt = "/tmp/synapse_storage.%(pid)s.out"
 
-        tgt = tgt % { 'tmp' : self._tmpdir, 
-                      'pid' : self._pid   }
+        src = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
+        tgt = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
 
-        self._run (mode, tgt, size, chunk)
+        self._run (src, read, tgt, write)
 
 
 #-------------------------------------------------------------------------------

@@ -11,7 +11,8 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 
-#define PROFILE 0
+#define CHUNKSIZE 1024*1024
+#define PROFILE   0
 
 
 size_t get_blocksize(void)
@@ -30,78 +31,95 @@ int main (int argc, char** argv)
         return -1;
     }
 
-    char*  mode  =       argv[1];
-    char*  tgt   =       argv[2];
-    off_t  size  = atol (argv[3]);
-    off_t  chunk = atol (argv[4]);
-    int    fd    = 0;
+    char*  src   =       argv[1];
+    off_t  rsize = atol (argv[2]);
+    char*  tgt   =       argv[3];
+    off_t  wsize = atol (argv[4]);
 
-    fprintf (stdout, "size : %ld\n", size);
-    fprintf (stdout, "chunk: %ld\n", chunk);
+    int    rfd   = 0;
+    int    wfd   = 0;
 
-    if (mode[0] == 'r')
+    fprintf (stdout, "src  : %s \n", src  );
+    fprintf (stdout, "rsize: %ld\n", rsize);
+    fprintf (stdout, "tgt  : %s \n", tgt  );
+    fprintf (stdout, "wsize: %ld\n", wsize);
+
+    if (src && rsize)
     {
-        fd = open (tgt, O_RDONLY);
-    }
-    else if (mode[0] == 'w')
-    {
-        fd = open (tgt, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
-    }
-    else
-    {
-        fprintf (stderr, "invalide mode %s\n", mode);
-        return -1;
+        rfd = open (tgt, O_RDONLY);
+        if ( rfd < 0 )
+        {
+            perror ("open for read failed");
+            return -2;
+        }
     }
 
-    if ( fd < 0 )
+    if (tgt && wsize)
     {
-        perror ("open failed");
-        return -2;
+        wfd = open (tgt, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
+        if ( wfd < 0 )
+        {
+            perror ("open for write failed");
+            return -2;
+        }
     }
+
 
     /* clear disk cache */
- // (void) syncfs (fd); 
+ // (void) syncfs (rfd); 
     (void) sync ();
 
-    off_t tot = 0;
-    char* buf = malloc (chunk);
+    off_t rtot = 0;
+    off_t wtot = 0;
+    char* rbuf = malloc (CHUNKSIZE);
+    char* wbuf = malloc (CHUNKSIZE);
 
-    while ( tot < size )
+    while ( rtot < rsize || wtot < wsize )
     {
-        size_t ret = 0;
-        size_t len = size - tot;
+        size_t rret = 0;
+        size_t rlen = rsize - rtot;
 
-        if ( len > chunk )
-        {
-            len = chunk;
+        size_t wret = 0;
+        size_t wlen = wsize - wtot;
+
+        if ( rlen > 0 )
+        { 
+            rret = read  (rfd, rbuf, CHUNKSIZE); 
+            fprintf (stderr, "read (%d %ld %ld) = %ld\n", rfd, rbuf, CHUNKSIZE, rret);
+
+            if ( rret != CHUNKSIZE )
+            {
+                perror ("io read failed");
+                return -4;
+            }
+
+            rtot += rret;
         }
 
-        if ( mode[0] == 'r' ) 
+        if ( wlen > 0 )
         { 
-            ret = read  (fd, buf, len); 
-            fprintf (stderr, "read (%d %ld %ld) = %ld\n", fd, buf, len, ret);
+            wret = write  (wfd, wbuf, CHUNKSIZE); 
+            fprintf (stderr, "write (%d %ld %ld) = %ld\n", wfd, wbuf, CHUNKSIZE, wret);
+
+            if ( wret != CHUNKSIZE )
+            {
+                perror ("io write failed");
+                return -4;
+            }
+
+            wtot += wret;
         }
-        else if ( mode[0] == 'w' ) 
-        { 
-            ret = write (fd, buf, len); 
-            fprintf (stderr, "write (%d %ld %ld) = %ld\n", fd, buf, len, ret);
-        }
-  
-        if ( ret != len )
-        {
-            perror ("io failed");
-            return -4;
-        }
-  
-        tot += len;
     }
   
     /* clear disk cache */
- // (void) syncfs (fd); 
+ // (void) syncfs (rfd); 
+ // (void) syncfs (wfd); 
     (void) sync ();
 
-    free  (buf);
-    close (fd);
+    free  (rbuf);
+    free  (wbuf);
+    close (rfd);
+    close (wfd);
   
  // (void) unlink (tgt);
 
@@ -130,10 +148,10 @@ int main (int argc, char** argv)
         fprintf (stdout, "ru.nswap         : %ld\n",     ru.ru_nswap         ); /* swaps */
         fprintf (stdout, "ru.inblock       : %ld\n",     ru.ru_inblock       ); /* block input operations */
         fprintf (stdout, "ru.inbytes       : %ld\n",     ru.ru_inblock*bs    ); 
-        fprintf (stdout, "ru.inbytes_app   : %ld\n",     tot                 ); 
+        fprintf (stdout, "ru.inbytes_app   : %ld\n",     rtot                ); 
         fprintf (stdout, "ru.outblock      : %ld\n",     ru.ru_oublock       ); /* block output operations */
         fprintf (stdout, "ru.outbytes      : %ld\n",     ru.ru_oublock*bs    ); 
-        fprintf (stdout, "ru.outbytes_app  : %ld\n",     tot                 ); 
+        fprintf (stdout, "ru.outbytes_app  : %ld\n",     wtot                ); 
         fprintf (stdout, "ru.msgsnd        : %ld\n",     ru.ru_msgsnd        ); /* IPC messages sent */
         fprintf (stdout, "ru.msgrcv        : %ld\n",     ru.ru_msgrcv        ); /* IPC messages received */
         fprintf (stdout, "ru.nsignals      : %ld\n",     ru.ru_nsignals      ); /* signals received */

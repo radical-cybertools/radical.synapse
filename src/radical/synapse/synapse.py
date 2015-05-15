@@ -122,65 +122,71 @@ _CPU = 0
 _MEM = 1
 _STO = 2
 
+_TYPE = 0
+_TIME = 1
+_VALS = 2
+
 # ------------------------------------------------------------------------------
 #
 def _emulator (samples) :
 
-    atoms = dict()
+    atoms = dict()  # one arom of eeach type
+    state = dict()  # there is at most one atom for each type in 'state'
 
     # create atoms for all sample types
     atoms[_CPU] = rsa.Compute ()
     atoms[_MEM] = rsa.Memory  ()
     atoms[_STO] = rsa.Storage ()
 
- #  app_n = rsa.Network ()
+    # run the first set of samples until we meet a sample type which is already
+    # started.  At that point, start to wait before submission.  If all samples
+    # have been run, wait for all atoms to complete, and voila
+    for pre in range(len(samples)):
 
-    # the atoms below are executed concurrently (in their own threads)
-    app_c.run (info={'n'   : cpu_ops})   # consume  n CPU Ooperations
-    app_m.run (info={'n'   : mem_size})  # allocate n Byte memory
-    app_s.run (info={'n'   : io_write,   # write    n Byte to disk
-                     'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
- #  app_n.run (info={'type'   : 'server', # communicate a 1 MByte message
- #                   'mode'   : 'read',
- #                   'port'   : 10000,
- #                   'n'      : 100})
- #  time.sleep (1)
- #  app_n.run (info={'type'   : 'client',
- #                   'mode'   : 'write',
- #                   'host'   : 'localhost',
- #                   'port'   : 10000,
- #                   'n'      : 100})
+        t = samples[pre][_TYPE]
+        v = samples[pre][_VALS]
 
-  # # all are started -- now wait for completion and collect times
-  # time_c = 0.0
-  # time_m = 0.0
-  # time_s = 0.0
- ## time_n = 0.0
+        if not t in state:
+            # no such atom running - start one
+            atoms[t].run (v)
+            state[t] = atoms[t]
 
-    info_c = app_c.wait ()
-    info_m = app_m.wait ()
-    info_s = app_s.wait ()
- #  info_n = app_n.wait ()
-   
-    print "-------------------------------"
+            print 'pre %d : %s' % (pre, t)
 
-    info_c = app_c.stop ()
-    info_m = app_m.stop ()
-    info_s = app_s.stop ()
- #  info_n = app_n.stop ()
+        else:
+            # such an atom is running -- go into steady state to wait for # it
+            break
+            print 'brk %d : %s' % (pre, t)
 
-  # time_c = float(info_c['timer'])
-  # time_m = float(info_m['timer'])
-  # time_s = float(info_s['timer'])
- ## time_n = float(info_n['timer'])
 
-  # host   = os.getenv ('HOST', os.popen ('hostname | cut -f 1 -d . | xargs echo -n').read ())
-  # output = '%-10s %10s ------- %7.2f %7.2f %7.2f %5d %5d %5d %5d' % \
-  #         (host, "", time_c, time_m, time_s,
-  #          0, cpu_flops, mem_size, io_write)
 
-  # print output
-  # f.write ("%s\n" % output)
+    # we need to wait first before running the next sample of any type
+    for idx in range(pre,len(samples)):
+
+        t = samples[idx][_TYPE]
+        v = samples[idx][_VALS]
+
+        if t in state:
+            print 'wai %d : %s' % (idx, t)
+            state[t].wait()
+        else:
+            print 'cre %d : %s' % (idx, t)
+            state[t] = atoms[t]
+
+        print 'idx %d : %s' % (idx, t)
+        state[t].run(v)
+
+
+    # all samples are running now (or have been running), now wait for all
+    # active ones
+    for t in state:
+        pass
+        state[t].wait()
+
+
+    # we are done and can shut the atoms down
+    for t in atoms:
+        atoms[t].stop()
 
 
 
@@ -206,28 +212,27 @@ def emulate (command) :
     samples = sorted (samples, key=lambda x: x[1])
 
     pprint.pprint (samples)
-    sys.exit()
 
     # let the profiler know that we run an emulation, so that the profile is not
     # stored as 'application run'.
     os.environ['_RADICAL_SYNAPSE_EMULATED'] = 'TRUE'
 
-    new_info, ret, _ = profile (_emulator, samples)
+    info, ret, _ = profile (_emulator, samples)
 
-    new_info['cpu']['efficiency']  = new_info['cpu']['ops']                       \
-                                     / ( new_info['cpu']['ops']                   \
-                                       + new_info['cpu']['cycles_stalled_front']  \
-                                       + new_info['cpu']['cycles_stalled_back']   \
-                                       )
+    info['cpu']['efficiency'] = info['cpu']['ops']                       \
+                                / ( info['cpu']['ops']                   \
+                                  + info['cpu']['cycles_stalled_front']  \
+                                  + info['cpu']['cycles_stalled_back']   \
+                                  )
 
    #print 'efficiency = %s / (%s + %s + %s) = %s' % (
-   #          new_info['cpu']['ops'],
-   #          new_info['cpu']['ops'],
-   #          new_info['cpu']['cycles_stalled_front'],
-   #          new_info['cpu']['cycles_stalled_back'],
-   #          new_info['cpu']['efficiency'])
+   #          info['cpu']['ops'],
+   #          info['cpu']['ops'],
+   #          info['cpu']['cycles_stalled_front'],
+   #          info['cpu']['cycles_stalled_back'],
+   #          info['cpu']['efficiency'])
 
-    return (new_info, ret, None)
+    return (info, ret, None)
 
 
 

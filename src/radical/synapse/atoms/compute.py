@@ -30,17 +30,15 @@ class Compute (AtomBase) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Compute', dict)
+    @rus.takes   ('Compute', list)
     @rus.returns (rus.nothing)
-    def run (self, info) : 
+    def run (self, vals) : 
 
-        n = 1
-
-        if 'n' in info : n = info['n']
+        ops = vals[0]
 
         # remove a empirical overhead
-      # n -= int(n/100*OVERHEAD)
-        self._run (n)
+      # ops -= int(ops/100*OVERHEAD)
+        self._run (ops)
 
 
 #-------------------------------------------------------------------------------

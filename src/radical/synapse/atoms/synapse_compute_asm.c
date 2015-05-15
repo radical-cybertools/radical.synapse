@@ -38,7 +38,7 @@ int main (int argc, char** argv)
     /* *********************************
      * 1 loop gives 1 MFLOP
      */
-    n = n / (1024 * 1024)
+    n = n / (1024 * 1024);
     for ( i = 0; i < n; i++ ) 
     {
         mat_mult (f, f, CHUNKSIZE);
