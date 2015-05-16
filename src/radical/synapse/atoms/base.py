@@ -75,7 +75,7 @@ class AtomBase (object) :
         self._work_queue   = multiprocessing.Queue ()
         self._result_queue = multiprocessing.Queue ()
 
-        self._proc  = multiprocessing.Process (target=self.work)
+        self._proc  = threading.Thread (target=self.work)
         self._proc.start ()
 
 
