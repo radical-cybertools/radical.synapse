@@ -239,8 +239,10 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
 
             doc = ru.read_json_str (test)
             if doc['command'] == command:
-                ret.append (doc)
-                print doc['command']
+                if emulated and doc['emulated']:
+                    ret.append (doc)
+                if not emulated and not doc['emulated']:
+                    ret.append (doc)
 
             test = "%s.%03d" % (full, idx)
             idx += 1

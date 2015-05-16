@@ -36,6 +36,9 @@ def profile (command, *args, **kwargs) :
 
     print "profile: %s" % cmd_str
 
+    if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
+        cmd_str = os.environ.get ('_RADICAL_SYNAPSE_EMULATEE', cmd_str)
+
     info = {'cmd' : cmd_str}
 
 
@@ -216,6 +219,7 @@ def emulate (command) :
     # let the profiler know that we run an emulation, so that the profile is not
     # stored as 'application run'.
     os.environ['_RADICAL_SYNAPSE_EMULATED'] = 'TRUE'
+    os.environ['_RADICAL_SYNAPSE_EMULATEE'] = command
 
     info, ret, _ = profile (_emulator, samples)
 
