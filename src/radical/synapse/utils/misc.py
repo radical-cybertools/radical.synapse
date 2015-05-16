@@ -159,7 +159,7 @@ def store_profile (profile, tags=None, dburl=None, emulated=False) :
         path = dburl.path
 
         if not os.path.isdir (path):
-            raise ValueError ("dburl must point to an existing dir")
+            os.system ('mkdir -p "%s"' % path)
 
         name = command_idx.split()[0]
         if tags:
@@ -191,6 +191,13 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
         raise ValueError ("need dburl to retrieve profiles")
 
     dburl = ru.Url (dburl)
+
+    if not tags:
+        tags = dict()
+        if 'RADICAL_SYNAPSE_TAGS' in os.environ:
+            for elem in os.environ['RADICAL_SYNAPSE_TAGS'].split(','):
+                key, val  = elem.split(':', 1)
+                tags[key] = val
 
     command_idx = index_command (command, tags)
 
