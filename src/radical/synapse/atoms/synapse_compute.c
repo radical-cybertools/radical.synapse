@@ -13,15 +13,9 @@
 
 #define PROFILE    0
 
-int main (int argc, char** argv)
+int _atom_compute (long flops)
 {
-    /* size */
-    if ( argc < 2 )
-    {
-        return -1;
-    }
-
-    size_t n = atol (argv[1]);
+    size_t n = flops;
     double f = 1.0;
 
     /* consume the given number of FLOPs, and some IOPS, too */

@@ -24,20 +24,10 @@ size_t get_blocksize(void)
 }
 
 
-int main (int argc, char** argv)
+int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
 {
-    if ( argc < 5 )
-    {
-        return -1;
-    }
-
-    char*  src   =       argv[1];
-    off_t  rsize = atol (argv[2]);
-    char*  tgt   =       argv[3];
-    off_t  wsize = atol (argv[4]);
-
-    int    rfd   = 0;
-    int    wfd   = 0;
+    int rfd = 0;
+    int wfd = 0;
 
     fprintf (stdout, "src  : %s \n", src  );
     fprintf (stdout, "rsize: %ld\n", rsize);

@@ -6,6 +6,7 @@ __license__   = "LGPL.v3"
 
 import radical.utils.signatures   as rus
 
+from   _atoms    import atom_memory
 from   base      import AtomBase
 from   constants import MEMORY
 
@@ -31,11 +32,20 @@ class Memory (AtomBase) :
     #
     @rus.takes   ('Memory', list)
     @rus.returns (rus.nothing)
-    def run (self, vals) : 
+    def emulate (self, vals) : 
 
-        size = vals[0]
+        size = int(vals[0])
 
         return self._run (size)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('Memory', int)
+    @rus.returns (rus.nothing)
+    def _emulate (self, size) : 
+
+        atom_memory (size)
 
 
 #-------------------------------------------------------------------------------

@@ -6,6 +6,7 @@ __license__   = "LGPL.v3"
 
 import radical.utils.signatures   as rus
 
+from   _atoms    import atom_network
 from   base      import AtomBase
 from   constants import NETWORK
 
@@ -36,7 +37,7 @@ class Network (AtomBase) :
     #
     @rus.takes   ('Network', dict)
     @rus.returns (rus.nothing)
-    def run (self, info) : 
+    def emulate (self, info) : 
 
         self._proc = None
 
@@ -52,20 +53,29 @@ class Network (AtomBase) :
             print "need 'port' flag to run network load"
             return
 
-        typ  = info['type']
-        mode = info['mode']
-        port = info['port']
+        typ  =     info['type']
+        mode =     info['mode']
+        port = int(info['port'])
         host = "nohost"
-        n    = 1
+        size = 1
 
         if 'host' in info : host = info['host']
-        if 'n'    in info : n    = info['n']
+        if 'size' in info : size = info['size']
 
         if  typ == 'client' and not host :
             print "network server needs host and port"
             return
 
-        self._run (typ, mode, host, port, n)
+        self._run (typ, mode, host, port, size)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('Network', basestring, basestring, basestring, int, int)
+    @rus.returns (rus.nothing)
+    def _emulate (self, typ, mode, host, port, size) : 
+
+        atom_network (typ, mode, host, port, size)
 
 
 #-------------------------------------------------------------------------------

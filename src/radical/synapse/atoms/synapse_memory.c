@@ -15,15 +15,9 @@
 #define CHUNKSIZE  (1024 * 1024)  /* 2^20 */
 #define PROFILE    0
 
-int main (int argc, char** argv)
+int _atom_memory (long size)
 {
-    /* size */
-    if ( argc < 2 )
-    {
-        return -1;
-    }
-
-    size_t n = atol   (argv[1]);
+    size_t n = atol   (size);
     char*  c = malloc (n * sizeof(char));
 
     /* *********************************
