@@ -1,7 +1,7 @@
 
 {
-    "command": "test cpu", 
-    "command_idx": "test cpu", 
+    "command": "test sto", 
+    "command_idx": "test sto", 
     "mode": "profiled", 
     "profile": {
         "cmd": "test sto", 
