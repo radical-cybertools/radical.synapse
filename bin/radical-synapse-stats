@@ -314,7 +314,7 @@ def stat_database (db_json) :
 
 
 # ------------------------------------------------------------------------------
-def plot_database (db_json, dbname, filters, term, emulated) :
+def plot_database (db_json, dbname, filters, term, mode) :
     """
     plot results :P
     """
@@ -365,8 +365,6 @@ def plot_database (db_json, dbname, filters, term, emulated) :
     profile_id = 0
     for doc in sorted(db_json, key=lambda x:x['profile']['time']['real']):
 
-        print 'emulated: %s' % doc['emulated']
-
         profile     = doc['profile']
         profile_id += 1
 
@@ -407,8 +405,8 @@ def plot_database (db_json, dbname, filters, term, emulated) :
                     % (profile_id, real, mem['rss'], mem['size'], mem['peak']))
 
             max_tot_mem = max(max_tot_mem, mem['rss'])
-            max_tot_mem = max(max_tot_mem, mem['size'])
-            max_tot_mem = max(max_tot_mem, mem['peak'])
+          # max_tot_mem = max(max_tot_mem, mem['size'])
+          # max_tot_mem = max(max_tot_mem, mem['peak'])
 
             acc_mem_size = 0.0
             acc_mem_rss  = 0.0
@@ -426,7 +424,7 @@ def plot_database (db_json, dbname, filters, term, emulated) :
                         % (profile_id, s[0], s[1]['rss'], s[1]['size']))
 
                 max_inc_mem = max(max_inc_mem, s[1]['rss'])
-                max_inc_mem = max(max_inc_mem, s[1]['size'])
+              # max_inc_mem = max(max_inc_mem, s[1]['size'])
 
                 acc_mem_rss  += s[1]['rss']
                 acc_mem_size += s[1]['size']
@@ -509,15 +507,15 @@ def plot_database (db_json, dbname, filters, term, emulated) :
               # print 'c',
                 ts      = s[0]
                 sample  = s[1]
-                real    = sample.get('real', 0)
                 threads = sample.get('threads', 1)
                 ops     = sample.get('ops', 0)
                 utili   = sample.get('utilization', 0)
                 effic   = sample.get('efficiency', 0)
                 flops   = sample.get('flops', 0)
 
-                if not real or not ops:
-                    print "warning: no time diff between samples? %s" % sample
+                if not ops:
+                  # print "warning: no ops in samples? %s" % ts
+                  # pprint.pprint (sample)
                     continue
 
                 max_inc_ops   = max(max_inc_ops  , ops  )
@@ -568,12 +566,12 @@ def plot_database (db_json, dbname, filters, term, emulated) :
     bounds += " -e max_tasks='\"%d\"'"     % profile_id
 
 
-    if emulated:
-        mode_tag = 'emu'
+    if syn_mode:
+        mode_tag = "-e mode='\"%s\"'" % syn_mode
     else:
-        mode_tag = 'pro'
+        mode_tag = ""
 
-    sys_cmd = "gnuplot -e experiment='\"%s\"' -e mode='\"%s\"' %s %s/radical-synapse-stats.plot" \
+    sys_cmd = "gnuplot -e experiment='\"%s\"' %s %s %s/radical-synapse-stats.plot" \
             % (dbname, mode_tag, bounds, os.path.dirname(__file__))
 
     print sys_cmd
@@ -708,8 +706,7 @@ if __name__ == '__main__' :
     parser.add_option('-h', '--help',      dest='help',     action="store_true")
     parser.add_option('-f', '--filter',    dest='filters')
     parser.add_option('-x', '--command',   dest='cmd')
-    parser.add_option('-e', '--emulated',  dest='emulated', action="store_true")
-    parser.add_option('-p', '--profiles',  dest='emulated', action="store_false")
+    parser.add_option('-e', '--syn-mode',  dest='syn_mode')
 
     options, args = parser.parse_args ()
 
@@ -736,7 +733,7 @@ if __name__ == '__main__' :
     term     = options.term
     cachedir = options.cachedir
     filters  = options.filters
-    emulated = options.emulated
+    syn_mode = options.syn_mode
 
     if  not filters:
         filters = ''
@@ -764,7 +761,7 @@ if __name__ == '__main__' :
     print "cachedir: %s" % cachedir
     print "filter  : %s" % filters
     print "command : %s" % cmd
-    print "emulated: %s" % emulated
+    print "syn.mode: %s" % syn_mode
 
 
     for m in mode.split (',') :
@@ -779,7 +776,7 @@ if __name__ == '__main__' :
         else:
 
             if cmd:
-                db_json = rsu.get_profiles (cmd, emulated=emulated)
+                db_json = rsu.get_profiles (cmd, mode=syn_mode)
                 dbname  = os.path.basename (url.path)
             else:
                 import json
@@ -790,7 +787,7 @@ if __name__ == '__main__' :
             elif m == 'sort' : sort_database  (db_json, dbname, filters, cachedir)
             elif m == 'hist' : hist_database  (db_json, dbname, filters, cachedir)
             elif m == 'stat' : stat_database  (db_json, dbname, filters, cachedir)
-            elif m == 'plot' : plot_database  (db_json, dbname, filters, term, emulated)
+            elif m == 'plot' : plot_database  (db_json, dbname, filters, term, syn_mode)
             elif m == 'help' : usage (noexit=True)
             else             : usage ("unknown mode '%s'" % mode)
 

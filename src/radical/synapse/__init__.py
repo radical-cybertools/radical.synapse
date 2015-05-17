@@ -14,6 +14,7 @@ from synapsify import EMULATE
 
 from synapse   import profile
 from synapse   import emulate
+from synapse   import execute
 
 
 

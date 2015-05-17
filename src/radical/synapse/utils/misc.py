@@ -113,13 +113,16 @@ def time_to_seconds (t) :
 
 
 # ------------------------------------------------------------------------------
-def store_profile (profile, tags=None, dburl=None, emulated=False) :
+def store_profile (profile, tags=None, dburl=None, mode=None) :
 
     if not dburl:
         dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if not dburl:
         raise ValueError ("need dburl for storing profiles")
+
+    if not mode:
+        raise ValueError ("document needs mode (emulated | eecuted | profiled)")
 
     dburl = ru.Url (dburl)
 
@@ -134,7 +137,7 @@ def store_profile (profile, tags=None, dburl=None, emulated=False) :
 
 
     doc = {'type'        : 'synapse_profile', 
-           'emulated'    : emulated,
+           'mode'        : mode,
            'command_idx' : command_idx, 
            'command'     : profile['cmd'], 
            'tags'        : tags, 
@@ -182,7 +185,7 @@ def store_profile (profile, tags=None, dburl=None, emulated=False) :
 
 
 # ------------------------------------------------------------------------------
-def get_profiles (command, tags=None, dburl=None, emulated=False) :
+def get_profiles (command, tags=None, dburl=None, mode=None) :
 
     if not dburl:
         dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
@@ -212,10 +215,15 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
 
         # FIXME: eval partial tags
 
-        results = collection.find ({'type'        : 'synapse_profile', 
-                                    'tags'        : tags,
-                                    'emulated'    : emulated,
-                                    'command_idx' : command_idx})
+        if mode:
+            results = collection.find ({'type'        : 'synapse_profile', 
+                                        'tags'        : tags,
+                                        'command_idx' : command_idx})
+        else:
+            results = collection.find ({'type'        : 'synapse_profile', 
+                                        'tags'        : tags,
+                                        'mode'        : mode,
+                                        'command_idx' : command_idx})
 
         if  not results.count() :
             raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, dburl))
@@ -248,14 +256,16 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
             print 'reading profile %s' % test
 
             doc = ru.read_json_str (test)
-            use = True
+            use = False
             if doc['command'] == command:
-                if emulated and not doc['emulated']:
-                    print "skip !emulated"
-                    use = False
-                if not emulated and doc['emulated']:
-                    print "skip emulated"
-                    use = False
+                if not mode :
+                    use = True
+                elif doc['mode'] == mode:
+                    use = True
+                else:
+                    print "skip ! mode: %s" % mode
+            else:
+                print "skip ! command: %s" % command
 
             if use:
                 ret.append (doc)
