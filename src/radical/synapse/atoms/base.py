@@ -82,8 +82,7 @@ class AtomBase (object) :
                 # signal to finish
                 return
 
-            time.sleep (1)
-          # print "--- %s (%s)----" % (self, data)
+            print "--- %s (%s)----" % (self, data)
 
             self._emulate (*data)
             self._result_queue.put (True)

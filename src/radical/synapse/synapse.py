@@ -140,6 +140,7 @@ def _emulator (samples) :
     atoms[_CPU] = rsa.Compute ()
     atoms[_MEM] = rsa.Memory  ()
     atoms[_STO] = rsa.Storage ()
+    time.sleep (1)
 
     # run the first set of samples until we meet a sample type which is already
     # started.  At that point, start to wait before submission.  If all samples
