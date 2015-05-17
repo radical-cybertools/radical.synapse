@@ -53,7 +53,7 @@ class Storage (AtomBase) :
         src = "/tmp/l" # FIXME
         tgt = "/tmp/synapse_storage.%(pid)s.out"
 
-        src = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
+        src = src % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
         tgt = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
 
         self._run (src, rsize, tgt, wsize)
