@@ -151,7 +151,7 @@ def _emulator (samples) :
 
         if not t in state:
             # no such atom running - start one
-            atoms[t].run (v)
+            atoms[t].emulate (v)
             state[t] = atoms[t]
 
             print 'pre %d : %s' % (pre, t)
@@ -177,7 +177,7 @@ def _emulator (samples) :
             state[t] = atoms[t]
 
         print 'idx %d : %s' % (idx, t)
-        state[t].run(v)
+        state[t].emulate(v)
 
 
     # all samples are running now (or have been running), now wait for all

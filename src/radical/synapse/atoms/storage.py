@@ -6,6 +6,7 @@ __license__   = "LGPL.v3"
 
 import radical.utils.signatures   as rus
 
+from   _atoms    import atom_storage
 from   base      import AtomBase
 from   constants import STORAGE
 
@@ -31,10 +32,10 @@ class Storage (AtomBase) :
     #
     @rus.takes   ('Storage', list)
     @rus.returns (rus.nothing)
-    def run (self, vals) : 
+    def emulate (self, vals) : 
 
-        read  = vals[0]
-        write = vals[1]
+        read  = int(vals[0])
+        write = int(vals[1])
 
         if  read: 
             # not yet supported
@@ -48,6 +49,15 @@ class Storage (AtomBase) :
         tgt = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
 
         self._run (src, read, tgt, write)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('Storage', basestring, int, basestring, int)
+    @rus.returns (rus.nothing)
+    def _emulate (self, src, read, tgt, write) : 
+
+        atom_storage (src, read, tgt, write)
 
 
 #-------------------------------------------------------------------------------

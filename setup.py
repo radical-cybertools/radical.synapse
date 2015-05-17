@@ -9,9 +9,11 @@ __license__   = 'MIT'
 
 import os
 import sys
+import glob
 import subprocess as sp
 
-from setuptools import setup, Command, find_packages
+from setuptools           import setup, Command, find_packages
+from setuptools.extension import Extension
 
 name     = 'radical.synapse'
 mod_root = 'src/radical/synapse'
@@ -131,6 +133,8 @@ def read(*rnames):
 
 
 # -------------------------------------------------------------------------------
+c_ext = Extension("radical/synapse/atoms/_atoms" ,
+                  sources = glob.glob('src/radical/synapse/atoms/*.c'))
 setup_args = {
     'name'               : name,
     'version'            : version,
@@ -161,6 +165,8 @@ setup_args = {
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
+    
+    'ext_modules'        : [c_ext],
     'namespace_packages' : ['radical'],
     'packages'           : find_packages('src'),
     'package_dir'        : {'': 'src'},

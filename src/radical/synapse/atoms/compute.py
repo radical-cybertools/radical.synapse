@@ -6,6 +6,8 @@ __license__   = "LGPL.v3"
 
 import radical.utils.signatures   as rus
 
+from   _atoms    import atom_compute_asm
+from   _atoms    import atom_compute
 from   base      import AtomBase
 from   constants import COMPUTE
 
@@ -32,13 +34,22 @@ class Compute (AtomBase) :
     #
     @rus.takes   ('Compute', list)
     @rus.returns (rus.nothing)
-    def run (self, vals) : 
+    def emulate (self, vals) : 
 
-        ops = vals[0]
+        ops = int(vals[0])
 
         # remove a empirical overhead
       # ops -= int(ops/100*OVERHEAD)
         self._run (ops)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @rus.takes   ('Compute', int)
+    @rus.returns (rus.nothing)
+    def _emulate (self, ops) : 
+
+        atom_compute_asm (ops)
 
 
 #-------------------------------------------------------------------------------

@@ -16,19 +16,9 @@ int server        (int   port );
 int server_accept (int   ssock);
 int client        (char* host, int port);
 
-int main (int argc, char** argv)
+int _atom_network (const char* type, const char* mode, const char* host, int port, long size)
 {
-  /* type, mode, host, port, size */ 
-  if ( argc < 5 )
-  {
-    return -1;
-  }
-
-  char*  t = argv[1];
-  char*  m = argv[2];
-  char*  h = argv[3];
-  size_t p = atoi   (argv[4]);
-  size_t n = atol   (argv[5]) * CHUNKSIZE;
+  size_t n = size * CHUNKSIZE;
   char*  c = malloc (CHUNKSIZE);
 
   /* make sure the memory actually got allocated */
@@ -39,10 +29,10 @@ int main (int argc, char** argv)
 
   int sock = -1;
 
-  if ( ! strcmp ("server", t) ) {
-    sock = server (p);
+  if ( ! strcmp ("server", type) ) {
+    sock = server (port);
   } else {
-    sock = client (h, p);
+    sock = client (host, port);
   }
 
 
@@ -51,7 +41,7 @@ int main (int argc, char** argv)
   {
     ssize_t ret = 0;
 
-    if ( ! strcmp ("read", m) )
+    if ( ! strcmp ("read", mode) )
     {
       while ( ret <= 0 )
       {
@@ -95,7 +85,7 @@ int main (int argc, char** argv)
   /* client closes the connection, and server waits until that is done.  This
    * way, the socket will not end up in TIME_WAIT, so we'll avoid the dreaded
    * 'Address already in use' error... */
-  if ( strcmp ("server", t) ) 
+  if ( strcmp ("server", type) ) 
   {
     close (sock);
   } 

@@ -75,7 +75,7 @@ class AtomBase (object) :
         self._work_queue   = multiprocessing.Queue ()
         self._result_queue = multiprocessing.Queue ()
 
-        self._proc  = threading.Thread (target=self.work)
+        self._proc  = threading.Thread (target=self.run)
         self._proc.start ()
 
 
@@ -92,7 +92,7 @@ class AtomBase (object) :
     #
     @rus.takes   ('AtomBase')
     @rus.returns (rus.nothing)
-    def work (self) :
+    def run (self) :
 
         while True :
 
@@ -102,27 +102,11 @@ class AtomBase (object) :
                 # signal to finish
                 return
 
-            args = data
-            cmd  = self._exe
-            for arg in args:
-                cmd += " %s" % str(arg)
+            time.sleep (1)
+          # print "--- %s (%s)----" % (self, data)
 
-          # print "start %-10s (%s) (%s)" % (self._atype, self._uid, cmd)
-
-            t_start = time.time ()
-            proc    = subprocess.Popen ("%s" % cmd, 
-                                        shell=True,
-                                        stdin=subprocess.PIPE, 
-                                        stdout=subprocess.PIPE, 
-                                        stderr=subprocess.PIPE)
-
-            pout, perr = proc.communicate ()
-            info       = {'timer' : float("%3.2f" % (time.time () - t_start)),
-                          'ret'   : int(proc.returncode), 
-                          'out'   : pout, 
-                          'err'   : perr}
-
-            self._result_queue.put (info)
+            self._emulate (*data)
+            self._result_queue.put (True)
 
 
     # --------------------------------------------------------------------------

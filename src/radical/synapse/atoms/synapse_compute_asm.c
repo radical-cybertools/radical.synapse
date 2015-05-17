@@ -17,16 +17,10 @@
 
 float mat_mult (float* a1, float* a2, int n);
 
-int main (int argc, char** argv)
+int _atom_compute_asm (long flops)
 {
-    /* size */
-    if ( argc < 2 )
-    {
-        return -1;
-    }
-
-    size_t n = atol (argv[1]);
-    float f[CHUNKSIZE];
+    size_t n = flops / (1024 * 1024);
+    float  f[CHUNKSIZE];
 
     /* This is an overhead for each sample :( */
     unsigned int i = 0;
@@ -38,7 +32,6 @@ int main (int argc, char** argv)
     /* *********************************
      * 1 loop gives 1 MFLOP
      */
-    n = n / (1024 * 1024);
     for ( i = 0; i < n; i++ ) 
     {
         mat_mult (f, f, CHUNKSIZE);
