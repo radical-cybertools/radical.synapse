@@ -34,30 +34,38 @@ class Storage (AtomBase) :
     @rus.returns (rus.nothing)
     def emulate (self, vals) : 
 
-        read  = int(vals[0])
-        write = int(vals[1])
+        rsize = int(vals[0])
+        wsize = int(vals[1])
 
-        if  read: 
+      # f = open ("/tmp/l")
+      # for i in range(10000000):
+      #     data = f.read (10)
+      # f.close()
+
+        if  rsize: 
+            # FIXME
+            pass 
             # not yet supported
           # raise ValueError ("need input source (%s)" % read)
-            read = 0 # FIXME
+          # rsize = 0
 
         src = "/tmp/synapse_storage.%(pid)s.in"
+        src = "/tmp/l" # FIXME
         tgt = "/tmp/synapse_storage.%(pid)s.out"
 
         src = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
         tgt = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
 
-        self._run (src, read, tgt, write)
+        self._run (src, rsize, tgt, wsize)
 
 
     # --------------------------------------------------------------------------
     #
     @rus.takes   ('Storage', basestring, int, basestring, int)
     @rus.returns (rus.nothing)
-    def _emulate (self, src, read, tgt, write) : 
+    def _emulate (self, src, rsize, tgt, wsize) : 
 
-        atom_storage (src, read, tgt, write)
+        atom_storage (src, rsize, tgt, wsize)
 
 
 #-------------------------------------------------------------------------------
