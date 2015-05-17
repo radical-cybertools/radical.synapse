@@ -5,9 +5,11 @@ import sys
 import numpy
 import pprint
 import pymongo
-import radical.utils       as ru
-import radical.pilot       as rp
-import radical.pilot.utils as rpu
+import radical.utils         as ru
+import radical.pilot         as rp
+import radical.pilot.utils   as rpu
+import radical.synapse       as rs
+import radical.synapse.utils as rsu
 
 
 _DEFAULT_DBURL = os.environ.get ('RADICAL_SYNAPSE_DBURL')
@@ -312,7 +314,7 @@ def stat_database (db_json) :
 
 
 # ------------------------------------------------------------------------------
-def plot_database (db_json, dbname, filters, term) :
+def plot_database (db_json, dbname, filters, term, emulated) :
     """
     plot results :P
     """
@@ -363,17 +365,7 @@ def plot_database (db_json, dbname, filters, term) :
     profile_id = 0
     for doc in sorted(db_json, key=lambda x:x['profile']['time']['real']):
 
-        # FIXME: make flag
-        mode_tag = 'emu'  # plot emulated runs
-        mode_tag = 'pro'  # plot profiled runs
-
-        if mode_tag == 'pro' :
-            if doc['emulated']:
-                continue
-
-        if mode_tag == 'emu' :
-            if not doc['emulated']:
-                continue
+        print 'emulated: %s' % doc['emulated']
 
         profile     = doc['profile']
         profile_id += 1
@@ -576,8 +568,16 @@ def plot_database (db_json, dbname, filters, term) :
     bounds += " -e max_tasks='\"%d\"'"     % profile_id
 
 
-    os.system("gnuplot -e experiment='\"%s_%s\"' %s %s/radical-synapse-stats.plot" \
-            % (dbname, mode_tag, bounds, os.path.dirname(__file__)))
+    if emulated:
+        mode_tag = 'emu'
+    else:
+        mode_tag = 'pro'
+
+    sys_cmd = "gnuplot -e experiment='\"%s\"' -e mode='\"%s\"' %s %s/radical-synapse-stats.plot" \
+            % (dbname, mode_tag, bounds, os.path.dirname(__file__))
+
+    print sys_cmd
+    os.system(sys_cmd)
 
 
 
@@ -705,8 +705,11 @@ if __name__ == '__main__' :
     parser.add_option('-m', '--mode',      dest='mode')
     parser.add_option('-c', '--cachedir',  dest='cachedir')
     parser.add_option('-t', '--terminal',  dest='term')
-    parser.add_option('-h', '--help',      dest='help', action="store_true")
+    parser.add_option('-h', '--help',      dest='help',     action="store_true")
     parser.add_option('-f', '--filter',    dest='filters')
+    parser.add_option('-x', '--command',   dest='cmd')
+    parser.add_option('-e', '--emulated',  dest='emulated', action="store_true")
+    parser.add_option('-p', '--profiles',  dest='emulated', action="store_false")
 
     options, args = parser.parse_args ()
 
@@ -727,11 +730,13 @@ if __name__ == '__main__' :
 
 
     mode     = options.mode 
+    cmd      = options.cmd 
     url      = options.url
     dbname   = options.dbname
     term     = options.term
     cachedir = options.cachedir
     filters  = options.filters
+    emulated = options.emulated
 
     if  not filters:
         filters = ''
@@ -748,13 +753,18 @@ if __name__ == '__main__' :
 
     url = ru.Url (options.url)
 
-    mongo, db, dbname, cname, pname = ru.mongodb_connect (str(url), url)
+    if url.schema == 'mongodb':
+        mongo, db, dbname, cname, pname = ru.mongodb_connect (str(url), url)
+    else:
+        mongo, db, dbname, cname, pname = (None, None, None, None, None)
 
     print "modes   : %s" % mode
     print "db url  : %s" % url
     print "db name : %s" % dbname
     print "cachedir: %s" % cachedir
     print "filter  : %s" % filters
+    print "command : %s" % cmd
+    print "emulated: %s" % emulated
 
 
     for m in mode.split (',') :
@@ -767,15 +777,20 @@ if __name__ == '__main__' :
             list_databases (mongo, db, dbname, cachedir)
 
         else:
-            import json
-            db_json = get_json (db, dbname, cachedir)
+
+            if cmd:
+                db_json = rsu.get_profiles (cmd, emulated=emulated)
+                dbname  = os.path.basename (url.path)
+            else:
+                import json
+                db_json = get_json (db, dbname, cachedir)
 
             if   m == 'tree' : tree_database  (db_json, dbname, filters, cachedir) 
             elif m == 'dump' : dump_database  (db_json, dbname, filters, cachedir)
             elif m == 'sort' : sort_database  (db_json, dbname, filters, cachedir)
             elif m == 'hist' : hist_database  (db_json, dbname, filters, cachedir)
             elif m == 'stat' : stat_database  (db_json, dbname, filters, cachedir)
-            elif m == 'plot' : plot_database  (db_json, dbname, filters, term)
+            elif m == 'plot' : plot_database  (db_json, dbname, filters, term, emulated)
             elif m == 'help' : usage (noexit=True)
             else             : usage ("unknown mode '%s'" % mode)
 
