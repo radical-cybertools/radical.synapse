@@ -3,13 +3,47 @@
 import os
 import sys
 import time
+import threading
 
 from   pprint import pprint
 
 import radical.synapse       as rs
 import radical.synapse.atoms as rsa
 
+# ------------------------------------------------------------------------------
+#
+# info, ret, out = rs.profile ('md5sum /tmp/l')
+info, _, _ = rs.emulate ('md5sum /tmp/l')
+pprint (info)
 
+sys.exit()
+
+
+# ------------------------------------------------------------------------------
+#
+def testme (delay) :
+
+    def _testme(d):
+
+        f = open ("/tmp/l")
+        for i in range(1000000):
+            data = f.read (20)
+        f.close()
+
+    time.sleep (1)
+    t = threading.Thread(target=_testme, args=(delay,))
+    t.start()
+    t.join()
+    time.sleep(1)
+
+info, ret, out = rs.profile (testme, 10)
+pprint (info)
+
+sys.exit()
+
+
+# ------------------------------------------------------------------------------
+#
 def func ():
     c = rsa.Storage ()
     m = rsa.Memory ()
@@ -29,12 +63,6 @@ def func ():
 
 rs.emulate ('sleep 10')
 
-
-def sleep (delay) :
-    time.sleep (delay)
-
-info, ret, out = rs.profile ('sleep 10');         
-pprint (info)
 
 command = rs.synapsify ('sleep 10', rs.NOTHING)
 command = rs.synapsify ('sleep 10', rs.PROFILE)

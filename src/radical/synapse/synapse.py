@@ -125,6 +125,10 @@ _CPU = 0
 _MEM = 1
 _STO = 2
 
+_CPU = 'cpu'
+_MEM = 'mem'
+_STO = 'sto'
+
 _TYPE = 0
 _TIME = 1
 _VALS = 2
@@ -140,7 +144,9 @@ def _emulator (samples) :
     atoms[_CPU] = rsa.Compute ()
     atoms[_MEM] = rsa.Memory  ()
     atoms[_STO] = rsa.Storage ()
-    time.sleep (1)
+    time.sleep (1) # FIXME: allow for setup to settle
+
+    print ' --- 1 samples %d' % len(samples)
 
     # run the first set of samples until we meet a sample type which is already
     # started.  At that point, start to wait before submission.  If all samples
@@ -149,6 +155,9 @@ def _emulator (samples) :
 
         t = samples[pre][_TYPE]
         v = samples[pre][_VALS]
+
+        print ' --- 1 sample %d: %s : %s' % (pre, t, v)
+
 
         if not t in state:
             # no such atom running - start one
@@ -169,6 +178,8 @@ def _emulator (samples) :
 
         t = samples[idx][_TYPE]
         v = samples[idx][_VALS]
+
+        print ' --- 2 sample %d: %s : %s' % (idx, t, v)
 
         if t in state:
             print 'wai %d : %s' % (idx, t)

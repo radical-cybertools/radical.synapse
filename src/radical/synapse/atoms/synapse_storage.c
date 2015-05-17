@@ -29,10 +29,10 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
     int rfd = 0;
     int wfd = 0;
 
-    fprintf (stdout, "src  : %s \n", src  );
-    fprintf (stdout, "rsize: %ld\n", rsize);
-    fprintf (stdout, "tgt  : %s \n", tgt  );
-    fprintf (stdout, "wsize: %ld\n", wsize);
+    fprintf (stdout, " === src  : %s \n", src  );
+    fprintf (stdout, " === rsize: %ld\n", rsize);
+    fprintf (stdout, " === tgt  : %s \n", tgt  );
+    fprintf (stdout, " === wsize: %ld\n", wsize);
 
     if (src && rsize)
     {
