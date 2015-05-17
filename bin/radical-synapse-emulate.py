@@ -12,8 +12,7 @@ if len(sys.argv) < 2 :
 
 info, ret, out = radical.synapse.emulate (' '.join (sys.argv[1:]))
 
-pprint.pprint (info)
-print out
+# pprint.pprint (info)
 
 sys.exit (ret)
 

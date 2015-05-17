@@ -144,9 +144,14 @@ def _emulator (samples) :
     atoms[_CPU] = rsa.Compute ()
     atoms[_MEM] = rsa.Memory  ()
     atoms[_STO] = rsa.Storage ()
-    time.sleep (1) # FIXME: allow for setup to settle
+
+    # FIXME: make sure threads and queues are up
+    time.sleep (1)
 
     print ' --- 1 samples %d' % len(samples)
+
+    print "\n-------------------------\n\n"
+    print "len: %d" % len(samples)
 
     # run the first set of samples until we meet a sample type which is already
     # started.  At that point, start to wait before submission.  If all samples
@@ -161,16 +166,15 @@ def _emulator (samples) :
 
         if not t in state:
             # no such atom running - start one
-            atoms[t].emulate (v)
+          # atoms[t].emulate (v)
             state[t] = atoms[t]
 
             print 'pre %d : %s' % (pre, t)
 
         else:
             # such an atom is running -- go into steady state to wait for # it
-            break
             print 'brk %d : %s' % (pre, t)
-
+            break
 
 
     # we need to wait first before running the next sample of any type
@@ -183,10 +187,10 @@ def _emulator (samples) :
 
         if t in state:
             print 'wai %d : %s' % (idx, t)
-            state[t].wait()
+          # state[t].wait()
         else:
             print 'cre %d : %s' % (idx, t)
-            state[t] = atoms[t]
+          # state[t] = atoms[t]
 
         print 'idx %d : %s' % (idx, t)
         state[t].emulate(v)
@@ -195,14 +199,15 @@ def _emulator (samples) :
     # all samples are running now (or have been running), now wait for all
     # active ones
     for t in state:
-        pass
-        state[t].wait()
+        print 'wai   : %s' % t
+      # state[t].wait()
 
 
     # we are done and can shut the atoms down
     for t in atoms:
         atoms[t].stop()
 
+    print "\n-------------------------\n\n"
 
 
 # ------------------------------------------------------------------------------
