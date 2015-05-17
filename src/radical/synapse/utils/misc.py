@@ -245,12 +245,20 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
         ret  = list()
         while os.path.exists (test):
 
+            print 'reading profile %s' % test
+
             doc = ru.read_json_str (test)
+            use = True
             if doc['command'] == command:
-                if emulated and doc['emulated']:
-                    ret.append (doc)
-                if not emulated and not doc['emulated']:
-                    ret.append (doc)
+                if emulated and not doc['emulated']:
+                    print "skip !emulated"
+                    use = False
+                if not emulated and doc['emulated']:
+                    print "skip emulated"
+                    use = False
+
+            if use:
+                ret.append (doc)
 
             test = "%s.%03d" % (full, idx)
             idx += 1

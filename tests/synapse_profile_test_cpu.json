@@ -56,7 +56,8 @@
                     }
                 ], 
                 [
-                    2{
+                    2.00,
+                    {
                         "branch_misses":                        50000.0, 
                         "branch_misses_perc":                      -1.0, 
                         "branches":                           5000000.0, 
@@ -73,7 +74,7 @@
                         "ops_perc":                                -1.0, 
                         "real":                                     1.0, 
                         "utilization":                              0.5
-                    }.00, 
+                    }
                 ]
             ], 
             "threads_per_core": 2, 
