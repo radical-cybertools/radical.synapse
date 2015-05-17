@@ -127,13 +127,18 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
     dburl = ru.Url (dburl)
 
     if not tags:
-        tags = dict()
-        if 'RADICAL_SYNAPSE_TAGS' in os.environ:
-            for elem in os.environ['RADICAL_SYNAPSE_TAGS'].split(','):
+        tags  = dict()
+        elems = filter (None, os.environ.get('RADICAL_SYNAPSE_TAGS', '').split(','))
+        for elem in elems:
+            if ':' in elem:
                 key, val  = elem.split(':', 1)
                 tags[key] = val
+            else:
+                tags[elem] = None
+        
 
     command_idx = index_command (profile['cmd'], tags)
+    print "index %s (%s) to %s" % (profile['cmd'], tags, command_idx)
 
 
     doc = {'type'        : 'synapse_profile', 
@@ -144,10 +149,11 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
            'profile'     : profile}
 
 
-    print 'store profile at %s' % dburl
 
     if dburl.schema == 'mongodb':
 
+        print 'store profile AT %s' % dburl
+        
         [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
 
         db_client  = pymongo.MongoClient (host=host, port=port)
@@ -165,20 +171,26 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
             os.system ('mkdir -p "%s"' % path)
 
         name = command_idx.split()[0]
-        if tags:
-            for tag in sorted(tags):
-                name += "_%s" % tags[tag]
+        print 'name: %s' % name
+        for key, val in tags.iteritems():
+            if val != None: name += "_%s:%s" % (key, val)
+            else          : name += "_%s"    % (key)
+            print 'Name: %s' % name
 
         full = "%s/synapse_profile_%s.json" % (path, name)
         test = full
+        print 'NAme: %s' % full
 
         idx  = 0
         while os.path.exists (test):
             test = "%s.%03d" % (full, idx)
             idx += 1
+            print 'NAMe: %s' % full
 
         full = test
+        print 'NAME: %s' % full
 
+        print 'store profile at %s' % full
         os.system ('mkdir -p "%s/"' % path) 
         ru.write_json (doc, full)
 
@@ -193,15 +205,19 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
     if not dburl:
         raise ValueError ("need dburl to retrieve profiles")
 
-    dburl = ru.Url (dburl)
-    print "dburl: %s" % dburl
+    dburl = ru.Url(dburl)
 
     if not tags:
-        tags = dict()
-        if 'RADICAL_SYNAPSE_TAGS' in os.environ:
-            for elem in os.environ['RADICAL_SYNAPSE_TAGS'].split(','):
+        tags  = dict()
+        elems = filter (None, os.environ.get('RADICAL_SYNAPSE_TAGS', '').split(','))
+        for elem in elems:
+            if ':' in elem:
                 key, val  = elem.split(':', 1)
                 tags[key] = val
+            else:
+                tags[elem] = None
+        
+        
 
     command_idx = index_command (command, tags)
 
@@ -239,9 +255,9 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             raise ValueError ("dburl must point to an existing dir")
 
         name = command_idx.split()[0]
-        if tags: 
-            for tag in sorted(tags):
-                name += "_%s" % tags[tag]
+        for key, val in tags.iteritems():
+            if val != None: name += "_%s:%s" % (key, val)
+            else          : name += "_%s"    % (key)
 
         full = "%s/synapse_profile_%s.json" % (path, name)
         test = full

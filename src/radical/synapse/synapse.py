@@ -114,6 +114,7 @@ def profile (command, *args, **kwargs) :
 
     if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
         cmd_str = os.environ.get ('_RADICAL_SYNAPSE_EMULATEE', cmd_str)
+        print 'using emulated command name: %s' % cmd_str
 
     info = {'cmd' : cmd_str}
 
