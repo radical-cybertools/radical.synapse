@@ -1,7 +1,7 @@
 
 {
-    "command": "test cpu", 
-    "command_idx": "test cpu", 
+    "command": "test mem", 
+    "command_idx": "test mem", 
     "mode": "profiled", 
     "profile": {
         "cmd": "test mem", 

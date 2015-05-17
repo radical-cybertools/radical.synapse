@@ -34,6 +34,7 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
         rfd = open (src, O_RDONLY);
         if ( rfd < 0 )
         {
+            fprintf (stderr, "cannot read from %s\n", src);
             perror ("open for read failed");
             return -2;
         }
@@ -44,6 +45,7 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
         wfd = open (tgt, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
         if ( wfd < 0 )
         {
+            fprintf (stderr, "cannot write to %s\n", tgt);
             perror ("open for write failed");
             return -2;
         }
