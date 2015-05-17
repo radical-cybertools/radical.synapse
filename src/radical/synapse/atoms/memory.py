@@ -46,6 +46,7 @@ class Memory (AtomBase) :
     def _emulate (self, size) : 
 
         try:
+         #  print "atom_memory (%s)" % size
             atom_memory (size)
         except Exception as e:
             print "mem atom error: %s" % e

@@ -23,7 +23,7 @@
             "cycles_stalled_front_perc": -1.0, 
             "efficiency":                        0.00, 
             "flops":                             0.00, 
-            "flops_per_core":          106 0000000, 
+            "flops_per_core":          10680000000, 
             "flops_per_cycle":                   4, 
             "frequency":                2670000000.0, 
             "load":                              0.10, 
