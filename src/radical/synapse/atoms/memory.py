@@ -45,7 +45,11 @@ class Memory (AtomBase) :
     @rus.returns (rus.nothing)
     def _emulate (self, size) : 
 
-        atom_memory (size)
+        try:
+            atom_memory (size)
+        except Exception as e:
+            print "mem atom error: %s" % e
+
 
 
 #-------------------------------------------------------------------------------
