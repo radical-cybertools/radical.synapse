@@ -29,14 +29,9 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
     int rfd = 0;
     int wfd = 0;
 
-    fprintf (stdout, " === src  : %s \n", src  );
-    fprintf (stdout, " === rsize: %ld\n", rsize);
-    fprintf (stdout, " === tgt  : %s \n", tgt  );
-    fprintf (stdout, " === wsize: %ld\n", wsize);
-
     if (src && rsize)
     {
-        rfd = open (tgt, O_RDONLY);
+        rfd = open (src, O_RDONLY);
         if ( rfd < 0 )
         {
             perror ("open for read failed");
@@ -75,7 +70,7 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
         if ( rlen > 0 )
         { 
             rret = read  (rfd, rbuf, CHUNKSIZE); 
-            fprintf (stderr, "read (%d %ld %ld) = %ld\n", rfd, rbuf, CHUNKSIZE, rret);
+         // fprintf (stderr, "read (%d %ld %ld) = %ld\n", rfd, rbuf, CHUNKSIZE, rret);
 
             if ( rret != CHUNKSIZE )
             {
@@ -89,7 +84,7 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
         if ( wlen > 0 )
         { 
             wret = write  (wfd, wbuf, CHUNKSIZE); 
-            fprintf (stderr, "write (%d %ld %ld) = %ld\n", wfd, wbuf, CHUNKSIZE, wret);
+         // fprintf (stderr, "write (%d %ld %ld) = %ld\n", wfd, wbuf, CHUNKSIZE, wret);
 
             if ( wret != CHUNKSIZE )
             {

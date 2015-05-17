@@ -2,6 +2,7 @@
 /* -----------------------------------------------------------------------------
  */
 #include <Python.h>
+#include "unistd.h"
 #include "atoms.h"
 
 
@@ -24,11 +25,11 @@ static PyObject *atom_network     (PyObject * self, PyObject * args);
 /* -----------------------------------------------------------------------------
  */
 static PyMethodDef module_methods[] = {
-    {"atom_compute_asm",  atom_compute_asm,  METH_VARARGS | METH_KEYWORDS, ""},
-    {"atom_compute",      atom_compute    ,  METH_VARARGS | METH_KEYWORDS, ""},
-    {"atom_memory",       atom_memory     ,  METH_VARARGS | METH_KEYWORDS, ""},
-    {"atom_storage",      atom_storage    ,  METH_VARARGS | METH_KEYWORDS, ""},
-    {"atom_network",      atom_network    ,  METH_VARARGS | METH_KEYWORDS, ""},
+    {"atom_compute_asm",  atom_compute_asm, METH_VARARGS, NULL},
+    {"atom_compute",      atom_compute    , METH_VARARGS, NULL},
+    {"atom_memory",       atom_memory     , METH_VARARGS, NULL},
+    {"atom_storage",      atom_storage    , METH_VARARGS, NULL},
+    {"atom_network",      atom_network    , METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
 };
 
@@ -95,12 +96,12 @@ atom_memory (PyObject * self, PyObject * args)
 static PyObject *
 atom_storage (PyObject * self, PyObject * args)
 {
-    char * src   = "";
+    char * src;
     long   rsize =  1;
-    char * tgt   = "";
+    char * tgt;
     long   wsize =  1;
 
-    if ( ! PyArg_ParseTuple (args, "slsl", &src, rsize, tgt, wsize) )
+    if ( ! PyArg_ParseTuple (args, "slsl", &src, &rsize, &tgt, &wsize) )
         return NULL;
 
     _atom_storage (src, rsize, tgt, wsize);

@@ -35,7 +35,7 @@ class AtomBase (object) :
 
         self._atype = atype
         self._pid   = os.getpid ()
-        self._uid   = ru.generate_id ("%-10s" % self._atype)
+        self._uid   = ru.generate_id ("%s" % self._atype)
         self.logger = rul.getLogger ("radical.synapse.%s" % self._uid)
 
 
@@ -84,8 +84,10 @@ class AtomBase (object) :
                     # signal to finish
                     return
 
+                print "emulate %-20s: %s" % (self, str(data))
                 self._emulate (*data)
                 self._result_queue.put (True)
+
 
         except Exception as e:
             print "main loop error in atom driver: %s" % e

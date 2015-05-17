@@ -146,12 +146,10 @@ def _emulator (samples) :
     atoms[_STO] = rsa.Storage ()
 
     # FIXME: make sure threads and queues are up
-    time.sleep (1)
-
-    print ' --- 1 samples %d' % len(samples)
+    time.sleep (0.1)
 
     print "\n-------------------------\n\n"
-    print "len: %d" % len(samples)
+    print "emulating %d samples" % len(samples)
 
     # run the first set of samples until we meet a sample type which is already
     # started.  At that point, start to wait before submission.  If all samples
@@ -161,19 +159,16 @@ def _emulator (samples) :
         t = samples[pre][_TYPE]
         v = samples[pre][_VALS]
 
-        print ' --- 1 sample %d: %s : %s' % (pre, t, v)
-
-
         if not t in state:
             # no such atom running - start one
-          # atoms[t].emulate (v)
+            atoms[t].emulate (v)
             state[t] = atoms[t]
 
-            print 'pre %d : %s' % (pre, t)
+          # print 'pre %d : %s' % (pre, t)
 
         else:
             # such an atom is running -- go into steady state to wait for # it
-            print 'brk %d : %s' % (pre, t)
+          # print 'brk %d : %s' % (pre, t)
             break
 
 
@@ -183,24 +178,22 @@ def _emulator (samples) :
         t = samples[idx][_TYPE]
         v = samples[idx][_VALS]
 
-        print ' --- 2 sample %d: %s : %s' % (idx, t, v)
-
         if t in state:
-            print 'wai %d : %s' % (idx, t)
-          # state[t].wait()
+          # print 'wai %d : %s' % (idx, t)
+            state[t].wait()
         else:
-            print 'cre %d : %s' % (idx, t)
-          # state[t] = atoms[t]
+          # print 'cre %d : %s' % (idx, t)
+            state[t] = atoms[t]
 
-        print 'idx %d : %s' % (idx, t)
+      # print 'idx %d : %s' % (idx, t)
         state[t].emulate(v)
 
 
     # all samples are running now (or have been running), now wait for all
     # active ones
     for t in state:
-        print 'wai   : %s' % t
-      # state[t].wait()
+      # print 'wai   : %s' % t
+        state[t].wait()
 
 
     # we are done and can shut the atoms down

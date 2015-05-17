@@ -30,11 +30,11 @@ def testme (delay) :
             data = f.read (20)
         f.close()
 
-    time.sleep (1)
+    time.sleep (0.1)
     t = threading.Thread(target=_testme, args=(delay,))
     t.start()
     t.join()
-    time.sleep(1)
+    time.sleep(0.1)
 
 info, ret, out = rs.profile (testme, 10)
 pprint (info)
