@@ -39,38 +39,6 @@ class AtomBase (object) :
         self.logger = rul.getLogger ("radical.synapse.%s" % self._uid)
 
 
-        # storage for temporary data and statistics
-     #  self._tmpdir = "/scratch/synapse/" # FIXME
-        self._tmpdir = "/tmp/"             # FIXME
-
-        try:
-            os.makedirs (self._tmpdir)
-        except OSError as exc :
-            if exc.errno == errno.EEXIST and os.path.isdir (self._tmpdir) :
-                pass
-            else: raise
-
-        # create our C-based workload script in tmp space
-        self._exe = "%s/synapse_%s"  %  (self._tmpdir, self._atype)
-
-        # already have the tool?
-        if  not os.path.isfile (self._exe) :
-
-            # if not, we compile it on the fly...
-            # Note that the program below will actually, for each flop, also create
-            # 3 INTEGER OPs and 1 Branching instruction.
-            code = open (os.path.dirname(__file__) + '/synapse_%s.c' % self._atype).read ()
-
-            p = subprocess.Popen ("cc -x c -O0 -o %s -" % self._exe,
-                                  shell=True,
-                                  stdin=subprocess.PIPE, 
-                                  stdout=subprocess.PIPE, 
-                                  stderr=subprocess.PIPE)
-            (pout, perr) = p.communicate (code)
-
-            if  p.returncode :
-                raise Exception("Couldn't create %s: %s : %s" % (self._atype, pout, perr))
-
         # start worker process
         self._work_queue   = multiprocessing.Queue ()
         self._result_queue = multiprocessing.Queue ()
