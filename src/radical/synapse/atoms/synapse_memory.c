@@ -17,13 +17,12 @@
 
 int _atom_memory (long size)
 {
-    size_t n = atol   (size);
-    char*  c = malloc (n * sizeof(char));
+    char*  c = malloc (size * sizeof(char));
 
     /* *********************************
      * 1 loop iter allocates 1 MByte
      */
-    n = n / CHUNKSIZE;
+    size_t n = size; // /CHUNKSIZE
 
     /* make sure the memory actually got allocated */
     unsigned long int i = 0;

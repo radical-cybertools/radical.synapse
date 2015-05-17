@@ -74,18 +74,22 @@ class AtomBase (object) :
     @rus.returns (rus.nothing)
     def run (self) :
 
-        while True :
+        try:
 
-            data = self._work_queue.get ()
+            while True :
 
-            if data == None:
-                # signal to finish
-                return
+                data = self._work_queue.get ()
 
-            print "--- %s (%s)----" % (self, data)
+                if data == None:
+                    # signal to finish
+                    return
 
-            self._emulate (*data)
-            self._result_queue.put (True)
+                self._emulate (*data)
+                self._result_queue.put (True)
+
+        except Exception as e:
+            print "main loop error in atom driver: %s" % e
+            raise
 
 
     # --------------------------------------------------------------------------
