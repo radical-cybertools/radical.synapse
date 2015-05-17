@@ -13,7 +13,15 @@ os.environ['RADICAL_SYNAPSE_DBURL'] = "file://%s" % os.getcwd ()
 os.environ['RADICAL_SYNAPSE_TAGS']  = "sto:sto"
 print os.environ['RADICAL_SYNAPSE_DBURL']
 
-info, _, _ = rs.emulate ('test sto')
+info, _, _ = rs.emulate ('test cpu')
+pprint.pprint (info)
 
+info, _, _ = rs.emulate ('test mem')
+pprint.pprint (info)
+
+info, _, _ = rs.emulate ('test sto')
+pprint.pprint (info)
+
+info, _, _ = rs.emulate ('test')
 pprint.pprint (info)
 

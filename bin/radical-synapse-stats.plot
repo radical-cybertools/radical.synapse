@@ -212,9 +212,9 @@ term_t = term.'cairo'
     set y2range [0:max_runtime]
 
     plot "/tmp/rs_".experiment.".mem.tot.dat" using 1:($3/scale) with linespoints ls 301 title 'rss'  ,\
-         "/tmp/rs_".experiment.".mem.tot.dat" using 1:($4/scale) with linespoints ls 303 title 'peak' ,\
          "/tmp/rs_".experiment.".mem.tot.dat" using 1:($2      ) with linespoints ls 100 title 'runtime' axes x1y2
                                          
+       # "/tmp/rs_".experiment.".mem.tot.dat" using 1:($4/scale) with linespoints ls 303 title 'peak' ,\
        # "/tmp/rs_".experiment.".mem.tot.dat" using 1:($4/scale) with linespoints ls 302 title 'size' ,\
 
     # -------------------------------------------------------------------------------------------
@@ -232,8 +232,9 @@ term_t = term.'cairo'
   unset y2range 
 
     set output "./rs_".experiment.".mem.inc.".mode.".png"
-    plot "/tmp/rs_".experiment.".mem.inc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'  ,\
-         "/tmp/rs_".experiment.".mem.inc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' 
+  # plot "/tmp/rs_".experiment.".mem.inc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' ,\
+
+    plot "/tmp/rs_".experiment.".mem.inc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'
 
 
 
@@ -252,8 +253,9 @@ term_t = term.'cairo'
   unset y2range 
 
     set output "./rs_".experiment.".mem.acc.".mode.".png"
-    plot "/tmp/rs_".experiment.".mem.acc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'  ,\
-         "/tmp/rs_".experiment.".mem.acc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' 
+  # plot "/tmp/rs_".experiment.".mem.acc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' ,\ 
+
+    plot "/tmp/rs_".experiment.".mem.acc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'
 
 
     # -------------------------------------------------------------------------------------------

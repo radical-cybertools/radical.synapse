@@ -37,20 +37,7 @@ class Storage (AtomBase) :
         rsize = int(vals[0])
         wsize = int(vals[1])
 
-      # f = open ("/tmp/l")
-      # for i in range(10000000):
-      #     data = f.read (10)
-      # f.close()
-
-        if  rsize: 
-            # FIXME
-            pass 
-            # not yet supported
-          # raise ValueError ("need input source (%s)" % read)
-          # rsize = 0
-
-        src = "/tmp/synapse_storage.%(pid)s.in"
-        src = "/tmp/l" # FIXME
+        src = "/tmp/synapse_storage.in"
         tgt = "/tmp/synapse_storage.%(pid)s.out"
 
         src = src % { 'tmp' : self._tmpdir, 'pid' : self._pid   }

@@ -2,7 +2,7 @@
 {
     "command": "test", 
     "command_idx": "test", 
-    "emulated": false, 
+    "mode": "profiled", 
     "profile": {
         "cmd": "test", 
         "cpu": {

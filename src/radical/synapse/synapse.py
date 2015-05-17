@@ -25,6 +25,82 @@ _LOAD_CMD = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//
 
 # ------------------------------------------------------------------------------
 #
+def execute (command, *args, **kwargs) :
+
+    if callable (command):
+        cmd_str = "%s %s %s" % (command.__name__, str (args), str(kwargs))
+
+    else:
+        cmd_str = command
+
+
+    print "execute: %s" % cmd_str
+
+    info = {'cmd' : cmd_str}
+
+
+    # start stress, get it spinning for one min to get a confirmed load
+    # measurement, then run our own load, then kill stress.
+    if  _LOAD > 0 :
+        rsu.logger.info ("creating system load %s" % _LOAD)
+        os.popen ("killall -9 stress 2>&1 > /dev/null")
+        os.popen ('stress --cpu %s &' % _LOAD)
+        time.sleep (60)
+
+    load_1 = float(os.popen (_LOAD_CMD).read())
+    start  = rsu.timestamp()
+
+    os.environ['_RADICAL_SYNAPSE_PROFILED'] = 'TRUE'
+
+    # run the function/command in a separate process
+    if callable (command):
+
+        proc = mp.Process (target = command,
+                           args   = args,
+                           kwargs = kwargs)
+        proc.start ()
+
+    else:
+
+        proc = sp.Popen (command.split(),
+                        stdout = sp.PIPE,
+                        stderr = sp.STDOUT)
+
+    if callable (command):
+
+        proc.join()
+        out = ""
+        ret = None
+
+    else:
+        out = proc.communicate()[0]
+        ret = proc.returncode
+
+    stop   = rsu.timestamp()
+    load_2 = float(os.popen (_LOAD_CMD).read())
+
+    info['time'] = dict()
+    info['time']['start'] = rsu.time_zero()
+    info['time']['real']  = stop-start
+
+    info['cpu']  = dict()
+    info['cpu']['load']   = max(load_1, load_2)
+   
+    if  _LOAD > 0 :
+        rsu.logger.info ("stopping system load")
+        os.popen ("killall -9 stress 2>&1 > /dev/null")
+        rsu.logger.info ("stopped  system load")
+
+    if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
+        rsu.store_profile (info, mode='executed')
+    else:
+        rsu.store_profile (info, mode='executed')
+
+    return info, ret, out
+
+
+# ------------------------------------------------------------------------------
+#
 def profile (command, *args, **kwargs) :
 
     if callable (command):
@@ -42,7 +118,7 @@ def profile (command, *args, **kwargs) :
     info = {'cmd' : cmd_str}
 
 
-    # start stress, get it spinning for one min to et a confirmed load
+    # start stress, get it spinning for one min to get a confirmed load
     # measurement, then run our own load, then kill stress.
     if  _LOAD > 0 :
         rsu.logger.info ("creating system load %s" % _LOAD)
@@ -50,10 +126,8 @@ def profile (command, *args, **kwargs) :
         os.popen ('stress --cpu %s &' % _LOAD)
         time.sleep (60)
 
-    time_1 = rsu.timestamp()
     load_1 = float(os.popen (_LOAD_CMD).read())
-
-    start = rsu.timestamp()
+    start  = rsu.timestamp()
 
     os.environ['_RADICAL_SYNAPSE_PROFILED'] = 'TRUE'
 
@@ -114,9 +188,9 @@ def profile (command, *args, **kwargs) :
         rsu.logger.info ("stopped  system load")
 
     if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
-        rsu.store_profile (info, emulated=True)
+        rsu.store_profile (info, mode='emulated')
     else:
-        rsu.store_profile (info, emulated=False)
+        rsu.store_profile (info, mode='profiled')
 
     return info, ret, out
 
@@ -208,7 +282,7 @@ def _emulator (samples) :
 def emulate (command) :
 
     # FIXME: average vals over all retrieved profiles
-    profs = rsu.get_profiles (command)
+    profs = rsu.get_profiles (command, mode='profiled')
     prof  = profs[0]['profile']
 
     pprint.pprint (prof)

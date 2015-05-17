@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 
-#define CHUNKSIZE 1024*1024
+#define CHUNKSIZE 1024
 #define PROFILE   0
 
 

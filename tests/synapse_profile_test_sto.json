@@ -2,7 +2,7 @@
 {
     "command": "test cpu", 
     "command_idx": "test cpu", 
-    "emulated": false, 
+    "mode": "profiled", 
     "profile": {
         "cmd": "test sto", 
         "cpu": {
