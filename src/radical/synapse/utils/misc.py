@@ -191,6 +191,7 @@ def get_profiles (command, tags=None, dburl=None, emulated=False) :
         raise ValueError ("need dburl to retrieve profiles")
 
     dburl = ru.Url (dburl)
+    print "dburl: %s" % dburl
 
     if not tags:
         tags = dict()

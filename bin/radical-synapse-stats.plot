@@ -4,6 +4,7 @@ print "experiment  : " . experiment
 print "max runtime : " . max_runtime
 print "max time    : " . max_time
 print "samples     : " . max_tasks
+print "mode        : " . mode
 
 
 ntasks = 100
@@ -66,7 +67,7 @@ term_t = term.'cairo'
 
     scale=1
 
-    set output "./rs_".experiment.".cpu.tot.ops.png"
+    set output "./rs_".experiment.".cpu.tot.ops.".mode.".png"
     set title   "Total CPU Usage vs Application Runtime"
     set xlabel  "tasks (sorted by runtime)"
     set xrange  [0:max_tasks+1]
@@ -82,7 +83,7 @@ term_t = term.'cairo'
 
 
     scale=100
-    set output "./rs_".experiment.".cpu.tot.eff.png"
+    set output "./rs_".experiment.".cpu.tot.eff.".mode.".png"
     set title   "Total CPU Utilization vs Application Runtime"
     set xlabel  "tasks (sorted by runtime)"
     set xrange  [0:max_tasks+1]
@@ -101,7 +102,7 @@ term_t = term.'cairo'
 
     scale=1024*1024
 
-    set output "./rs_".experiment.".cpu.inc.ops.png"
+    set output "./rs_".experiment.".cpu.inc.ops.".mode.".png"
     set title   "CPU Usage over Application Runtime"
     set xlabel  "task runtime (s)"
     set xrange  [0:*]
@@ -119,7 +120,7 @@ term_t = term.'cairo'
 
     scale=1024*1024
 
-    set output "./rs_".experiment.".cpu.acc.ops.png"
+    set output "./rs_".experiment.".cpu.acc.ops.".mode.".png"
     set title   "Accumulated CPU Usage over Application Runtime"
     set xlabel  "task runtime (s)"
     set xrange  [0:*]
@@ -147,7 +148,7 @@ term_t = term.'cairo'
     set y2tics  auto
     set y2range [0:max_runtime]
 
-    set output "./rs_".experiment.".io.tot.png"
+    set output "./rs_".experiment.".io.tot.".mode.".png"
     plot "/tmp/rs_".experiment.".io.tot.dat" using 1:($3/scale) with linespoints ls 201 title 'read'  ,\
          "/tmp/rs_".experiment.".io.tot.dat" using 1:($4/scale) with linespoints ls 202 title 'write' ,\
          "/tmp/rs_".experiment.".io.tot.dat" using 1:($2      ) with linespoints ls 100 title 'runtime' axes x1y2
@@ -166,7 +167,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".io.inc.png"
+    set output "./rs_".experiment.".io.inc.".mode.".png"
     plot "/tmp/rs_".experiment.".io.inc.dat" using 2:($3/scale) with linespoints ls 211 title 'read'  ,\
          "/tmp/rs_".experiment.".io.inc.dat" using 2:($4/scale) with linespoints ls 212 title 'write' 
 
@@ -185,7 +186,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".io.acc.png"
+    set output "./rs_".experiment.".io.acc.".mode.".png"
     plot "/tmp/rs_".experiment.".io.acc.dat" using 2:($3/scale) with linespoints ls 211 title 'read'  ,\
          "/tmp/rs_".experiment.".io.acc.dat" using 2:($4/scale) with linespoints ls 212 title 'write' 
 
@@ -197,7 +198,7 @@ term_t = term.'cairo'
     scale=1024*1024
 
     set term    term_t enhanced color dashed
-    set output "./rs_".experiment.".mem.tot.png"
+    set output "./rs_".experiment.".mem.tot.".mode.".png"
 
     print max_time
 
@@ -230,7 +231,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".mem.inc.png"
+    set output "./rs_".experiment.".mem.inc.".mode.".png"
     plot "/tmp/rs_".experiment.".mem.inc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'  ,\
          "/tmp/rs_".experiment.".mem.inc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' 
 
@@ -250,7 +251,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".mem.acc.png"
+    set output "./rs_".experiment.".mem.acc.".mode.".png"
     plot "/tmp/rs_".experiment.".mem.acc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'  ,\
          "/tmp/rs_".experiment.".mem.acc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' 
 
@@ -271,7 +272,7 @@ term_t = term.'cairo'
     set y2tics  ""
     set title   "Memory Allocation over Application Runtime"
 
-    set output "./rs_".experiment.".mem.png"
+    set output "./rs_".experiment.".mem.".mode.".png"
     plot "/tmp/rs_".experiment.".mem.dat" using 1:($2/1024) with linespoints pt 7 ps 0.3 lt 206 title 'total size',\
          "/tmp/rs_".experiment.".mem.dat" using 1:($3/1024) with linespoints pt 7 ps 0.3 lt 306 title 'resident size'
 
@@ -289,7 +290,7 @@ term_t = term.'cairo'
     set y2range [0:flops]
     set title   "CPU Consumption over Application Runtime"
 
-    set output "./rs_".experiment.".cpu.png"
+    set output "./rs_".experiment.".cpu.".mode.".png"
     plot "/tmp/rs_".experiment.".cpu.dat" using 1:($4*100) with points pt 6 ps 0.5 lt 206 title 'FLOPs' axes x1y2 ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($4*100) with points pt 6 ps 0.5 lt 206 title 'efficiency'  ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($5*100) with points pt 1 ps 0.5 lt 307 title 'utilization'
@@ -308,7 +309,7 @@ term_t = term.'cairo'
     set y2range [0:rtime]
     set title   "Computation Efficiency vs. Application Runtime"
 
-    set output "./rs_".experiment.".cpu_1.png"
+    set output "./rs_".experiment.".cpu_1.".mode.".png"
     plot "/tmp/rs_".experiment.".cpu.dat" using 1:($4*100) with points pt 6 ps 0.5 lt 206 title 'efficiency'  ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($5*100) with points pt 1 ps 0.5 lt 307 title 'utilization' ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($6*1  ) with points pt 6 ps 0.5 lt 308 title 'runtime' axes x1y2
@@ -327,7 +328,7 @@ term_t = term.'cairo'
     set y2range [0:rtime]
     set title   "CPU Cycle Consumption vs. Application Runtime"
 
-    set output "./rs_".experiment.".cpu_2.png"
+    set output "./rs_".experiment.".cpu_2.".mode.".png"
     plot "/tmp/rs_".experiment.".cpu.dat" using 1:($3/1024/1024) with points pt 6 ps 0.5 lt 306 title 'MegaFLOPs' ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($6*1        ) with points pt 6 ps 0.5 lt 308 title 'runtime' axes x1y2
 
@@ -345,7 +346,7 @@ term_t = term.'cairo'
     set y2range [0:rtime]
     set title   "Relation between Resource Consumption and Runtime"
 
-    set output "./rs_".experiment.".cpu_3.png"
+    set output "./rs_".experiment.".cpu_3.".mode.".png"
     plot "/tmp/rs_".experiment.".cpu.dat" using 1:($7/1024     ) with lines              lt 301 title 'read' ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($3/1024/1024) with points pt 6 ps 0.5 lt 306 title 'MegaFLOPs' ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($5*2        ) with points pt 1 ps 0.5 lt 307 title 'utilization'  axes x1y2 ,\
@@ -366,7 +367,7 @@ term_t = term.'cairo'
     set yrange  [0:6.5]
     set y2range [0:rtime]
     set title   "Relation between Resource Consumption Rate and Runtime"
-    set output "./rs_".experiment.".cpu_4.png"
+    set output "./rs_".experiment.".cpu_4.".mode.".png"
     plot "/tmp/rs_".experiment.".cpu.dat" using 1:(1/($4*$5)) with lines lt 306 title '(FLOPs/time)^-1' ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($6       ) with linespoints pt 6 ps 0.5 lt 308 title 'runtime' axes x1y2 ,\
 
@@ -388,7 +389,7 @@ term_t = term.'cairo'
     flops_1=13600000000.0/4/4 # BG
     flops_2=10680000000.0   # PC
 
-    set output "./rs_".experiment.".test.png"
+    set output "./rs_".experiment.".test.".mode.".png"
     plot "/tmp/rs_".experiment.".cpu.dat" using 1:($3/$4/$5/flops_1) with      points pt 7 ps 0.3 lt 206 title 'pred bg' ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($3/$4/$5/flops_2) with      points pt 7 ps 0.3 lt 207 title 'pred pc' ,\
          "/tmp/rs_".experiment.".cpu.dat" using 1:($6              ) with linespoints pt 6 ps 0.5 lt 308 title 'runtime'
