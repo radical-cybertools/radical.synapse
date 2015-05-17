@@ -39,6 +39,18 @@ class AtomBase (object) :
         self.logger = rul.getLogger ("radical.synapse.%s" % self._uid)
 
 
+        # storage for temporary data and statistics
+     #  self._tmpdir = "/scratch/synapse/" # FIXME
+        self._tmpdir = "/tmp/"             # FIXME
+
+        try:
+            os.makedirs (self._tmpdir)
+        except OSError as exc :
+            if exc.errno == errno.EEXIST and os.path.isdir (self._tmpdir) :
+                pass
+            else: raise
+
+
         # start worker process
         self._work_queue   = multiprocessing.Queue ()
         self._result_queue = multiprocessing.Queue ()
