@@ -1,0 +1,131 @@
+
+{
+    "command": "test cpu", 
+    "command_idx": "test cpu", 
+    "emulated": false, 
+    "profile": {
+        "cmd": "md5sum l", 
+        "cpu": {
+            "branch_misses":                100000.0, 
+            "branch_misses_perc":               -1.0, 
+            "branches":                   10000000.0, 
+            "branches_perc":                    -1.0, 
+            "cores_per_socket":                  2, 
+            "cycles":                  10000000000.0, 
+            "cycles_idle_back":                 10.00, 
+            "cycles_idle_back_perc":            10.00, 
+            "cycles_idle_front":                10.00, 
+            "cycles_idle_front_perc":           10.00, 
+            "cycles_perc":                      -1.0, 
+            "cycles_stalled_back":      1000000000.0, 
+            "cycles_stalled_back_perc":         -1.0, 
+            "cycles_stalled_front":     1000000000.0, 
+            "cycles_stalled_front_perc": -1.0, 
+            "efficiency":                        0.30, 
+            "flops":                    5000000000.00, 
+            "flops_per_core":          10680000000, 
+            "flops_per_cycle":                   4, 
+            "frequency":                2670000000.0, 
+            "load":                              0.10, 
+            "num_sockets":                       1, 
+            "ops":                     10000000000.0, 
+            "ops_per_cycle":                     1.00, 
+            "ops_per_cycle_perc":               -1.0, 
+            "ops_perc":                         -1.0, 
+            "real":                              2.00, 
+            "sequence": [
+                [
+                    1.00, 
+                    {
+                        "branch_misses":                        50000.0, 
+                        "branch_misses_perc":                      -1.0, 
+                        "branches":                           5000000.0, 
+                        "branches_perc":                           -1.0, 
+                        "cycles":                          5000000000.0, 
+                        "cycles_perc":                             10.00,
+                        "cycles_stalled_back":                     10.00,
+                        "cycles_stalled_back_perc":                10.00, 
+                        "cycles_stalled_front":                    10.00,
+                        "cycles_stalled_front_perc":               10.00, 
+                        "efficiency":                               0.30, 
+                        "flops":                           5000000000.00, 
+                        "ops":                             5000000000.0, 
+                        "ops_perc":                                -1.0, 
+                        "real":                                     1.0, 
+                        "utilization":                              0.5
+                    }
+                ], 
+                [
+                    2{
+                        "branch_misses":                        50000.0, 
+                        "branch_misses_perc":                      -1.0, 
+                        "branches":                           5000000.0, 
+                        "branches_perc":                           -1.0, 
+                        "cycles":                          5000000000.0, 
+                        "cycles_perc":                             10.00,
+                        "cycles_stalled_back":                     10.00,
+                        "cycles_stalled_back_perc":                10.00, 
+                        "cycles_stalled_front":                    10.00,
+                        "cycles_stalled_front_perc":               10.00, 
+                        "efficiency":                               0.30, 
+                        "flops":                           5000000000.00, 
+                        "ops":                             5000000000.0, 
+                        "ops_perc":                                -1.0, 
+                        "real":                                     1.0, 
+                        "utilization":                              0.5
+                    }.00, 
+                ]
+            ], 
+            "threads_per_core": 2, 
+            "utilization": 0.5
+        }, 
+        "i_o": {
+            "read": 0.0, 
+            "sequence": [
+                [
+                    1.00, 
+                    {
+                        "read":  0.0, 
+                        "write": 0.0
+                    }
+                ], 
+                [
+                    2.00, 
+                    {
+                        "read":  0.0, 
+                        "write": 0.0
+                    }
+                ]
+            ], 
+            "write": 0.0
+        }, 
+        "mem": {
+            "peak": 0.0, 
+            "rss":  0.0, 
+            "sequence": [
+                [
+                    1.00, 
+                    {
+                        "rss":   0.0, 
+                        "size":  0.0
+                    }
+                ], 
+                [
+                    2.00, 
+                    {
+                        "rss":  0.0, 
+                        "size": 0.0
+                    }
+                ]
+            ], 
+            "size": 0.0
+        }, 
+        "time": {
+            "real":  2.00, 
+            "start": 1431820000.00
+        }
+    }, 
+    "tags": {}, 
+    "type": "synapse_profile"
+}
+
