@@ -152,7 +152,7 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
 
     if dburl.schema == 'mongodb':
 
-        print 'store profile AT %s' % dburl
+        print 'store profile in db %s' % dburl
         
         [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
 
@@ -171,26 +171,21 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
             os.system ('mkdir -p "%s"' % path)
 
         name = command_idx.split()[0]
-        print 'name: %s' % name
         for key, val in tags.iteritems():
             if val != None: name += "_%s:%s" % (key, val)
             else          : name += "_%s"    % (key)
-            print 'Name: %s' % name
 
         full = "%s/synapse_profile_%s.json" % (path, name)
         test = full
-        print 'NAme: %s' % full
 
         idx  = 0
         while os.path.exists (test):
             test = "%s.%03d" % (full, idx)
             idx += 1
-            print 'NAMe: %s' % full
 
         full = test
-        print 'NAME: %s' % full
 
-        print 'store profile at %s' % full
+        print 'store profile in file %s' % full
         os.system ('mkdir -p "%s/"' % path) 
         ru.write_json (doc, full)
 
