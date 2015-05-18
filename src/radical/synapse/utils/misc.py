@@ -170,7 +170,7 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
         if not os.path.isdir (path):
             os.system ('mkdir -p "%s"' % path)
 
-      # name = command_idx.split()[0]
+        name = command_idx.split()[0]
       # for key, val in tags.iteritems():
       #     if val != None: name += "_%s:%s" % (key, val)
       #     else          : name += "_%s"    % (key)
