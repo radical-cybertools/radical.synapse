@@ -146,11 +146,17 @@ def profile (command, *args, **kwargs) :
                         stdout = sp.PIPE,
                         stderr = sp.STDOUT)
 
-    watchers = list()
-    watchers.append (rsw.WatcherCPU (proc.pid))
-    watchers.append (rsw.WatcherIO  (proc.pid))
-    watchers.append (rsw.WatcherMem (proc.pid))
+    watch_mode = os.environ.get('RADICAL_SYNAPSE_WATCHMODE', 'full').lower()
+    watchers   = list()
+
+    if watch_mode == 'full':
+        watchers.append (rsw.WatcherCPU (proc.pid))
+        watchers.append (rsw.WatcherIO  (proc.pid))
+        watchers.append (rsw.WatcherMem (proc.pid))
+
+    # watchmode 'basic'
     watchers.append (rsw.WatcherSys (proc.pid))
+
 
     if callable (command):
 
@@ -308,11 +314,12 @@ def emulate (command) :
 
     info, ret, _ = profile (_emulator, samples)
 
-    info['cpu']['efficiency'] = info['cpu']['ops']                       \
-                                / ( info['cpu']['ops']                   \
-                                  + info['cpu']['cycles_stalled_front']  \
-                                  + info['cpu']['cycles_stalled_back']   \
-                                  )
+    if 'ops' in info['cpu']:
+        info['cpu']['efficiency'] = info['cpu']['ops']                       \
+                                    / ( info['cpu']['ops']                   \
+                                      + info['cpu']['cycles_stalled_front']  \
+                                      + info['cpu']['cycles_stalled_back']   \
+                                      )
 
    #print 'efficiency = %s / (%s + %s + %s) = %s' % (
    #          info['cpu']['ops'],
