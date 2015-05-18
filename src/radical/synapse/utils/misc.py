@@ -175,8 +175,8 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
       #     if val != None: name += "_%s:%s" % (key, val)
       #     else          : name += "_%s"    % (key)
         for tag in sorted(tags.keys()):
-            if tags[tag] != None: name += "_%s" % (val)
-            else                : name += "_%s" % (key)
+            if tags[tag] != None: name += "_%s" % tags[tag]
+            else                : name += "_%s" % tag
 
         full = "%s/synapse_profile_%s.json" % (path, name)
         test = full
@@ -257,8 +257,8 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
       #     if val != None: name += "_%s:%s" % (key, val)
       #     else          : name += "_%s"    % (key)
         for tag in sorted(tags.keys()):
-            if tags[tag] != None: name += "_%s" % (val)
-            else                : name += "_%s" % (key)
+            if tags[tag] != None: name += "_%s" % tags[tag]
+            else                : name += "_%s" % tag
 
         full = "%s/synapse_profile_%s.json" % (path, name)
         test = full
