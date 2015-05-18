@@ -4,6 +4,7 @@ __copyright__ = "Copyright 2015, RADICAL@Rutgers"
 __license__   = "MIT"
 
 
+import os
 import socket
 
 import watcher_base as wb
