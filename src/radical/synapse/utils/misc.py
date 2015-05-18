@@ -247,7 +247,7 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
         path = dburl.path
 
         if not os.path.isdir (path):
-            raise ValueError ("dburl must point to an existing dir")
+            raise ValueError ("dburl (%s) must point to an existing dir" % dburl)
 
         name = command_idx.split()[0]
         for key, val in tags.iteritems():
