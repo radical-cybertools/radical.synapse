@@ -4,6 +4,8 @@ __copyright__ = "Copyright 2015, RADICAL@Rutgers"
 __license__   = "MIT"
 
 
+import socket
+
 import watcher_base as wb
 
 from ..utils import human_to_number, PREFIX_ISO
@@ -24,6 +26,7 @@ class WatcherSys (wb.WatcherBase) :
     #
     def _pre_process (self, config): 
 
+        self._data['sys'] = dict()
         self._data['cpu'] = dict()
 
 
@@ -73,6 +76,10 @@ class WatcherSys (wb.WatcherBase) :
         self._data['cpu']['frequency'        ] = cpu_freq         
         self._data['cpu']['flops_per_cycle'  ] = flops_per_cycle  
         self._data['cpu']['flops_per_core'   ] = flops_per_core   
+
+        self._data['sys']['hostname'] = os.environ.get('RADICAL_SYNAPSE_HOSTNAME', 
+                                                       socket.gethostname())
+        
 
 
 

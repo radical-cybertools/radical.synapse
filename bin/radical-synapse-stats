@@ -98,6 +98,9 @@ def usage (msg=None, noexit=False) :
         -d      : database name
         -c      : cachedir where <sid>.json caches are kept (also needs -s)
         -t      : terminal type for plotting (pdf and/or png, default is both)
+        -x      : command which synapse executed/profiled/emulated
+        -s      : synapse mode ( exe[cuted] | pro[filed] | emu[lated] | any) 
+                  (can be or-ed via '|')
 
 
       The default command is 'list'.  
@@ -314,7 +317,7 @@ def stat_database (db_json) :
 
 
 # ------------------------------------------------------------------------------
-def plot_database (db_json, dbname, filters, term, mode) :
+def plot_database (db_json, dbname, filters, term, modes) :
     """
     plot results :P
     """
@@ -331,23 +334,19 @@ def plot_database (db_json, dbname, filters, term, mode) :
     dat_acc_io  = open("/tmp/rs_%s.io.acc.dat"  % dbname, 'w')
     dat_acc_cpu = open("/tmp/rs_%s.cpu.acc.dat" % dbname, 'w')
 
-    dat_tot_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s  %15s\n" 
-            % ('id', 'runtime', 'ops', 'flops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
-    dat_inc_cpu.write("# %15s  %15s  %15s  %15s  %15s  %15s\n" 
-            % ('id', 'runtime', 'ops', 'flops', 'efficiency', 'utilization'))
-    dat_acc_cpu.write("# %15s  %15s  %15s\n" 
-            % ('id', 'runtime', 'ops'))
-
-    dat_tot_io.write ("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'read', 'write'))
-    dat_inc_io.write ("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'read', 'write'))
-    dat_acc_io.write ("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'read', 'write'))
-    dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'rss',  'size', 'peak'))
-    dat_inc_mem.write("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'rss',  'size'))
-    dat_acc_mem.write("# %15s  %15s  %15s  %15s\n"       % ('id', 'runtime', 'rss',  'size'))
+    dat_tot_cpu.write(("# " + ("%15s  "*11)+"\n") % ('host', 'mode', 'id', 'ttc', 'ops', 'flops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
+    dat_inc_cpu.write(("# " + ("%15s  "* 8)+"\n") % ('host', 'mode', 'id', 'ttc', 'ops', 'flops', 'efficiency', 'utilization'))
+    dat_acc_cpu.write(("# " + ("%15s  "* 5)+"\n") % ('host', 'mode', 'id', 'ttc', 'ops'))
+    dat_tot_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'read', 'write'))
+    dat_inc_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'read', 'write'))
+    dat_acc_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'read', 'write'))
+    dat_tot_mem.write(("# " + ("%15s  "* 7)+"\n") % ('host', 'mode', 'id', 'ttc', 'rss',  'size', 'peak'))
+    dat_inc_mem.write(("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'rss',  'size'))
+    dat_acc_mem.write(("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'rss',  'size'))
 
     # some boundaries we want to let gnuplot know about
     max_time      = 0.0
-    max_runtime   = 0.0
+    max_ttc       = 0.0
     max_tot_mem   = 0.0
     max_inc_mem   = 0.0
     max_load      = 0.0
@@ -374,6 +373,12 @@ def plot_database (db_json, dbname, filters, term, mode) :
         io   = profile.get ('i_o')
         cmd  = profile.get ('cmd')
 
+        host = profile.get ('sys',{}).get('host',os.environ.get('RADICAL_SYNAPSE_HOST'))
+
+        if not host:
+            print "need hostname, set RADICAL_SYNAPSE_HOST"
+            sys.exit()
+
         accept = False
 
         if not filters:
@@ -393,14 +398,14 @@ def plot_database (db_json, dbname, filters, term, mode) :
 
         real = perf['real']
 
-        max_runtime = max(max_runtime, real)
+        max_ttc = max(max_ttc, real)
 
         if mem:
 
             if not 'rss' in mem:
                 continue
 
-          # dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'rss',  'size', 'peak'))
+          # dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'ttc', 'rss',  'size', 'peak'))
             dat_tot_mem.write("  %15s  %15.2f  %15d  %15d  %15d\n"
                     % (profile_id, real, mem['rss'], mem['size'], mem['peak']))
 
@@ -441,7 +446,7 @@ def plot_database (db_json, dbname, filters, term, mode) :
             if not 'read' in io:
                 continue
 
-          # dat_tot_io.write("# %15s  %15s  %15s  %15s\n" % ('id', 'runtime', 'read', 'write'))
+          # dat_tot_io.write("# %15s  %15s  %15s  %15s\n" % ('id', 'ttc', 'read', 'write'))
             dat_tot_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
                     % (profile_id, real, io['read'], io['write']))
 
@@ -494,7 +499,7 @@ def plot_database (db_json, dbname, filters, term, mode) :
 
           # print "%s - %s" % (ops, max_tot_ops)
 
-            # ('id', 'runtime', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
+            # ('id', 'ttc', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
             dat_tot_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.3f  %15.2f  %15d  %15d\n' \
                     % (profile_id, real, ops, flops, effic, utili, load, fpc, threads))
 
@@ -521,7 +526,7 @@ def plot_database (db_json, dbname, filters, term, mode) :
                 max_inc_ops   = max(max_inc_ops  , ops  )
                 max_inc_flops = max(max_inc_flops, flops)
 
-                # ('id', 'runtime', 'ops', 'efficiency', 'utilization'))
+                # ('id', 'ttc', 'ops', 'efficiency', 'utilization'))
                 dat_inc_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.2f\n' \
                         % (profile_id, ts, ops, flops, effic, utili))
 
@@ -544,12 +549,12 @@ def plot_database (db_json, dbname, filters, term, mode) :
     dat_acc_io .close()
     dat_acc_cpu.close()
 
-    max_runtime = max(max_runtime, 1)
+    max_ttc = max(max_ttc, 1)
 
     f = ru.round_upper_bound
     bounds  = ""
-    bounds += " -e max_time='\"%d\"'"      % max_runtime
-    bounds += " -e max_runtime='\"%d\"'"   % f(max_runtime   * 1.1)
+    bounds += " -e max_time='\"%d\"'"      %   max_ttc
+    bounds += " -e max_ttc='\"%d\"'"       % f(max_ttc       * 1.1)
     bounds += " -e max_tot_mem='\"%d\"'"   % f(max_tot_mem   * 1.1)
     bounds += " -e max_inc_mem='\"%d\"'"   % f(max_inc_mem   * 1.1)
     bounds += " -e max_load='\"%d\"'"      % f(max_load      * 1.1)
@@ -566,8 +571,8 @@ def plot_database (db_json, dbname, filters, term, mode) :
     bounds += " -e max_tasks='\"%d\"'"     % profile_id
 
 
-    if syn_mode:
-        mode_tag = "-e mode='\"%s\"'" % syn_mode
+    if syn_modes:
+        mode_tag = "-e modes='\"%s\"'" % ('_'.join(syn_modes))
     else:
         mode_tag = ""
 
@@ -684,11 +689,6 @@ def handle_doc (collection, mode, doc) :
                 lnum    += 1
 
             print " | | | +-- %-10s : %s" % (key, txt_out[:-1]) # remove last \n
-# ------------------------------------------------------------------------------
-# 
-def parse_commandline():
-
-    return options
 
 
 # ------------------------------------------------------------------------------
@@ -706,7 +706,7 @@ if __name__ == '__main__' :
     parser.add_option('-h', '--help',      dest='help',     action="store_true")
     parser.add_option('-f', '--filter',    dest='filters')
     parser.add_option('-x', '--command',   dest='cmd')
-    parser.add_option('-e', '--syn-mode',  dest='syn_mode')
+    parser.add_option('-s', '--syn-mode',  dest='syn_mode')
 
     options, args = parser.parse_args ()
 
@@ -735,6 +735,14 @@ if __name__ == '__main__' :
     filters  = options.filters
     syn_mode = options.syn_mode
 
+    if syn_mode and len(syn_mode)>3:
+        syn_mode = syn_mode[0:2]
+
+    if syn_mode == 'any':
+        syn_mode = 'emu|pro|exe'
+
+    syn_modes = syn_mode.split('|')
+
     if  not filters:
         filters = ''
     filters = filters.split(',')
@@ -761,7 +769,7 @@ if __name__ == '__main__' :
     print "cachedir: %s" % cachedir
     print "filter  : %s" % filters
     print "command : %s" % cmd
-    print "syn.mode: %s" % syn_mode
+    print "syn.mode: %s" % syn_modes
 
 
     for m in mode.split (',') :
@@ -776,7 +784,7 @@ if __name__ == '__main__' :
         else:
 
             if cmd:
-                db_json = rsu.get_profiles (cmd, mode=syn_mode)
+                db_json = rsu.get_profiles (cmd, mode=syn_modes)
                 dbname  = os.path.basename (url.path)
             else:
                 import json
@@ -787,7 +795,7 @@ if __name__ == '__main__' :
             elif m == 'sort' : sort_database  (db_json, dbname, filters, cachedir)
             elif m == 'hist' : hist_database  (db_json, dbname, filters, cachedir)
             elif m == 'stat' : stat_database  (db_json, dbname, filters, cachedir)
-            elif m == 'plot' : plot_database  (db_json, dbname, filters, term, syn_mode)
+            elif m == 'plot' : plot_database  (db_json, dbname, filters, term, syn_modes)
             elif m == 'help' : usage (noexit=True)
             else             : usage ("unknown mode '%s'" % mode)
 
