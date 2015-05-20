@@ -2,7 +2,6 @@
 
 import os
 import time
-import socket
 import pprint
 import threading
 import radical.utils   as ru
