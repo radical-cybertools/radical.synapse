@@ -2,6 +2,7 @@
 
 import os
 import time
+import glob
 import signal
 import pprint
 import pymongo
@@ -178,19 +179,16 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
             if tags[tag] != None: name += "_%s" % tags[tag]
             else                : name += "_%s" % tag
 
-        full = "%s/synapse_profile_%s.json" % (path, name)
-        test = full
-
         idx  = 0
-        while os.path.exists (test):
-            test = "%s.%03d" % (full, idx)
+        while True:
+            fname = "%s/synapse_profile_%s_%s_%s_%03d.json" % (path, name, host, mode[0:3], idx)
+            if not os.path.exists (fname):
+                break
             idx += 1
 
-        full = test
-
-        print 'store profile in file %s' % full
+        print 'store profile in file %s' % fname
         os.system ('mkdir -p "%s/"' % path) 
-        ru.write_json (doc, full)
+        ru.write_json (doc, fname)
 
 
 
@@ -260,19 +258,13 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             if tags[tag] != None: name += "_%s" % tags[tag]
             else                : name += "_%s" % tag
 
-        full = "%s/synapse_profile_%s.json" % (path, name)
-        test = full
+        fnames = glob.glob ("%s/synapse_profile_%s_*.json" % (path, name))
+        ret    = list()
+        for fname in fnames:
 
-        if not os.path.exists (full):
-            raise LookupError ("No matching profile at %s" % full)
+            print 'reading profile %s' % fname
 
-        idx  = 0
-        ret  = list()
-        while os.path.exists (test):
-
-            print 'reading profile %s' % test
-
-            doc = ru.read_json_str (test)
+            doc = ru.read_json_str (fname)
             use = False
             if doc['command'] == command:
                 if not mode :
@@ -287,8 +279,6 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             if use:
                 ret.append (doc)
 
-            test = "%s.%03d" % (full, idx)
-            idx += 1
 
     print 'retrieved %d profiles from %s' % (len(ret), dburl)
   # pprint.pprint (ret)

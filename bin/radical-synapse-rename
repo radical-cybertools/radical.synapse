@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import radical.utils as ru
+
+import os
+import glob
+import pprint
+
+DEFAULT_HOST = 'thinkie'
+
+
+fnames = glob.glob ('*.json*')
+
+for fname in fnames:
+    
+    idx  = 0
+    base = fname[:-5]
+
+    if not fname.endswith('.json'):
+        idx  = int(fname[-3:])
+        base = fname[:-9]
+
+
+    json = ru.read_json (fname)
+  # pprint.pprint (json)
+
+    if not 'profile' in json:
+        print 'skip bogus %s' % fname
+
+    if not 'host' in json['profile']:
+        json['profile']['host'] = DEFAULT_HOST
+
+    host = json['profile']['host']
+    mode = json['mode']
+    new  = "%s_%s_%s_%03d.json" % (base, host, mode[0:3], idx)
+
+  # print "%50s  %s" % (fname, new)
+
+    ru.write_json (json, new)
+    os.system ('rm -v %s' % fname)
+
+
