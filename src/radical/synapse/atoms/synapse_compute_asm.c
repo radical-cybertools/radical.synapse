@@ -19,8 +19,8 @@ float mat_mult (float* a1, float* a2, int n);
 
 int _atom_compute_asm (long flops)
 {
-    size_t n = flops / (1024 * 1024);
-    float  f[CHUNKSIZE];
+    size_t  n = flops / (1024 * 1024);
+    float * f = calloc (CHUNKSIZE, sizeof(float));
 
     /* This is an overhead for each sample :( */
     unsigned int i = 0;
@@ -37,6 +37,8 @@ int _atom_compute_asm (long flops)
         mat_mult (f, f, CHUNKSIZE);
     }
     /* ********************************* */
+
+    free (f);
 
     if (PROFILE)
     {
