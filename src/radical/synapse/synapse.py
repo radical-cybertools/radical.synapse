@@ -2,6 +2,7 @@
 
 import os
 import time
+import socket
 import pprint
 import threading
 import radical.utils   as ru
@@ -92,7 +93,7 @@ def execute (command, *args, **kwargs) :
         rsu.logger.info ("stopped  system load")
 
     if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
-        rsu.store_profile (info, mode='executed')
+        rsu.store_profile (info, mode='emulated')
     else:
         rsu.store_profile (info, mode='executed')
 
@@ -245,11 +246,11 @@ def _emulator (samples) :
             atoms[t].emulate (v)
             state[t] = atoms[t]
 
-          # print 'pre %d : %s' % (pre, t)
+            print 'pre %d : %s' % (pre, t)
 
         else:
             # such an atom is running -- go into steady state to wait for # it
-          # print 'brk %d : %s' % (pre, t)
+            print 'brk %d : %s' % (pre, t)
             break
 
 
@@ -260,20 +261,20 @@ def _emulator (samples) :
         v = samples[idx][_VALS]
 
         if t in state:
-          # print 'wai %d : %s' % (idx, t)
+            print 'wai %d : %s' % (idx, t)
             state[t].wait()
         else:
-          # print 'cre %d : %s' % (idx, t)
+            print 'cre %d : %s' % (idx, t)
             state[t] = atoms[t]
 
-      # print 'idx %d : %s' % (idx, t)
+        print 'idx %d : %s' % (idx, t)
         state[t].emulate(v)
 
 
     # all samples are running now (or have been running), now wait for all
     # active ones
     for t in state:
-      # print 'wai   : %s' % t
+        print 'wai   : %s' % t
         state[t].wait()
 
 
@@ -307,26 +308,42 @@ def emulate (command) :
 
     pprint.pprint (samples)
 
-    # let the profiler know that we run an emulation, so that the profile is not
-    # stored as 'application run'.
-    os.environ['_RADICAL_SYNAPSE_EMULATED'] = 'TRUE'
-    os.environ['_RADICAL_SYNAPSE_EMULATEE'] = command
+    if os.environ.get ('RADICAL_SYNAPSE_WATCHMODE').lower() in ['none', 'noop']:
+        start = time.time()
+        _emulator (samples)
+        stop = time.time()
 
-    info, ret, _ = profile (_emulator, samples)
+        info = dict()
+        info['cmd']  = command
+        info['host'] = os.environ.get ('RADICAL_SYNAPSE_HOSTNAME', socket.gethostname())
+        info['time'] = dict()
+        info['time']['start'] = start
+        info['time']['real']  = stop-start
 
-    if 'ops' in info['cpu']:
-        info['cpu']['efficiency'] = info['cpu']['ops']                       \
-                                    / ( info['cpu']['ops']                   \
-                                      + info['cpu']['cycles_stalled_front']  \
-                                      + info['cpu']['cycles_stalled_back']   \
-                                      )
+        rsu.store_profile (info, mode='emulated')
+     
 
-   #print 'efficiency = %s / (%s + %s + %s) = %s' % (
-   #          info['cpu']['ops'],
-   #          info['cpu']['ops'],
-   #          info['cpu']['cycles_stalled_front'],
-   #          info['cpu']['cycles_stalled_back'],
-   #          info['cpu']['efficiency'])
+    else:
+        # let the profiler know that we run an emulation, so that the profile is not
+        # stored as 'application run'.
+        os.environ['_RADICAL_SYNAPSE_EMULATED'] = 'TRUE'
+        os.environ['_RADICAL_SYNAPSE_EMULATEE'] = command
+
+        info, ret, _ = profile (_emulator, samples)
+
+        if 'ops' in info['cpu']:
+            info['cpu']['efficiency'] = info['cpu']['ops']                       \
+                                        / ( info['cpu']['ops']                   \
+                                          + info['cpu']['cycles_stalled_front']  \
+                                          + info['cpu']['cycles_stalled_back']   \
+                                          )
+
+       #print 'efficiency = %s / (%s + %s + %s) = %s' % (
+       #          info['cpu']['ops'],
+       #          info['cpu']['ops'],
+       #          info['cpu']['cycles_stalled_front'],
+       #          info['cpu']['cycles_stalled_back'],
+       #          info['cpu']['efficiency'])
 
     return (info, ret, None)
 
