@@ -9,7 +9,7 @@ import pymongo
 import radical.utils        as ru
 import radical.utils.logger as rul
 
-# import pudb 
+# import pudb
 # pudb.set_interrupt_handler ()
 
 
@@ -67,7 +67,7 @@ def human_to_number (h, prefix=PREFIX_BIN) :
 
     rs = ru.ReString (h)
 
-    with rs // '^\s*([\d\.]+)\s*(\D+)\s*$' as match : 
+    with rs // '^\s*([\d\.]+)\s*(\D+)\s*$' as match :
         if  not match :
           # print 'incorrect format: %s' % h
             return float(h)
@@ -136,28 +136,29 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
                 tags[key] = val
             else:
                 tags[elem] = None
-        
+
 
     command_idx = index_command (profile['cmd'], tags)
     print "index %s (%s) to %s" % (profile['cmd'], tags, command_idx)
 
-
-    doc = {'type'        : 'synapse_profile', 
-           'mode'        : mode,
-           'command_idx' : command_idx, 
-           'command'     : profile['cmd'], 
-           'tags'        : tags, 
-           'profile'     : profile}
+    host = os.environ.get ('RADICAL_SYNAPSE_HOSTNAME', socket.gethostname())
+    doc  = {'type'        : 'synapse_profile',
+            'mode'        : mode,
+            'command_idx' : command_idx,
+            'command'     : profile['cmd'],
+            'host'        : host,
+            'tags'        : tags,
+            'profile'     : profile}
 
 
 
     if dburl.schema == 'mongodb':
 
         print 'store profile in db %s' % dburl
-        
-        [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
 
-        db_client  = pymongo.MongoClient (host=host, port=port)
+        [dbhost, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
+
+        db_client  = pymongo.MongoClient (host=dbhost, port=port)
         database   = db_client[dbname]
         collection = database['profiles']
 
@@ -187,7 +188,7 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
             idx += 1
 
         print 'store profile in file %s' % fname
-        os.system ('mkdir -p "%s/"' % path) 
+        os.system ('mkdir -p "%s/"' % path)
         ru.write_json (doc, fname)
 
 
@@ -212,27 +213,26 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
                 tags[key] = val
             else:
                 tags[elem] = None
-        
-        
+
 
     command_idx = index_command (command, tags)
 
     if dburl.schema == 'mongodb':
 
-        [host, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
+        [dbhost, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
 
-        db_client  = pymongo.MongoClient (host=host, port=port)
+        db_client  = pymongo.MongoClient (host=dbhost, port=port)
         database   = db_client[dbname]
         collection = database['profiles']
 
         # FIXME: eval partial tags
 
         if mode:
-            results = collection.find ({'type'        : 'synapse_profile', 
+            results = collection.find ({'type'        : 'synapse_profile',
                                         'tags'        : tags,
                                         'command_idx' : command_idx})
         else:
-            results = collection.find ({'type'        : 'synapse_profile', 
+            results = collection.find ({'type'        : 'synapse_profile',
                                         'tags'        : tags,
                                         'mode'        : mode,
                                         'command_idx' : command_idx})

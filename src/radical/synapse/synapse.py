@@ -317,7 +317,6 @@ def emulate (command) :
         ret   = None
         info  = dict()
         info['cmd']  = command
-        info['host'] = os.environ.get ('RADICAL_SYNAPSE_HOSTNAME', socket.gethostname())
         info['time'] = dict()
         info['time']['start'] = start
         info['time']['real']  = stop-start
