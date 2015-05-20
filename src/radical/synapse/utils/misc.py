@@ -258,7 +258,7 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             if tags[tag] != None: name += "_%s" % tags[tag]
             else                : name += "_%s" % tag
 
-        base   = "%s/synapse_profile_%s_*.json" % (path, name))
+        base   = "%s/synapse_profile_%s_*.json" % (path, name)
         fnames = glob.glob (base)
         ret    = list()
         for fname in fnames:
