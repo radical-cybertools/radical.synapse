@@ -258,7 +258,8 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             if tags[tag] != None: name += "_%s" % tags[tag]
             else                : name += "_%s" % tag
 
-        fnames = glob.glob ("%s/synapse_profile_%s_*.json" % (path, name))
+        base   = "%s/synapse_profile_%s_*.json" % (path, name))
+        fnames = glob.glob (base)
         ret    = list()
         for fname in fnames:
 
@@ -279,12 +280,12 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             if use:
                 ret.append (doc)
 
+        if not len(ret):
+            raise LookupError ("No matching profile at %s" % base)
 
     print 'retrieved %d profiles from %s' % (len(ret), dburl)
   # pprint.pprint (ret)
 
-    if not len(ret):
-        raise LookupError ("No matching profile at %s" % full)
 
     return ret
 
