@@ -308,12 +308,14 @@ def emulate (command) :
 
     pprint.pprint (samples)
 
-    if os.environ.get ('RADICAL_SYNAPSE_WATCHMODE').lower() in ['none', 'noop']:
+    watchmode = os.environ.get ('RADICAL_SYNAPSE_WATCHMODE')
+    if watchmode and watchmode.lower in ['none', 'noop']:
         start = time.time()
         _emulator (samples)
-        stop = time.time()
+        stop  = time.time()
 
-        info = dict()
+        ret   = None
+        info  = dict()
         info['cmd']  = command
         info['host'] = os.environ.get ('RADICAL_SYNAPSE_HOSTNAME', socket.gethostname())
         info['time'] = dict()
