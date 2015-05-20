@@ -5,6 +5,7 @@ import time
 import glob
 import signal
 import pprint
+import socket
 import pymongo
 import radical.utils        as ru
 import radical.utils.logger as rul
