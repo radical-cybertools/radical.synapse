@@ -151,7 +151,7 @@ def profile (command, *args, **kwargs) :
 
     if watch_mode == 'full':
         watchers.append (rsw.WatcherCPU (proc.pid))
-        watchers.append (rsw.WatcherIO  (proc.pid))
+        watchers.append (rsw.WatcherSto (proc.pid))
         watchers.append (rsw.WatcherMem (proc.pid))
 
     # watchmode 'basic'
@@ -300,7 +300,7 @@ def emulate (command) :
                               x[1].get('efficiency', 0)]] for x in prof['cpu']['sequence']]
     samples += [[_MEM, x[0], [x[1].get('size',       0)]] for x in prof['mem']['sequence']]
     samples += [[_STO, x[0], [x[1].get('read',       0), 
-                              x[1].get('write',      0)]] for x in prof['i_o']['sequence']]
+                              x[1].get('write',      0)]] for x in prof['sto']['sequence']]
 
     # sort samples by time
     samples = sorted (samples, key=lambda x: x[1])

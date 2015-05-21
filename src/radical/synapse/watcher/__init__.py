@@ -7,7 +7,7 @@ __license__   = "MIT"
 # ------------------------------------------------------------------------------
 
 from watcher_mem  import WatcherMem
-from watcher_io   import WatcherIO
+from watcher_sto  import WatcherSto
 from watcher_cpu  import WatcherCPU
 from watcher_sys  import WatcherSys
 

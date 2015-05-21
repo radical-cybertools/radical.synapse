@@ -4,7 +4,7 @@ print "experiment  : " . experiment
 print "max ttc     : " . max_ttc
 print "max time    : " . max_time
 print "samples     : " . max_tasks
-print "mode        : " . mode
+print "modes       : " . modes
 
 
 term   = 'png'
@@ -63,7 +63,7 @@ term_t = term.'cairo'
 
     scale=1
 
-    set output "./rs_".experiment.".cpu.tot.ops.".mode.".png"
+    set output "./rs_".experiment.".cpu.tot.ops.".modes.".png"
     set title   "Total CPU Usage vs Task TTC"
     set xlabel  "tasks (sorted by ttc)"
     set xrange  [0:max_tasks+1]
@@ -79,7 +79,7 @@ term_t = term.'cairo'
 
 
     scale=100
-    set output "./rs_".experiment.".cpu.tot.eff.".mode.".png"
+    set output "./rs_".experiment.".cpu.tot.eff.".modes.".png"
     set title   "Total CPU Utilization vs Task TTC"
     set xlabel  "tasks (sorted by ttc)"
     set xrange  [0:max_tasks+1]
@@ -98,7 +98,7 @@ term_t = term.'cairo'
 
     scale=1024*1024
 
-    set output "./rs_".experiment.".cpu.inc.ops.".mode.".png"
+    set output "./rs_".experiment.".cpu.inc.ops.".modes.".png"
     set title   "CPU Usage over Task TTC"
     set xlabel  "task ttc (s)"
     set xrange  [0:*]
@@ -116,7 +116,7 @@ term_t = term.'cairo'
 
     scale=1024*1024
 
-    set output "./rs_".experiment.".cpu.acc.ops.".mode.".png"
+    set output "./rs_".experiment.".cpu.acc.ops.".modes.".png"
     set title   "Accumulated CPU Usage over Task TTC"
     set xlabel  "task ttc (s)"
     set xrange  [0:*]
@@ -144,7 +144,7 @@ term_t = term.'cairo'
     set y2tics  auto
     set y2range [0:max_ttc]
 
-    set output "./rs_".experiment.".io.tot.".mode.".png"
+    set output "./rs_".experiment.".io.tot.".modes.".png"
     plot "/tmp/rs_".experiment.".io.tot.dat" using 1:($3/scale) with linespoints ls 201 title 'read'  ,\
          "/tmp/rs_".experiment.".io.tot.dat" using 1:($4/scale) with linespoints ls 202 title 'write' ,\
          "/tmp/rs_".experiment.".io.tot.dat" using 1:($2      ) with linespoints ls 100 title 'ttc' axes x1y2
@@ -163,7 +163,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".io.inc.".mode.".png"
+    set output "./rs_".experiment.".io.inc.".modes.".png"
     plot "/tmp/rs_".experiment.".io.inc.dat" using 2:($3/scale) with linespoints ls 211 title 'read'  ,\
          "/tmp/rs_".experiment.".io.inc.dat" using 2:($4/scale) with linespoints ls 212 title 'write' 
 
@@ -182,7 +182,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".io.acc.".mode.".png"
+    set output "./rs_".experiment.".io.acc.".modes.".png"
     plot "/tmp/rs_".experiment.".io.acc.dat" using 2:($3/scale) with linespoints ls 211 title 'read'  ,\
          "/tmp/rs_".experiment.".io.acc.dat" using 2:($4/scale) with linespoints ls 212 title 'write' 
 
@@ -194,7 +194,7 @@ term_t = term.'cairo'
     scale=1024*1024
 
     set term    term_t enhanced color dashed
-    set output "./rs_".experiment.".mem.tot.".mode.".png"
+    set output "./rs_".experiment.".mem.tot.".modes.".png"
 
     print max_time
 
@@ -227,7 +227,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".mem.inc.".mode.".png"
+    set output "./rs_".experiment.".mem.inc.".modes.".png"
   # plot "/tmp/rs_".experiment.".mem.inc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' ,\
 
     plot "/tmp/rs_".experiment.".mem.inc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'
@@ -248,7 +248,7 @@ term_t = term.'cairo'
   unset y2tics  
   unset y2range 
 
-    set output "./rs_".experiment.".mem.acc.".mode.".png"
+    set output "./rs_".experiment.".mem.acc.".modes.".png"
   # plot "/tmp/rs_".experiment.".mem.acc.dat" using 2:($4/scale) with linespoints ls 313 title 'size' ,\ 
 
     plot "/tmp/rs_".experiment.".mem.acc.dat" using 2:($3/scale) with linespoints ls 311 title 'rss'
