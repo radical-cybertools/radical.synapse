@@ -11,7 +11,7 @@ from ..utils import human_to_number
 
 # ------------------------------------------------------------------------------
 #
-class WatcherIO (wb.WatcherBase) :
+class WatcherSto (wb.WatcherBase) :
 
     # --------------------------------------------------------------------------
     #
@@ -28,8 +28,8 @@ class WatcherIO (wb.WatcherBase) :
     def _pre_process  (self, config):
 
         self._f = open('/proc/%s/io' % self._pid, 'r')
-        self._data['i_o']             = dict()
-        self._data['i_o']['sequence'] = list()
+        self._data['sto']             = dict()
+        self._data['sto']['sequence'] = list()
 
 
     # --------------------------------------------------------------------------
@@ -40,7 +40,7 @@ class WatcherIO (wb.WatcherBase) :
 
         # use the values from tot_sample as global total
         for key,val in self._tot_sample.iteritems():
-            self._data['i_o'][key] = val
+            self._data['sto'][key] = val
 
 
     # --------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class WatcherIO (wb.WatcherBase) :
 
         except Exception as e:
             # FIXME: use log
-          # print "i_o data source is gone (%s)" % e
+          # print "sto data source is gone (%s)" % e
             return
 
         sample = dict()
@@ -84,7 +84,7 @@ class WatcherIO (wb.WatcherBase) :
 
             self._old_sample[key] = val
 
-        self._data['i_o']['sequence'].append ([now, sample])
+        self._data['sto']['sequence'].append ([now, sample])
 
 
 # ------------------------------------------------------------------------------

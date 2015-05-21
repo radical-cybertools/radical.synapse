@@ -142,12 +142,15 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
     command_idx = index_command (profile['cmd'], tags)
     print "index %s (%s) to %s" % (profile['cmd'], tags, command_idx)
 
-    host = os.environ.get ('RADICAL_SYNAPSE_HOSTNAME', socket.gethostname())
+    host = profile['sys'].get ('hostname')
+    if not host:
+        host = os.environ.get ('RADICAL_SYNAPSE_HOSTNAME', socket.gethostname())
+        profile['sys']['hostname'] = host
+
     doc  = {'type'        : 'synapse_profile',
             'mode'        : mode,
             'command_idx' : command_idx,
             'command'     : profile['cmd'],
-            'host'        : host,
             'tags'        : tags,
             'profile'     : profile}
 
@@ -205,6 +208,9 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
 
     dburl = ru.Url(dburl)
 
+    if not isinstance (mode, list):
+        mode = [mode]
+
     if not tags:
         tags  = dict()
         elems = filter (None, os.environ.get('RADICAL_SYNAPSE_TAGS', '').split(','))
@@ -231,11 +237,11 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
         if mode:
             results = collection.find ({'type'        : 'synapse_profile',
                                         'tags'        : tags,
+                                        'mode'        : {'$in': mode},  # FIXME: check
                                         'command_idx' : command_idx})
         else:
             results = collection.find ({'type'        : 'synapse_profile',
                                         'tags'        : tags,
-                                        'mode'        : mode,
                                         'command_idx' : command_idx})
 
         if  not results.count() :
@@ -259,6 +265,7 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             if tags[tag] != None: name += "_%s" % tags[tag]
             else                : name += "_%s" % tag
 
+        print    "checking profiles %s/synapse_profile_%s_*.json" % (path, name)
         base   = "%s/synapse_profile_%s_*.json" % (path, name)
         fnames = glob.glob (base)
         ret    = list()
@@ -266,17 +273,22 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
 
             print 'reading profile %s' % fname
 
-            doc = ru.read_json_str (fname)
-            use = False
+            doc     = ru.read_json_str (fname)
+            use     = False
+            docmode = doc['mode'][0:3]
+
+            doc['fname'] = fname
+
             if doc['command'] == command:
                 if not mode :
                     use = True
-                elif doc['mode'] == mode:
+                elif docmode in mode:
                     use = True
                 else:
-                    print "skip ! mode: %s" % mode
+                    print "skip: mode %s not in %s" % (docmode, mode)
             else:
-                print "skip ! command: %s" % command
+                print "skip command %s" % command
+                print "   ! command %s" % doc['command']
 
             if use:
                 ret.append (doc)
@@ -290,6 +302,50 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
 
     return ret
 
+
+# ------------------------------------------------------------------------------
+def get_frames (command, tags=None, dburl=None, mode=None) :
+
+    docs  = get_profiles (command, tags, dburl, mode)
+    dicts = list()
+
+    for doc in docs:
+
+        profile = doc['profile']
+
+        tags = doc['tags']
+        mode = doc['mode'][0:3]
+
+        sys  = profile.get ('sys', {})
+        sto  = profile.get ('sto', {})
+        cpu  = profile.get ('cpu', {})
+        cmd  = profile.get ('cmd', "")
+        time = profile.get ('time', {})
+        sys  = profile.get ('sys', {})
+
+        frame_dict = {
+            'host'         : d,
+            'pid'          : pid, 
+            'n_units'      : len(pilot.get ('unit_ids', list())), 
+            'started'      : started,
+            'finished'     : finished,
+            'resource'     : description.get ('resource'),
+            'cores'        : cores,
+            'runtime'      : description.get ('runtime'),
+            NEW            : None, 
+            PENDING_LAUNCH : None, 
+            LAUNCHING      : None, 
+            PENDING_ACTIVE : None, 
+            ACTIVE         : None, 
+            DONE           : None, 
+            FAILED         : None, 
+            CANCELED       : None
+        }
+
+    import pandas 
+    frames = pandas.DataFrame (frame_dicts)
+
+    return frames
 
 # ------------------------------------------------------------------------------
 #

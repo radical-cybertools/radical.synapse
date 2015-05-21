@@ -305,7 +305,7 @@ def stat_database (db_json) :
             print "  command: %s" % profile['cmd']
             print "  time   : %s" % profile['time']['real']
             print "  cpu    : %s" % len(profile['cpu']['sequence'])
-            print "  io     : %s" % len(profile['i_o']['sequence'])
+            print "  io     : %s" % len(profile['sto']['sequence'])
 
             mem = profile['mem']
             print "  mem: %s" % mem['peak']
@@ -334,15 +334,15 @@ def plot_database (db_json, dbname, filters, term, modes) :
     dat_acc_io  = open("/tmp/rs_%s.io.acc.dat"  % dbname, 'w')
     dat_acc_cpu = open("/tmp/rs_%s.cpu.acc.dat" % dbname, 'w')
 
-    dat_tot_cpu.write(("# " + ("%15s  "*11)+"\n") % ('host', 'mode', 'id', 'ttc', 'ops', 'flops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
-    dat_inc_cpu.write(("# " + ("%15s  "* 8)+"\n") % ('host', 'mode', 'id', 'ttc', 'ops', 'flops', 'efficiency', 'utilization'))
-    dat_acc_cpu.write(("# " + ("%15s  "* 5)+"\n") % ('host', 'mode', 'id', 'ttc', 'ops'))
-    dat_tot_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'read', 'write'))
-    dat_inc_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'read', 'write'))
-    dat_acc_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'read', 'write'))
-    dat_tot_mem.write(("# " + ("%15s  "* 7)+"\n") % ('host', 'mode', 'id', 'ttc', 'rss',  'size', 'peak'))
-    dat_inc_mem.write(("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'rss',  'size'))
-    dat_acc_mem.write(("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'id', 'ttc', 'rss',  'size'))
+    dat_tot_cpu.write(("# " + ("%15s  "*11)+"\n") % ('host', 'mode', 'tid', 'ttc', 'ops', 'flops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
+    dat_inc_cpu.write(("# " + ("%15s  "* 8)+"\n") % ('host', 'mode', 'tid', 'ttc', 'ops', 'flops', 'efficiency', 'utilization'))
+    dat_acc_cpu.write(("# " + ("%15s  "* 5)+"\n") % ('host', 'mode', 'tid', 'ttc', 'ops'))
+    dat_tot_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'tid', 'ttc', 'read', 'write'))
+    dat_inc_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'tid', 'ttc', 'read', 'write'))
+    dat_acc_io.write (("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'tid', 'ttc', 'read', 'write'))
+    dat_tot_mem.write(("# " + ("%15s  "* 7)+"\n") % ('host', 'mode', 'tid', 'ttc', 'rss',  'size', 'peak'))
+    dat_inc_mem.write(("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'tid', 'ttc', 'rss',  'size'))
+    dat_acc_mem.write(("# " + ("%15s  "* 6)+"\n") % ('host', 'mode', 'tid', 'ttc', 'rss',  'size'))
 
     # some boundaries we want to let gnuplot know about
     max_time      = 0.0
@@ -370,12 +370,14 @@ def plot_database (db_json, dbname, filters, term, modes) :
         perf = profile.get ('time')
         mem  = profile.get ('mem')
         cpu  = profile.get ('cpu')
-        io   = profile.get ('i_o')
+        io   = profile.get ('sto')
         cmd  = profile.get ('cmd')
 
-        host = profile.get ('sys',{}).get('host',os.environ.get('RADICAL_SYNAPSE_HOST'))
+        mode = doc['mode'][0:3]
+        host = profile.get ('sys',{}).get('hostname',os.environ.get('RADICAL_SYNAPSE_HOST'))
 
         if not host:
+            pprint.pprint(doc)
             print "need hostname, set RADICAL_SYNAPSE_HOST"
             sys.exit()
 
@@ -406,8 +408,8 @@ def plot_database (db_json, dbname, filters, term, modes) :
                 continue
 
           # dat_tot_mem.write("# %15s  %15s  %15s  %15s  %15s\n" % ('id', 'ttc', 'rss',  'size', 'peak'))
-            dat_tot_mem.write("  %15s  %15.2f  %15d  %15d  %15d\n"
-                    % (profile_id, real, mem['rss'], mem['size'], mem['peak']))
+            dat_tot_mem.write("  %15s  %15s  %15s  %15.2f  %15d  %15d  %15d\n"
+                    % (host, mode, profile_id, real, mem['rss'], mem['size'], mem['peak']))
 
             max_tot_mem = max(max_tot_mem, mem['rss'])
           # max_tot_mem = max(max_tot_mem, mem['size'])
@@ -416,8 +418,8 @@ def plot_database (db_json, dbname, filters, term, modes) :
             acc_mem_size = 0.0
             acc_mem_rss  = 0.0
 
-            dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
-                    % (profile_id, 0.0, acc_mem_rss, acc_mem_size))
+            dat_acc_mem.write("  %15s  %15s  %15s  %15.2f  %15d  %15d\n"
+                    % (host, mode, profile_id, 0.0, acc_mem_rss, acc_mem_size))
 
             for s in mem['sequence']:
 
@@ -425,8 +427,8 @@ def plot_database (db_json, dbname, filters, term, modes) :
                     continue
 
               # print 'm',
-                dat_inc_mem.write("  %15s  %15.2f  %15d  %15d\n"
-                        % (profile_id, s[0], s[1]['rss'], s[1]['size']))
+                dat_inc_mem.write("  %15s  %15s  %15s  %15.2f  %15d  %15d\n"
+                        % (host, mode, profile_id, s[0], s[1]['rss'], s[1]['size']))
 
                 max_inc_mem = max(max_inc_mem, s[1]['rss'])
               # max_inc_mem = max(max_inc_mem, s[1]['size'])
@@ -434,8 +436,8 @@ def plot_database (db_json, dbname, filters, term, modes) :
                 acc_mem_rss  += s[1]['rss']
                 acc_mem_size += s[1]['size']
 
-                dat_acc_mem.write("  %15s  %15.2f  %15d  %15d\n"
-                        % (profile_id, s[0], acc_mem_rss, acc_mem_size))
+                dat_acc_mem.write("  %15s  %15s  %15s  %15.2f  %15d  %15d\n"
+                        % (host, mode, profile_id, s[0], acc_mem_rss, acc_mem_size))
 
             dat_inc_mem.write("\n")
             dat_acc_mem.write("\n")
@@ -447,8 +449,8 @@ def plot_database (db_json, dbname, filters, term, modes) :
                 continue
 
           # dat_tot_io.write("# %15s  %15s  %15s  %15s\n" % ('id', 'ttc', 'read', 'write'))
-            dat_tot_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
-                    % (profile_id, real, io['read'], io['write']))
+            dat_tot_io.write("  %15s  %15s  %15s  %15.2f  %15.3f  %15.3f\n"
+                    % (host, mode, profile_id, real, io['read'], io['write']))
 
             max_tot_read  = max(max_tot_read,  io['read'])
             max_tot_write = max(max_tot_write, io['write'])
@@ -457,14 +459,14 @@ def plot_database (db_json, dbname, filters, term, modes) :
             acc_io_read  = 0.0
             acc_io_write = 0.0
 
-            dat_acc_io.write("  %15s  %15.2f  %15d  %15d\n"
-                    % (profile_id, 0.0, acc_io_read, acc_io_write))
+            dat_acc_io.write("  %15s  %15s  %15s  %15.2f  %15d  %15d\n"
+                    % (host, mode, profile_id, 0.0, acc_io_read, acc_io_write))
 
             for s in io['sequence']:
 
               # print 'i',
-                dat_inc_io.write("  %15s  %15.2f  %15.3f  %15.3f\n"
-                        % (profile_id, s[0], s[1]['read'], s[1]['write']))
+                dat_inc_io.write("  %15s  %15s  %15s  %15.2f  %15.3f  %15.3f\n"
+                        % (host, mode, profile_id, s[0], s[1]['read'], s[1]['write']))
 
                 max_inc_read  = max(max_inc_read,  s[1]['read'])
                 max_inc_write = max(max_inc_write, s[1]['write'])
@@ -473,8 +475,8 @@ def plot_database (db_json, dbname, filters, term, modes) :
                 acc_io_read  += s[1]['read']
                 acc_io_write += s[1]['write']
 
-                dat_acc_io.write("  %15s  %15.2f  %15d  %15d\n"
-                        % (profile_id, s[0], acc_io_read, acc_io_write))
+                dat_acc_io.write("  %15s  %15s  %15s  %15.2f  %15d  %15d\n"
+                        % (host, mode, profile_id, s[0], acc_io_read, acc_io_write))
 
             dat_inc_io.write("\n")
             dat_acc_io.write("\n")
@@ -482,60 +484,63 @@ def plot_database (db_json, dbname, filters, term, modes) :
 
         if cpu:
 
-            mega    = 1024*1024
+            # check if we have more than a basic profile
+            if 'ops' in cpu:
 
-            flops   = int(cpu['ops'] / mega / real)
-            ops     = int(cpu['ops'] / mega)
-            effic   = float(cpu['efficiency'])
-            utili   = float(cpu['utilization'])
-            load    = cpu['load']
-            fpc     = cpu['flops_per_core']
-            threads = cpu.get('threads', 1)
-          # fpc     = 13600000000/4/4
+                mega    = 1024*1024
 
-            max_tot_flops = max(max_tot_flops, flops)
-            max_tot_ops   = max(max_tot_ops  , ops  )
-            max_load      = max(max_load     , load )
+                flops   = int(cpu['ops'] / mega / real)
+                ops     = int(cpu['ops'] / mega)
+                effic   = float(cpu['efficiency'])
+                utili   = float(cpu['utilization'])
+                load    = cpu['load']
+                fpc     = cpu['flops_per_core']
+                threads = cpu.get('threads', 1)
+          #     fpc     = 13600000000/4/4
 
-          # print "%s - %s" % (ops, max_tot_ops)
+                max_tot_flops = max(max_tot_flops, flops)
+                max_tot_ops   = max(max_tot_ops  , ops  )
+                max_load      = max(max_load     , load )
 
-            # ('id', 'ttc', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
-            dat_tot_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.3f  %15.2f  %15d  %15d\n' \
-                    % (profile_id, real, ops, flops, effic, utili, load, fpc, threads))
+          #     print "%s - %s" % (ops, max_tot_ops)
 
-            acc_cpu_ops   = 0.0
-            dat_acc_cpu.write('  %15d  %15.2f  %15d\n' \
-                    % (profile_id, 0.0, acc_cpu_ops))
+                # ('id', 'ttc', 'ops', 'efficiency', 'utilization', 'load', 'fpc', 'threads'))
+                dat_tot_cpu.write('  %15s  %15s  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.3f  %15.2f  %15d  %15d\n' \
+                        % (host, mode, profile_id, real, ops, flops, effic, utili, load, fpc, threads))
 
-            for s in cpu['sequence']:
+                acc_cpu_ops   = 0.0
+                dat_acc_cpu.write('  %15s  %15s  %15d  %15.2f  %15d\n' \
+                        % (host, mode, profile_id, 0.0, acc_cpu_ops))
 
-              # print 'c',
-                ts      = s[0]
-                sample  = s[1]
-                threads = sample.get('threads', 1)
-                ops     = sample.get('ops', 0)
-                utili   = sample.get('utilization', 0)
-                effic   = sample.get('efficiency', 0)
-                flops   = sample.get('flops', 0)
+                for s in cpu['sequence']:
 
-                if not ops:
-                  # print "warning: no ops in samples? %s" % ts
-                  # pprint.pprint (sample)
-                    continue
+                  # print 'c',
+                    ts      = s[0]
+                    sample  = s[1]
+                    threads = sample.get('threads', 1)
+                    ops     = sample.get('ops', 0)
+                    utili   = sample.get('utilization', 0)
+                    effic   = sample.get('efficiency', 0)
+                    flops   = sample.get('flops', 0)
 
-                max_inc_ops   = max(max_inc_ops  , ops  )
-                max_inc_flops = max(max_inc_flops, flops)
+                    if not ops:
+                      # print "warning: no ops in samples? %s" % ts
+                      # pprint.pprint (sample)
+                        continue
 
-                # ('id', 'ttc', 'ops', 'efficiency', 'utilization'))
-                dat_inc_cpu.write('  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.2f\n' \
-                        % (profile_id, ts, ops, flops, effic, utili))
+                    max_inc_ops   = max(max_inc_ops  , ops  )
+                    max_inc_flops = max(max_inc_flops, flops)
 
-                acc_cpu_ops += ops
-                dat_acc_cpu.write('  %15d  %15.2f  %15d\n' \
-                        % (profile_id, ts, acc_cpu_ops))
+                    # ('id', 'ttc', 'ops', 'efficiency', 'utilization'))
+                    dat_inc_cpu.write('  %15s  %15s  %15d  %15.2f  %15d  %15.2f  %15.2f  %15.2f\n' \
+                            % (host, mode, profile_id, ts, ops, flops, effic, utili))
 
-            dat_inc_cpu.write("\n")
-            dat_acc_cpu.write("\n")
+                    acc_cpu_ops += ops
+                    dat_acc_cpu.write('  %15s  %15s  %15d  %15.2f  %15d\n' \
+                            % (host, mode, profile_id, ts, acc_cpu_ops))
+
+                dat_inc_cpu.write("\n")
+                dat_acc_cpu.write("\n")
          
     dat_tot_mem.close()
     dat_tot_io .close()
@@ -735,10 +740,7 @@ if __name__ == '__main__' :
     filters  = options.filters
     syn_mode = options.syn_mode
 
-    if syn_mode and len(syn_mode)>3:
-        syn_mode = syn_mode[0:2]
-
-    if syn_mode == 'any':
+    if not syn_mode or syn_mode == 'any':
         syn_mode = 'emu|pro|exe'
 
     syn_modes = syn_mode.split('|')
