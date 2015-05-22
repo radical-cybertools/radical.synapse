@@ -786,6 +786,10 @@ if __name__ == '__main__' :
         else:
 
             if cmd:
+              # docs = rs.utils.get_all_frames (cmd)
+              # print len(docs)
+              # sys.exit()
+
                 db_json = rsu.get_profiles (cmd, mode=syn_modes)
                 dbname  = os.path.basename (url.path)
             else:

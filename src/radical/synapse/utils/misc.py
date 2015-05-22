@@ -208,7 +208,7 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
 
     dburl = ru.Url(dburl)
 
-    if not isinstance (mode, list):
+    if mode and not isinstance (mode, list):
         mode = [mode]
 
     if not tags:
@@ -265,13 +265,13 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
             if tags[tag] != None: name += "_%s" % tags[tag]
             else                : name += "_%s" % tag
 
-        print    "checking profiles %s/synapse_profile_%s_*.json" % (path, name)
+      # print    "checking profiles %s/synapse_profile_%s_*.json" % (path, name)
         base   = "%s/synapse_profile_%s_*.json" % (path, name)
         fnames = glob.glob (base)
         ret    = list()
         for fname in fnames:
 
-            print 'reading profile %s' % fname
+          # print 'reading profile %s' % fname
 
             doc     = ru.read_json_str (fname)
             use     = False
@@ -296,18 +296,59 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
         if not len(ret):
             raise LookupError ("No matching profile at %s" % base)
 
-    print 'retrieved %d profiles from %s' % (len(ret), dburl)
+  # print 'retrieved %d profiles from %s' % (len(ret), dburl)
   # pprint.pprint (ret)
-
 
     return ret
 
+# ------------------------------------------------------------------------------
+#
+def get_all_frames (command, tags=None, dburl=None, mode=None) :
+
+    if not dburl:
+        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+
+    if not dburl:
+        raise ValueError ("need dburl to retrieve profiles")
+
+    docs = list()
+
+    url = ru.Url (dburl)
+    if url.scheme != 'file':
+        raise ValueError ('can only handle file:// based dburls, not %s' % dburl)
+
+    path = url.path
+
+    for p in glob.glob ("%s/*/" % path):
+        tmp_url = ru.Url (url)
+        tmp_url.path = p
+        tmp_docs = get_profiles (command, tags=tags, dburl=tmp_url, mode=mode)
+        if tmp_docs:
+            docs += tmp_docs
+
+    return make_frames (docs)
+
 
 # ------------------------------------------------------------------------------
+#
 def get_frames (command, tags=None, dburl=None, mode=None) :
 
-    docs  = get_profiles (command, tags, dburl, mode)
-    dicts = list()
+    if not dburl:
+        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+
+    if not dburl:
+        raise ValueError ("need dburl to retrieve profiles")
+
+    docs = get_profiles (command, tags, dburl, mode)
+
+    return make_frames (docs)
+
+
+# ------------------------------------------------------------------------------
+#
+def make_frames (docs):
+
+    frame_dicts = list()
 
     for doc in docs:
 
@@ -316,36 +357,49 @@ def get_frames (command, tags=None, dburl=None, mode=None) :
         tags = doc['tags']
         mode = doc['mode'][0:3]
 
-        sys  = profile.get ('sys', {})
-        sto  = profile.get ('sto', {})
-        cpu  = profile.get ('cpu', {})
-        cmd  = profile.get ('cmd', "")
+        cmd  = profile.get ('cmd',  "")
+        sys  = profile.get ('sys',  {})
+        sto  = profile.get ('sto',  {})
+        cpu  = profile.get ('cpu',  {})
+        mem  = profile.get ('mem',  {})
+        sys  = profile.get ('sys',  {})
         time = profile.get ('time', {})
-        sys  = profile.get ('sys', {})
 
         frame_dict = {
-            'host'         : d,
-            'pid'          : pid, 
-            'n_units'      : len(pilot.get ('unit_ids', list())), 
-            'started'      : started,
-            'finished'     : finished,
-            'resource'     : description.get ('resource'),
-            'cores'        : cores,
-            'runtime'      : description.get ('runtime'),
-            NEW            : None, 
-            PENDING_LAUNCH : None, 
-            LAUNCHING      : None, 
-            PENDING_ACTIVE : None, 
-            ACTIVE         : None, 
-            DONE           : None, 
-            FAILED         : None, 
-            CANCELED       : None
+            'host'         : sys['hostname'],
+            'mode'         : mode,
+            'tags'         : tags,
+            'cmd'          : doc['command'],
+            'cmd_idx'      : doc['command_idx'],
+
+            'time_real'    : time['real'],
+            'time_start'   : time['start'],
+
+            'cpu_ops'      : cpu.get('ops'),
+            'cpu_flops'    : cpu.get('flops'),
+            'cpu_sequence' : cpu.get('sequence'),
+
+            'mem_peak'     : mem.get('peak'),
+            'mem_rss'      : mem.get('rss'),
+            'mem_sequence' : mem.get('sequence'),
+            'mem_size'     : mem.get('size'),
+
+            'sto_read'     : sto.get('read'),
+            'sto_write'    : sto.get('write'),
+            'sto_sequence' : sto.get('sequence'),
         }
+
+        for tag in tags:
+            # FIXME: assumption is that tags are ints -- that is not save
+            frame_dict['tag_%s'%tag] = float(tags[tag])
+
+        frame_dicts.append(frame_dict)
 
     import pandas 
     frames = pandas.DataFrame (frame_dicts)
 
     return frames
+
 
 # ------------------------------------------------------------------------------
 #
