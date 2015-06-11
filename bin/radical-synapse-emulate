@@ -3,21 +3,23 @@
 import os
 import sys
 import pprint
-import radical.synapse
+import radical.synapse       as rs
+import radical.synapse.utils as rsu
 
 # FIXME: support tags as flags
 
 # ------------------------------------------------------------------------------
 #
-def run_command (command):
+def run_command (url, command):
     
-    info, ret, out = radical.synapse.emulate (command=command)
+    info, ret, out = rs.emulate (command=command)
     pprint.pprint (info)
 
+    rsu.store_profile (info, mode='emu', url=url)
 
 # ------------------------------------------------------------------------------
 #
-def run_samples (cpu_flops, sto_in, sto_out, mem_rss, n_samples):
+def run_samples (url, cpu_flops, sto_in, sto_out, mem_rss, n_samples):
     
     samples  = list()
 
@@ -35,27 +37,23 @@ def run_samples (cpu_flops, sto_in, sto_out, mem_rss, n_samples):
         # append MEM sample
         samples.append(['mem', float(time), [mem_rss]])
 
-    info, ret, out = radical.synapse.emulate (samples=samples)
+    info, ret, out = rs.emulate (samples=samples)
     pprint.pprint (info)
+
+    rsu.store_profile (info, mode='emu', url=url)
 
 
 # ------------------------------------------------------------------------------
 #
-def usage (msg=None, noexit=False) :
+def usage (msg=None, noexit=False):
 
-    if  msg :
+    if  msg:
         print "\n      Error: %s" % msg
 
-    parser.add_option('-m', '--mode',      dest='mode')
-    parser.add_option('-f', '--flops',     dest='cpu_flops')
-    parser.add_option('-i', '--input',     dest='sto_in')
-    parser.add_option('-o', '--output',    dest='sto_out')
-    parser.add_option('-r', '--memory',    dest='mem_rss')
-    parser.add_option('-s', '--samples',   dest='samples')
-    parser.add_option('-h', '--help',      dest='help', action="store_true")
     print """
       usage     : %s -m <mode> [-f <flops>]  [-i <input>]   [-o <output>] 
-                               [-r <memory>] [-s <samples>] [command] 
+                               [-r <memory>] [-s <samples>] [-u <url>] 
+                               [command] 
 
       examples  : %s sleep 10
                   %s -m command sleep 10
@@ -75,6 +73,7 @@ def usage (msg=None, noexit=False) :
         -o      : number of bytes to write to disk
         -r      : number of bytes to allocate (RSS)
         -s      : number of samples to run with the above configuration
+        -u      : database URL (empty string to disable db access)
 
 
       Notes     :
@@ -83,16 +82,16 @@ def usage (msg=None, noexit=False) :
 
 """ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 
-    if  msg :
+    if  msg:
         sys.exit (1)
 
-    if  not noexit :
+    if  not noexit:
         sys.exit (0)
 
 
 # ------------------------------------------------------------------------------
 #
-if __name__ == '__main__' :
+if __name__ == '__main__':
 
     import optparse
     parser = optparse.OptionParser (add_help_option=False)
@@ -103,11 +102,13 @@ if __name__ == '__main__' :
     parser.add_option('-o', '--output',    dest='sto_out')
     parser.add_option('-r', '--memory',    dest='mem_rss')
     parser.add_option('-s', '--samples',   dest='samples')
+    parser.add_option('-u', '--url',       dest='url')
     parser.add_option('-h', '--help',      dest='help', action="store_true")
 
     options, args = parser.parse_args ()
 
     mode      = options.mode 
+    url       = options.url 
     command   = ' '.join(args)
     cpu_flops = options.cpu_flops
     sto_in    = options.sto_in   
@@ -127,16 +128,16 @@ if __name__ == '__main__' :
     mem_rss   = float(mem_rss  )
     samples   = int  (samples  )
 
-    if  options.help :
+    if  options.help:
         usage ()
 
-    if  mode in ['help'] : 
-        usage ()
-
-    if  not options.mode :
+    if  not mode:
         mode = 'command'
 
-    if mode == 'command' :
+    if  mode in ['help']: 
+        usage ()
+
+    if mode == 'command':
         if  cpu_flops or \
             sto_in    or \
             sto_out   or \
@@ -148,10 +149,8 @@ if __name__ == '__main__' :
             usage ("mode 'command' requires command arg")
 
 
-    if  'RADICAL_SYNAPSE_DBURL' in os.environ : 
-        default_dburl = os.environ['RADICAL_SYNAPSE_DBURL']
-    else :
-        default_dburl = _DEFAULT_DBURL 
+    if not url:
+        url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if not cpu_flops : cpu_flops  = 0.0
     if not sto_in    : sto_in     = 0.0
@@ -159,8 +158,8 @@ if __name__ == '__main__' :
     if not mem_rss   : mem_rss    = 0.0
     if not samples   : samples    = 0.0
 
-    if   mode == 'command' : run_command (command)
-    elif mode == 'sample'  : run_samples (cpu_flops, sto_in, sto_out, mem_rss, samples)
+    if   mode == 'command' : run_command (url, command)
+    elif mode == 'sample'  : run_samples (url, cpu_flops, sto_in, sto_out, mem_rss, samples)
     elif mode == 'help'    : usage (noexit=True)
     else                   : usage ("unknown mode '%s'" % mode)
 

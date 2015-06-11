@@ -90,11 +90,6 @@ def execute (command, *args, **kwargs) :
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")
 
-    if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
-        rsu.store_profile (info, mode='emu')
-    else:
-        rsu.store_profile (info, mode='exe')
-
     return info, ret, out
 
 
@@ -192,11 +187,6 @@ def profile (command, *args, **kwargs) :
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")
-
-    if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
-        rsu.store_profile (info, mode='emu')
-    else:
-        rsu.store_profile (info, mode='pro')
 
     return info, ret, out
 
@@ -329,9 +319,6 @@ def emulate (command=None, samples=None) :
         info['time']['start'] = start
         info['time']['real']  = stop-start
 
-        rsu.store_profile (info, mode='emu')
-     
-
     else:
         # let the profiler know that we run an emulation, so that the profile is not
         # stored as 'application run'.
@@ -353,6 +340,7 @@ def emulate (command=None, samples=None) :
        #          info['cpu']['cycles_stalled_front'],
        #          info['cpu']['cycles_stalled_back'],
        #          info['cpu']['efficiency'])
+
 
     return (info, ret, None)
 

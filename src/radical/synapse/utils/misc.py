@@ -115,18 +115,19 @@ def time_to_seconds (t) :
 
 
 # ------------------------------------------------------------------------------
-def store_profile (profile, tags=None, dburl=None, mode=None) :
+def store_profile (profile, tags=None, url=None, mode=None) :
 
-    if not dburl:
-        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+    if not url:
+        url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    if not dburl:
-        raise ValueError ("need dburl for storing profiles")
+    if not url:
+        print "warning: need dburl to store profiles"
+        return None
 
     if not mode:
         raise ValueError ("document needs mode (emulated | eecuted | profiled)")
 
-    dburl = ru.Url (dburl)
+    url = ru.Url (url)
 
     if not tags:
         tags  = dict()
@@ -156,11 +157,11 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
 
 
 
-    if dburl.schema == 'mongodb':
+    if url.schema == 'mongodb':
 
-        print 'store profile in db %s' % dburl
+        print 'store profile in db %s' % url
 
-        [dbhost, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
+        [dbhost, port, dbname, _, _, _, _] = ru.split_dburl (url)
 
         db_client  = pymongo.MongoClient (host=dbhost, port=port)
         database   = db_client[dbname]
@@ -169,9 +170,9 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
         collection.insert (doc)
 
 
-    elif dburl.schema == 'file':
+    elif url.schema == 'file':
 
-        path = dburl.path
+        path = url.path
 
         if not os.path.isdir (path):
             os.system ('mkdir -p "%s"' % path)
@@ -198,17 +199,18 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
 
 
 # ------------------------------------------------------------------------------
-def get_profiles (command, tags=None, dburl=None, mode=None) :
+def get_profiles (command, tags=None, url=None, mode=None) :
 
     print command
 
-    if not dburl:
-        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+    if not url:
+        url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    if not dburl:
-        raise ValueError ("need dburl to retrieve profiles")
+    if not url:
+        print "warning: need dburl to retrieve profiles"
+        return None
 
-    dburl = ru.Url(dburl)
+    url = ru.Url(url)
 
     if mode and not isinstance (mode, list):
         mode = [mode]
@@ -226,9 +228,9 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
 
     command_idx = index_command (command, tags)
 
-    if dburl.schema == 'mongodb':
+    if url.schema == 'mongodb':
 
-        [dbhost, port, dbname, _, _, _, _] = ru.split_dburl (dburl)
+        [dbhost, port, dbname, _, _, _, _] = ru.split_dburl (url)
 
         db_client  = pymongo.MongoClient (host=dbhost, port=port)
         database   = db_client[dbname]
@@ -247,17 +249,18 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
                                         'command_idx' : command_idx})
 
         if  not results.count() :
-            raise RuntimeError ("Could not get profile for %s at %s/profiles" % (command, dburl))
+            raise RuntimeError ("Could not get profile for %s at %s/profiles"
+                    % (command, url))
 
         ret = list(results)
 
 
-    elif dburl.schema == 'file':
+    elif url.schema == 'file':
 
-        path = dburl.path
+        path = url.path
 
         if not os.path.isdir (path):
-            raise ValueError ("dburl (%s) must point to an existing dir" % dburl)
+            raise ValueError ("dburl (%s) must point to an existing dir" % url)
 
         name = command_idx.split()[0]
       # for key, val in tags.iteritems():
@@ -298,33 +301,34 @@ def get_profiles (command, tags=None, dburl=None, mode=None) :
         if not len(ret):
             raise LookupError ("No matching profile at %s" % base)
 
-  # print 'retrieved %d profiles from %s' % (len(ret), dburl)
+  # print 'retrieved %d profiles from %s' % (len(ret), url)
   # pprint.pprint (ret)
 
     return ret
 
 # ------------------------------------------------------------------------------
 #
-def get_all_frames (command, tags=None, dburl=None, mode=None) :
+def get_all_frames (command, tags=None, url=None, mode=None) :
 
-    if not dburl:
-        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+    if not url:
+        url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    if not dburl:
-        raise ValueError ("need dburl to retrieve profiles")
+    if not url:
+        print "warning: need dburl to retrieve profiles"
+        return None
 
     docs = list()
 
-    url = ru.Url (dburl)
+    url = ru.Url (url)
     if url.scheme != 'file':
-        raise ValueError ('can only handle file:// based dburls, not %s' % dburl)
+        raise ValueError ('can only handle file:// based dburls, not %s' % url)
 
     path = url.path
 
     for p in glob.glob ("%s/*/" % path):
         tmp_url = ru.Url (url)
         tmp_url.path = p
-        tmp_docs = get_profiles (command, tags=tags, dburl=tmp_url, mode=mode)
+        tmp_docs = get_profiles (command, tags=tags, url=tmp_url, mode=mode)
         if tmp_docs:
             docs += tmp_docs
 
@@ -333,15 +337,16 @@ def get_all_frames (command, tags=None, dburl=None, mode=None) :
 
 # ------------------------------------------------------------------------------
 #
-def get_frames (command, tags=None, dburl=None, mode=None) :
+def get_frames (command, tags=None, url=None, mode=None) :
 
-    if not dburl:
-        dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+    if not url:
+        url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    if not dburl:
-        raise ValueError ("need dburl to retrieve profiles")
+    if not url:
+        print "warning: need dburl to retrieve profiles"
+        return None
 
-    docs = get_profiles (command, tags, dburl, mode)
+    docs = get_profiles (command, tags, url, mode)
 
     return make_frames (docs)
 
