@@ -1,5 +1,4 @@
 
-
 import os
 import time
 import pprint
@@ -92,9 +91,9 @@ def execute (command, *args, **kwargs) :
         rsu.logger.info ("stopped  system load")
 
     if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
-        rsu.store_profile (info, mode='emulated')
+        rsu.store_profile (info, mode='emu')
     else:
-        rsu.store_profile (info, mode='executed')
+        rsu.store_profile (info, mode='exe')
 
     return info, ret, out
 
@@ -195,16 +194,12 @@ def profile (command, *args, **kwargs) :
         rsu.logger.info ("stopped  system load")
 
     if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
-        rsu.store_profile (info, mode='emulated')
+        rsu.store_profile (info, mode='emu')
     else:
-        rsu.store_profile (info, mode='profiled')
+        rsu.store_profile (info, mode='pro')
 
     return info, ret, out
 
-
-_CPU = 0
-_MEM = 1
-_STO = 2
 
 _CPU = 'cpu'
 _MEM = 'mem'
@@ -218,7 +213,7 @@ _VALS = 2
 #
 def _emulator (samples) :
 
-    atoms = dict()  # one arom of eeach type
+    atoms = dict()  # one atom of eeach type
     state = dict()  # there is at most one atom for each type in 'state'
 
     # create atoms for all sample types
@@ -286,26 +281,40 @@ def _emulator (samples) :
 
 # ------------------------------------------------------------------------------
 #
-def emulate (command) :
+def emulate (command=None, samples=None) :
 
-    # FIXME: average vals over all retrieved profiles
-    profs = rsu.get_profiles (command, mode='profiled')
-    prof  = profs[0]['profile']
+    if command and samples:
+        raise ValueError ("emulate needs either command or sample set to emulate")
 
-    pprint.pprint (prof)
+    if not command and not samples:
+        raise ValueError ("emulate needs either command or sample set to emulate")
 
-    # get time series to emulate (all types of operations are mixed)
-    samples  = list()
-    samples += [[_CPU, x[0], [x[1].get('ops',        0),
-                              x[1].get('efficiency', 0)]] for x in prof['cpu']['sequence']]
-    samples += [[_MEM, x[0], [x[1].get('size',       0)]] for x in prof['mem']['sequence']]
-    samples += [[_STO, x[0], [x[1].get('read',       0), 
-                              x[1].get('write',      0)]] for x in prof['sto']['sequence']]
+    if not command:
+        # dummy command
+        command = 'synapse_sampling'
+
+    else:
+        # FIXME: average vals over all retrieved profiles
+        profs = rsu.get_profiles (command, mode='pro')
+        prof  = profs[0]['profile']
+
+        pprint.pprint (prof)
+
+        # get time series to emulate (all types of operations are mixed)
+        samples  = list()
+        samples += [[_CPU, x[0], [x[1].get('ops',        0),
+                                  x[1].get('efficiency', 0)]] for x in prof['cpu']['sequence']]
+        samples += [[_MEM, x[0], [x[1].get('size',       0)]] for x in prof['mem']['sequence']]
+        samples += [[_STO, x[0], [x[1].get('read',       0), 
+                                  x[1].get('write',      0)]] for x in prof['sto']['sequence']]
+
 
     # sort samples by time
     samples = sorted (samples, key=lambda x: x[1])
 
+    print "samples:\n---"
     pprint.pprint (samples)
+    print "---"
 
     watchmode = os.environ.get ('RADICAL_SYNAPSE_WATCHMODE')
     if watchmode and watchmode.lower in ['none', 'noop']:
@@ -320,7 +329,7 @@ def emulate (command) :
         info['time']['start'] = start
         info['time']['real']  = stop-start
 
-        rsu.store_profile (info, mode='emulated')
+        rsu.store_profile (info, mode='emu')
      
 
     else:

@@ -36,6 +36,8 @@ class Compute (AtomBase) :
     @rus.returns (rus.nothing)
     def emulate (self, vals) : 
 
+        print 'cpu: %s' % vals
+
         ops = int(vals[0] * 0.6)
 
         # remove a empirical overhead

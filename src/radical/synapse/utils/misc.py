@@ -200,6 +200,8 @@ def store_profile (profile, tags=None, dburl=None, mode=None) :
 # ------------------------------------------------------------------------------
 def get_profiles (command, tags=None, dburl=None, mode=None) :
 
+    print command
+
     if not dburl:
         dburl = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
