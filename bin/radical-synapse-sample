@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import pprint
+import radical.synapse       as rs
+import radical.synapse.utils as rsu
+
+# FIXME: support tags as flags
+
+# ------------------------------------------------------------------------------
+#
+def run_samples (url, cpu_flops, sto_in, sto_out, mem_rss, n_samples):
+    
+    samples  = list()
+
+    for n in range(n_samples):
+
+        # assume 1 sample per second -- but that is not interpreted anyway...
+        time = n+1 
+
+        # append CPU sample (set efficiency to 1)
+        samples.append(['cpu', float(time), [cpu_flops, 1]])
+
+        # append STO sample
+        samples.append(['sto', float(time), [sto_in, sto_out]])
+
+        # append MEM sample
+        samples.append(['mem', float(time), [mem_rss]])
+
+    info, ret, out = rs.emulate (samples=samples)
+    pprint.pprint (info)
+
+    rsu.store_profile (info, mode='emu', url=url)
+
+
+# ------------------------------------------------------------------------------
+#
+def usage (msg=None, noexit=False):
+
+    if  msg:
+        print "\n      Error: %s" % msg
+
+    print """
+      usage     : %s -m <mode> [-f <flops>]  [-i <input>]   [-o <output>] 
+                               [-r <memory>] [-s <samples>] [-u <url>] 
+
+      examples  : %s -m sample -f 10000000
+
+      mode(s)   :
+
+        help    : show this message
+        sample  : run the specified load as emulation samples
+
+
+      arguments :
+        
+        -f      : number of flops to emulate
+        -i      : number of bytes to read from disk
+        -o      : number of bytes to write to disk
+        -r      : number of bytes to allocate (RSS)
+        -s      : number of samples to run with the above configuration
+        -u      : database URL (empty string to disable db access)
+
+
+      Notes     :
+
+        The default mode is 'sample'.
+
+""" % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+
+    if  msg:
+        sys.exit (1)
+
+    if  not noexit:
+        sys.exit (0)
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    import argparse
+    parser = argparse.ArgumentParser (add_help=False)
+
+    parser.add_argument('-m', '--mode',      dest='mode')
+    parser.add_argument('-f', '--flops',     dest='cpu_flops')
+    parser.add_argument('-i', '--input',     dest='sto_in')
+    parser.add_argument('-o', '--output',    dest='sto_out')
+    parser.add_argument('-r', '--memory',    dest='mem_rss')
+    parser.add_argument('-s', '--samples',   dest='samples')
+    parser.add_argument('-u', '--url',       dest='url')
+    parser.add_argument('-h', '--help',      dest='help', action="store_true")
+
+    arguments, args = parser.parse_known_args ()
+
+    mode      = arguments.mode 
+    url       = arguments.url 
+    cpu_flops = arguments.cpu_flops
+    sto_in    = arguments.sto_in   
+    sto_out   = arguments.sto_out
+    mem_rss   = arguments.mem_rss
+    samples   = arguments.samples
+
+    if not cpu_flops : cpu_flops = 0.0
+    if not sto_in    : sto_in    = 0.0
+    if not sto_out   : sto_out   = 0.0
+    if not mem_rss   : mem_rss   = 0.0
+    if not samples   : samples   = 1
+
+    cpu_flops = float(cpu_flops)
+    sto_in    = float(sto_in   )
+    sto_out   = float(sto_out  )
+    mem_rss   = float(mem_rss  )
+    samples   = int  (samples  )
+
+    if  arguments.help:
+        usage ()
+
+    if  not mode:
+        mode = 'sample'
+
+    if  mode in ['help']: 
+        usage ()
+
+    if not url:
+        url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+
+    if not cpu_flops : cpu_flops  = 0.0
+    if not sto_in    : sto_in     = 0.0
+    if not sto_out   : sto_out    = 0.0
+    if not mem_rss   : mem_rss    = 0.0
+    if not samples   : samples    = 1
+
+    if   mode == 'sample'  : run_samples (url, cpu_flops, sto_in, sto_out, mem_rss, samples)
+    elif mode == 'help'    : usage (noexit=True)
+    else                   : usage ("unknown mode '%s'" % mode)
+
+# ------------------------------------------------------------------------------
+
