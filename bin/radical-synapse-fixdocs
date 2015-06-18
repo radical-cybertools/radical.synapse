@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+
+import radical.utils as ru
+
+import os
+import sys
+import glob
+import pprint
+
+
+# ------------------------------------------------------------------------------
+#
+def fix_sto(doc):
+
+    sto = doc['profile'].get ('i_o')
+
+    if sto:
+        doc['profile']['sto'] = sto
+        del doc['profile']['i_o']
+
+    return doc
+
+
+# ------------------------------------------------------------------------------
+#
+def fix_command_nt(doc):
+
+    doc['command']        = doc['command']       .replace('mdrun -nt 1 -o traj.trr', 'mdrun -o traj.trr')
+    doc['command_idx']    = doc['command_idx']   .replace('mdrun -nt 1 -o traj.trr', 'mdrun -o traj.trr')
+    doc['profile']['cmd'] = doc['profile']['cmd'].replace('mdrun -nt 1 -o traj.trr', 'mdrun -o traj.trr')
+
+    return doc
+
+
+# ------------------------------------------------------------------------------
+#
+def fix_host(doc):
+
+    host = None
+
+    if 'sys' in doc['profile']:
+        host = doc['profile']['sys'].get ('hostname')
+
+    if not host:
+        host = doc['profile'].get ('host')
+
+    if not host:
+        host = doc.get('host')
+
+    if not host:
+        print 'no host'
+        sys.exit()
+
+    if not 'sys' in doc['profile']:
+        doc['profile']['sys'] = dict()
+
+    doc['profile']['sys']['hostname'] = host
+
+    if 'host' in doc           : del doc['host']
+    if 'host' in doc['profile']: del doc['profile']['host']
+
+    return doc
+
+
+# ------------------------------------------------------------------------------
+#
+fnames = glob.glob ('*.json*')
+for fname in fnames:
+    
+    json = ru.read_json (fname)
+
+    if not 'profile' in json:
+        print 'skip bogus %s' % fname
+
+    print 'fixing %s' % fname
+
+  # pprint.pprint (json)
+    json = fix_command_nt(json)
+    json = fix_host(json)
+  # json = fix_sto(json)
+  # pprint.pprint (json)
+  # sys.exit (0)
+    
+    ru.write_json (json, fname)
+
+
