@@ -156,7 +156,7 @@ if __name__ == '__main__':
     if not sto_in    : sto_in     = 0.0
     if not sto_out   : sto_out    = 0.0
     if not mem_rss   : mem_rss    = 0.0
-    if not samples   : samples    = 0.0
+    if not samples   : samples    = 1
 
     if   mode == 'command' : run_command (url, command)
     elif mode == 'sample'  : run_samples (url, cpu_flops, sto_in, sto_out, mem_rss, samples)

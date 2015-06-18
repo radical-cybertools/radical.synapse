@@ -184,7 +184,7 @@ setup_args = {
                             'bin/radical-synapse-mandelbrot-emulate.py',
                             'bin/radical-synapse-iotrace.sh'
                            ],
-    'package_data'       : {'': ['*.sh', '*.json', '*.gz', 'VERSION', 'SDIST', sdist_name, '*.c']},
+    'package_data'       : {'': ['*.sh', '*.json', '*.gz', 'VERSION', 'SDIST', sdist_name, '*.c', '*.h']},
     'cmdclass'           : {
         'test'           : our_test,
     },
