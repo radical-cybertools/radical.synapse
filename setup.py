@@ -177,6 +177,7 @@ setup_args = {
                             'bin/radical-synapse-execute',
                             'bin/radical-synapse-emulate',
                             'bin/radical-synapse-fixdocs',
+                            'bin/radical-synapse-sample',
                             'bin/radical-synapse-mandelbrot-dummy.py',
                             'bin/radical-synapse-mandelbrot-master.py',
                             'bin/radical-synapse-mandelbrot-worker.py',
