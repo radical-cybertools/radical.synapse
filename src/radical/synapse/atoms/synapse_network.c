@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -70,7 +71,7 @@ int _atom_network (const char* type, const char* mode, const char* host, int por
      // fprintf (stdout, ":");
      // fflush  (stdout);
         
-        ret = send (sock, c, CHUNKSIZE, MSG_NOSIGNAL);
+        ret = send (sock, c, CHUNKSIZE, 0);
 
         if ( ret != CHUNKSIZE ) 
         {
@@ -146,6 +147,8 @@ int server (int port)
     exit (-1);
   }  
 
+  signal(SIGPIPE, SIG_IGN);
+
   return server_accept (ssock);
 }
 
@@ -204,6 +207,8 @@ int client (char* host, int port)
     perror ("connect failed");
     exit (-1);
   }
+
+  signal(SIGPIPE, SIG_IGN);
 
   return sock;
 }
