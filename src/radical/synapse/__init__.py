@@ -22,17 +22,13 @@ from synapse   import execute
 #
 
 import os
-
-import radical.utils        as ru
-import radical.utils.logger as rul
-
+import radical.utils as ru
 
 pwd     = os.path.dirname (__file__)
 root    = "%s/.." % pwd
 version, version_detail, version_branch, sdist_name, sdist_path = ru.get_version ([root, pwd])
 
-_logger = rul.logger.getLogger  ('radical.synapse')
-_logger.info ('radical.synapse      version: %s' % version_detail)
+_logger = ru.get_logger('radical.synapse')
 
 
 # ------------------------------------------------------------------------------

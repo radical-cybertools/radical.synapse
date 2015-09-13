@@ -36,8 +36,7 @@ class AtomBase (object) :
         self._atype = atype
         self._pid   = os.getpid ()
         self._uid   = ru.generate_id ("%s" % self._atype)
-        self.logger = rul.getLogger ("radical.synapse.%s" % self._uid)
-
+        self.logger = ru.get_logger('radical.synapse.self._uid')
 
         # storage for temporary data and statistics
      #  self._tmpdir = "/scratch/synapse/" # FIXME

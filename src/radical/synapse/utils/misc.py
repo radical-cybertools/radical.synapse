@@ -8,7 +8,6 @@ import pprint
 import socket
 import pymongo
 import radical.utils        as ru
-import radical.utils.logger as rul
 
 # import pudb
 # pudb.set_interrupt_handler ()
@@ -21,7 +20,7 @@ LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,
 
 # ------------------------------------------------------------------------------
 #
-logger = rul.getLogger  ('radical.synapse')
+logger = ru.get_logger('radical.synapse')
 
 
 # ------------------------------------------------------------------------------
