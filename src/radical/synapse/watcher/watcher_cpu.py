@@ -28,11 +28,10 @@ class WatcherCPU (wb.WatcherBase) :
     #
     def __init__ (self, pid):
 
-        wb.WatcherBase.__init__(self, pid)
-
         self._data['cpu']             = dict()
         self._data['cpu']['sequence'] = list()
 
+        wb.WatcherBase.__init__(self, pid)
 
 
     # --------------------------------------------------------------------------
