@@ -1,5 +1,6 @@
 
 import os
+import sys
 import time
 import pprint
 import threading
@@ -17,9 +18,14 @@ import atoms   as rsa
 
 # ------------------------------------------------------------------------------
 #
-_LOAD     = int (os.environ.get ('LOAD', '0'))
-_LOAD_CMD = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
-_LOAD_CMD = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
+LOAD = int (os.environ.get ('LOAD', '0'))
+
+if 'darwin' not in sys.platform.lower():
+  # LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
+    LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
+else:
+    LOAD_CMD    = "top -l 1 | head -n 3 | tail -n 1 | cut -f 3 -d ' ' | cut -f 1 -d ','"
+
 
 
 # ------------------------------------------------------------------------------
@@ -40,13 +46,13 @@ def execute (command, *args, **kwargs) :
 
     # start stress, get it spinning for one min to get a confirmed load
     # measurement, then run our own load, then kill stress.
-    if  _LOAD > 0 :
-        rsu.logger.info ("creating system load %s" % _LOAD)
+    if  LOAD > 0 :
+        rsu.logger.info ("creating system load %s" % LOAD)
         os.popen ("killall -9 stress 2>&1 > /dev/null")
-        os.popen ('stress --cpu %s &' % _LOAD)
+        os.popen ('stress --cpu %s &' % LOAD)
         time.sleep (60)
 
-    load_1 = float(os.popen (_LOAD_CMD).read())
+    load_1 = float(os.popen (LOAD_CMD).read())
     start  = rsu.timestamp()
 
     os.environ['_RADICAL_SYNAPSE_PROFILED'] = 'TRUE'
@@ -76,7 +82,7 @@ def execute (command, *args, **kwargs) :
         ret = proc.returncode
 
     stop   = rsu.timestamp()
-    load_2 = float(os.popen (_LOAD_CMD).read())
+    load_2 = float(os.popen (LOAD_CMD).read())
 
     info['time'] = dict()
     info['time']['start'] = rsu.time_zero()
@@ -85,7 +91,7 @@ def execute (command, *args, **kwargs) :
     info['cpu']  = dict()
     info['cpu']['load']   = max(load_1, load_2)
    
-    if  _LOAD > 0 :
+    if  LOAD > 0 :
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")
@@ -115,13 +121,13 @@ def profile (command, *args, **kwargs) :
 
     # start stress, get it spinning for one min to get a confirmed load
     # measurement, then run our own load, then kill stress.
-    if  _LOAD > 0 :
-        rsu.logger.info ("creating system load %s" % _LOAD)
+    if  LOAD > 0 :
+        rsu.logger.info ("creating system load %s" % LOAD)
         os.popen ("killall -9 stress 2>&1 > /dev/null")
-        os.popen ('stress --cpu %s &' % _LOAD)
+        os.popen ('stress --cpu %s &' % LOAD)
         time.sleep (60)
 
-    load_1 = float(os.popen (_LOAD_CMD).read())
+    load_1 = float(os.popen (LOAD_CMD).read())
     start  = rsu.timestamp()
 
     os.environ['_RADICAL_SYNAPSE_PROFILED'] = 'TRUE'
@@ -179,11 +185,11 @@ def profile (command, *args, **kwargs) :
         watcher.finalize(info)
 
     time_2 = rsu.timestamp()
-    load_2 = float(os.popen (_LOAD_CMD).read())
+    load_2 = float(os.popen (LOAD_CMD).read())
     info['cpu']['load'] = max(load_1, load_2)
-    rsu.logger.info ("system load %s: %s" % (_LOAD, info['cpu']['load']))
+    rsu.logger.info ("system load %s: %s" % (LOAD, info['cpu']['load']))
    
-    if  _LOAD > 0 :
+    if  LOAD > 0 :
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")

@@ -1,6 +1,7 @@
 
 
 import os
+import sys
 import time
 import glob
 import signal
@@ -13,9 +14,13 @@ import radical.utils        as ru
 # pudb.set_interrupt_handler ()
 
 
-LOAD        = int (os.environ.get ('RADICAL_SYNAPSE_LOAD', '0'))
-LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
-LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
+LOAD = int (os.environ.get ('RADICAL_SYNAPSE_LOAD', '0'))
+
+if 'darwin' not in sys.platform.lower():
+  # LOAD_CMD    = "top -b -n1 | head -1  |       cut -f 4 -d :         | cut -f 1 -d ,"
+    LOAD_CMD    = "top -b -n1 | head -n1 | rev | cut -f 3 -d \  | rev  | sed -e 's/,//'"
+else:
+    LOAD_CMD    = "top -l 1 | head -n 3 | tail -n 1 | cut -f 3 -d ' ' | cut -f 1 -d ','"
 
 
 # ------------------------------------------------------------------------------
