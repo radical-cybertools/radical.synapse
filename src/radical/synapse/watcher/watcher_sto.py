@@ -17,10 +17,10 @@ class WatcherSto (wb.WatcherBase) :
     #
     def __init__ (self, pid):
 
-        wb.WatcherBase.__init__(self, pid)
-
         self._old_sample = dict()
         self._tot_sample = dict()
+
+        wb.WatcherBase.__init__(self, pid)
 
 
     # --------------------------------------------------------------------------
