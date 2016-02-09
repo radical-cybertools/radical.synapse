@@ -277,7 +277,7 @@ def _emulator (samples) :
 
 # ------------------------------------------------------------------------------
 #
-def emulate (command=None, samples=None) :
+def emulate(command=None, samples=None):
 
     if command and samples:
         raise ValueError ("emulate needs either command or sample set to emulate")
@@ -313,7 +313,7 @@ def emulate (command=None, samples=None) :
     print "---"
 
     watchmode = os.environ.get ('RADICAL_SYNAPSE_WATCHMODE')
-    if watchmode and watchmode.lower in ['none', 'noop']:
+    if not watchmode or watchmode.lower in ['none', 'noop']:
         start = time.time()
         _emulator (samples)
         stop  = time.time()

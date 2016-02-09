@@ -132,9 +132,9 @@ if __name__ == '__main__':
     if not mem_rss   : mem_rss    = 0.0
     if not samples   : samples    = 1
 
-    if   mode == 'sample'  : run_samples (url, cpu_flops, sto_in, sto_out, mem_rss, samples)
-    elif mode == 'help'    : usage (noexit=True)
-    else                   : usage ("unknown mode '%s'" % mode)
+    if   mode == 'sample'  : run_samples(url, cpu_flops, sto_in, sto_out, mem_rss, samples)
+    elif mode == 'help'    : usage(noexit=True)
+    else                   : usage("unknown mode '%s'" % mode)
 
 # ------------------------------------------------------------------------------
 
