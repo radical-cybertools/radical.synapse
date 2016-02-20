@@ -200,6 +200,7 @@ def profile (command, *args, **kwargs) :
 _CPU = 'cpu'
 _MEM = 'mem'
 _STO = 'sto'
+_TIM = 'time'
 
 _TYPE = 0
 _TIME = 1
@@ -213,6 +214,7 @@ def _emulator (samples) :
     state = dict()  # there is at most one atom for each type in 'state'
 
     # create atoms for all sample types
+    atoms[_TIM] = rsa.Time    ()
     atoms[_CPU] = rsa.Compute ()
     atoms[_MEM] = rsa.Memory  ()
     atoms[_STO] = rsa.Storage ()
