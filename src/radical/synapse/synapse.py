@@ -299,12 +299,16 @@ def emulate(command=None, samples=None):
         pprint.pprint (prof)
 
         # get time series to emulate (all types of operations are mixed)
+        # FIXME: we should also sample walltime for _TIM.  As it is, mixing
+        #        time and other samples will yield incorrect results due to
+        #        mismatch in granularity.
         samples  = list()
-        samples += [[_CPU, x[0], [x[1].get('ops',        0),
-                                  x[1].get('efficiency', 0)]] for x in prof['cpu']['sequence']]
-        samples += [[_MEM, x[0], [x[1].get('size',       0)]] for x in prof['mem']['sequence']]
-        samples += [[_STO, x[0], [x[1].get('read',       0), 
-                                  x[1].get('write',      0)]] for x in prof['sto']['sequence']]
+        samples += [[_TIM, x[0], [x[1].get('real',       0.0)]] for x in prof['time']]
+        samples += [[_CPU, x[0], [x[1].get('ops',        0)  ,
+                                  x[1].get('efficiency', 0)  ]] for x in prof['cpu']['sequence']]
+        samples += [[_MEM, x[0], [x[1].get('size',       0)  ]] for x in prof['mem']['sequence']]
+        samples += [[_STO, x[0], [x[1].get('read',       0)  , 
+                                  x[1].get('write',      0)  ]] for x in prof['sto']['sequence']]
 
 
     # sort samples by time
