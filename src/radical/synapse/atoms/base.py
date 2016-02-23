@@ -11,7 +11,7 @@ import errno
 import psutil
 import threading
 import subprocess
-import multiprocessing
+import Queue
 
 import radical.utils              as ru
 import radical.utils.logger       as rul
@@ -51,8 +51,8 @@ class AtomBase (object) :
 
 
         # start worker process
-        self._work_queue   = multiprocessing.Queue ()
-        self._result_queue = multiprocessing.Queue ()
+        self._work_queue   = Queue.Queue ()
+        self._result_queue = Queue.Queue ()
 
         self._proc  = threading.Thread (target=self.run)
         self._proc.start ()
