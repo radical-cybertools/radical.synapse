@@ -10,23 +10,24 @@ import radical.synapse.utils as rsu
 
 # ------------------------------------------------------------------------------
 #
-def run_samples (url, cpu_flops, sto_in, sto_out, mem_rss, n_samples):
+def run_samples (url, time, cpu_flops, sto_in, sto_out, mem_rss, n_samples):
     
     samples  = list()
 
+    # assume 1 sample per second -- but that is not interpreted anyway...
     for n in range(n_samples):
 
-        # assume 1 sample per second -- but that is not interpreted anyway...
-        time = n+1 
+        # append TIME sample
+        samples.append(['time', float(n+1), [time]])
 
         # append CPU sample (set efficiency to 1)
-        samples.append(['cpu', float(time), [cpu_flops, 1]])
+        samples.append(['cpu', float(n+1), [cpu_flops, 1]])
 
         # append STO sample
-        samples.append(['sto', float(time), [sto_in, sto_out]])
+        samples.append(['sto', float(n+1), [sto_in, sto_out]])
 
         # append MEM sample
-        samples.append(['mem', float(time), [mem_rss]])
+        samples.append(['mem', float(n+1), [mem_rss]])
 
     info, ret, out = rs.emulate (samples=samples)
     pprint.pprint (info)
@@ -42,8 +43,9 @@ def usage (msg=None, noexit=False):
         print "\n      Error: %s" % msg
 
     print """
-      usage     : %s -m <mode> [-f <flops>]  [-i <input>]   [-o <output>] 
-                               [-r <memory>] [-s <samples>] [-u <url>] 
+      usage     : %s -m <mode> [-t <seconds>] [-f <flops>]  [-i <input>]   
+                               [-o <output>]  [-r <memory>] [-s <samples>] 
+                               [-u <url>] 
 
       examples  : %s -m sample -f 10000000
 
@@ -55,6 +57,7 @@ def usage (msg=None, noexit=False):
 
       arguments :
         
+        -t      : number of seconds to spend sleeping
         -f      : number of flops to emulate
         -i      : number of bytes to read from disk
         -o      : number of bytes to write to disk
@@ -67,7 +70,7 @@ def usage (msg=None, noexit=False):
 
         The default mode is 'sample'.
 
-""" % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+""" % (sys.argv[0], sys.argv[0])
 
     if  msg:
         sys.exit (1)
@@ -84,6 +87,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser (add_help=False)
 
     parser.add_argument('-m', '--mode',      dest='mode')
+    parser.add_argument('-t', '--time',      dest='time')
     parser.add_argument('-f', '--flops',     dest='cpu_flops')
     parser.add_argument('-i', '--input',     dest='sto_in')
     parser.add_argument('-o', '--output',    dest='sto_out')
@@ -96,18 +100,21 @@ if __name__ == '__main__':
 
     mode      = arguments.mode 
     url       = arguments.url 
+    time      = arguments.time
     cpu_flops = arguments.cpu_flops
     sto_in    = arguments.sto_in   
     sto_out   = arguments.sto_out
     mem_rss   = arguments.mem_rss
     samples   = arguments.samples
 
+    if not time      : time      = 0.0
     if not cpu_flops : cpu_flops = 0.0
     if not sto_in    : sto_in    = 0.0
     if not sto_out   : sto_out   = 0.0
     if not mem_rss   : mem_rss   = 0.0
     if not samples   : samples   = 1
 
+    time      = float(time     )
     cpu_flops = float(cpu_flops)
     sto_in    = float(sto_in   )
     sto_out   = float(sto_out  )
@@ -126,13 +133,7 @@ if __name__ == '__main__':
     if not url:
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    if not cpu_flops : cpu_flops  = 0.0
-    if not sto_in    : sto_in     = 0.0
-    if not sto_out   : sto_out    = 0.0
-    if not mem_rss   : mem_rss    = 0.0
-    if not samples   : samples    = 1
-
-    if   mode == 'sample'  : run_samples(url, cpu_flops, sto_in, sto_out, mem_rss, samples)
+    if   mode == 'sample'  : run_samples(url, time, cpu_flops, sto_in, sto_out, mem_rss, samples)
     elif mode == 'help'    : usage(noexit=True)
     else                   : usage("unknown mode '%s'" % mode)
 

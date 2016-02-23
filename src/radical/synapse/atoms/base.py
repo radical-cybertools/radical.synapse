@@ -17,8 +17,6 @@ import radical.utils              as ru
 import radical.utils.logger       as rul
 import radical.utils.signatures   as rus
 
-from constants import UNKNOWN, COMPUTE, STORAGE, NETWORK
-
 
 # ------------------------------------------------------------------------------
 #
