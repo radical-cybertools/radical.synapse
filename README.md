@@ -123,37 +123,36 @@ Emulation:
 The synapse incarnation of the above would be:
 
 ```
-import synapse.atoms
-import pprint
 import time
+import radical.synapse as rs
+
 
 start = time.time ()
-sa_c  = synapse.atoms.Compute ()
-sa_m  = synapse.atoms.Memory  ()
-sa_s  = synapse.atoms.Storage ()
+rsa_c = rs.atoms.Compute ()
+rsa_m = rs.atoms.Memory  ()
+rsa_s = rs.atoms.Storage ()
 
-sa_c.run (info={'n'   : 1100})   # consume  1.1 GFlop Cycles
-sa_m.run (info={'n'   :  322})   # allocate 0.3 GByte memory
-sa_s.run (info={'n'   :    0,    # write    0.0 GByte to disk
-          'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
+rsa_c.run (info={'n'   : 1100})   # consume  1.1 GFlop Cycles
+rsa_m.run (info={'n'   :  322})   # allocate 0.3 GByte memory
+rsa_s.run (info={'n'   :    0,    # write    0.0 GByte to disk
+                 'mode': 'w',     # write mode!
+                 'tgt' : '%(tmp)s/synapse_storage.tmp.%(pid)s'})
 
-# atoms are now working in separate threads
+# atoms are now working in separate threads - wait for them.
 
-info_c = sa_c.wait ()
-info_m = sa_m.wait ()
-info_s = sa_s.wait ()
-
-stop = time.time ()
+info_c = rsa_c.wait ()
+info_m = rsa_m.wait ()
+info_s = rsa_s.wait ()
+stop   = time.time ()
 
 # info now contains self-profiled information for the atoms
-
 print "t_c: %.2f" % info_c['timer']
 print "t_m: %.2f" % info_m['timer']
 print "t_s: %.2f" % info_s['timer']
 print "ttc: %.2f" % (stop - start)
 ```
 
-which will result in
+which will result in something like:
 
 ```
 t_c: 1.84
