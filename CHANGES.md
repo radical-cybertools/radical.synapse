@@ -5,6 +5,13 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.41 Release                                                          2016-02-23
+--------------------------------------------------------------------------------
+
+  - add walltime sampler
+  - replace multiprocessing.Queue with Queue.Queue (former breaks on Gordon)
+
+
 0.40 Release                                                          2016-02-10
 --------------------------------------------------------------------------------
 
