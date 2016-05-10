@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.42 Release                                                          2016-05-09
+--------------------------------------------------------------------------------
+
+  - installation fixes, minor other changes
+
+
 0.41 Release                                                          2016-02-23
 --------------------------------------------------------------------------------
 
