@@ -31,7 +31,11 @@ class WatcherMem (wb.WatcherBase) :
         self._data['mem']['sequence'] = list()
 
         self._f.seek(0,0)
-        data = self._f.read()
+        data = None
+        try:
+            data = self._f.read()
+        except:
+            pass
 
     
     # --------------------------------------------------------------------------
