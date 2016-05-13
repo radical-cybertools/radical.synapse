@@ -23,6 +23,16 @@ def emu_command (command):
 
 # ------------------------------------------------------------------------------
 #
+def emu_source (src):
+
+    info, ret, out = rs.emulate (src=src)
+    pprint.pprint (info)
+
+    rsu.store_profile (info, mode='emu')
+
+
+# ------------------------------------------------------------------------------
+#
 def usage (msg=None, noexit=False):
 
     if  msg:
@@ -30,7 +40,9 @@ def usage (msg=None, noexit=False):
 
     print """
       usage     : %s <command>
+                  %s -i <profile>
       example   : %s sleep 10
+                  %s -i sleep_10.json
 
 """
 
@@ -45,7 +57,10 @@ def usage (msg=None, noexit=False):
 #
 if __name__ == '__main__':
 
-    emu_command (' '.join(sys.argv[1:]))
+    if sys.argv[1] == '-i':
+        emu_source(sys.argv[2])
+    else:
+        emu_command (' '.join(sys.argv[1:]))
 
 
 # ------------------------------------------------------------------------------

@@ -118,7 +118,6 @@ def profile (command, *args, **kwargs) :
 
     info = {'cmd' : cmd_str}
 
-
     # start stress, get it spinning for one min to get a confirmed load
     # measurement, then run our own load, then kill stress.
     if  LOAD > 0 :
@@ -279,22 +278,25 @@ def _emulator (samples) :
 
 # ------------------------------------------------------------------------------
 #
-def emulate(command=None, samples=None):
+def emulate(command=None, samples=None, src=None):
 
-    if command and samples:
-        raise ValueError ("emulate needs either command or sample set to emulate")
+    if (command and samples) or \
+       (command and src    ) or \
+       (samples and src    )    :
+        raise ValueError ("emulate needs *either* command, sample *or* src")
 
-    if not command and not samples:
-        raise ValueError ("emulate needs either command or sample set to emulate")
+    if not command and not samples and not src:
+        raise ValueError ("emulate needs either command, sample or src")
 
-    if not command:
-        # dummy command
-        command = 'synapse_sampling'
+    if command or src:
 
-    else:
-        # FIXME: average vals over all retrieved profiles
-        profs = rsu.get_profiles (command, mode='pro')
-        prof  = profs[0]['profile']
+        if command:
+            # FIXME: average vals over all retrieved profiles
+            profs = rsu.get_profiles (command, mode='pro')
+            prof  = profs[0]['profile']
+
+        else:
+            prof = ru.read_json(src)
 
         pprint.pprint (prof)
 
@@ -303,13 +305,12 @@ def emulate(command=None, samples=None):
         #        time and other samples will yield incorrect results due to
         #        mismatch in granularity.
         samples  = list()
-        samples += [[_TIM, x[0], [x[1].get('real',       0.0)]] for x in prof['time']]
+      # samples += [[_TIM, x[0], [x[1].get('real',       0.0)]] for x in prof['time']]
         samples += [[_CPU, x[0], [x[1].get('ops',        0)  ,
                                   x[1].get('efficiency', 0)  ]] for x in prof['cpu']['sequence']]
         samples += [[_MEM, x[0], [x[1].get('size',       0)  ]] for x in prof['mem']['sequence']]
         samples += [[_STO, x[0], [x[1].get('read',       0)  , 
                                   x[1].get('write',      0)  ]] for x in prof['sto']['sequence']]
-
 
     # sort samples by time
     samples = sorted (samples, key=lambda x: x[1])

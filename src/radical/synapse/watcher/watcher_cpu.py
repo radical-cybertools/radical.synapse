@@ -131,7 +131,10 @@ class WatcherCPU (wb.WatcherBase) :
         #
         #  * http://stackoverflow.com/questions/22165299/
 
-        opc  = info['cpu']['ops_per_cycle']
+        import pprint
+        pprint.pprint(info['cpu'])
+
+        opc  = info['cpu']['flops_per_cycle']
         fpc  = info['cpu']['flops_per_cycle']
         freq = info['cpu']['frequency']
 
