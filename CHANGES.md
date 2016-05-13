@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.43 Release                                                          2016-05-13
+--------------------------------------------------------------------------------
+
+  - support file based samples for profile and emulation
+
+
 0.42 Release                                                          2016-05-09
 --------------------------------------------------------------------------------
 
