@@ -131,6 +131,7 @@ class WatcherCPU (wb.WatcherBase) :
         #
         #  * http://stackoverflow.com/questions/22165299/
 
+        opc  = info['cpu']['ops_per_cycle']
         fpc  = info['cpu']['flops_per_cycle']
         freq = info['cpu']['frequency']
 
@@ -141,9 +142,7 @@ class WatcherCPU (wb.WatcherBase) :
         csf  = info['cpu'].get('cycles_stalled_front', 0)
         csb  = info['cpu'].get('cycles_stalled_back',  0)
 
-        ctot = cns  + csf + csb
-        cmax = freq * real
-        cuse = ops  / fpc
+        omax = cns * fpc
 
         if real    : info['cpu']['real']        = real
         else       : info['cpu']['real']        = None
@@ -151,10 +150,10 @@ class WatcherCPU (wb.WatcherBase) :
         if real    : info['cpu']['flops']       = ops / real
         else       : info['cpu']['flops']       = None
 
-        if ctot    : info['cpu']['efficiency']  = cuse / (cuse + csf + csb)
+        if opc     : info['cpu']['efficiency']  = fpc / opc
         else       : info['cpu']['efficiency']  = None
 
-        if cmax    : info['cpu']['utilization'] = cuse / cmax
+        if ops     : info['cpu']['utilization'] = omax / ops
         else       : info['cpu']['utilization'] = None
         
 
@@ -170,10 +169,9 @@ class WatcherCPU (wb.WatcherBase) :
             cns  = sample.get('cycles', 0)
             csf  = sample.get('cycles_stalled_front', 0)
             csb  = sample.get('cycles_stalled_back',  0)
+            opc  = sample.get('ops_per_cycle')
 
-            ctot = cns  + csf + csb
-            cmax = freq * real
-            cuse = ops  / fpc
+            omax = cns * fpc
 
             if real    : sample['real']        = real
             else       : sample['real']        = None
@@ -181,10 +179,10 @@ class WatcherCPU (wb.WatcherBase) :
             if real    : sample['flops']       = ops / real
             else       : sample['flops']       = None
 
-            if ctot    : sample['efficiency']  = cuse / (cuse + csf + csb)
+            if opc     : sample['efficiency']  = fpc / opc
             else       : sample['efficiency']  = None
 
-            if cmax    : sample['utilization'] = cuse / cmax
+            if ops     : sample['utilization'] = omax / ops
             else       : sample['utilization'] = None
 
 

@@ -3,6 +3,7 @@
 import sys
 import time
 import pprint
+import radical.utils         as ru
 import radical.synapse       as rs
 import radical.synapse.utils as rsu
 
@@ -12,12 +13,23 @@ if len(sys.argv) < 2 :
     print "\n\n\tusage: %s <command> ...\n\n" % sys.argv[0]
     sys.exit (0)
 
-info, ret, out = rs.profile (' '.join (sys.argv[1:]))
+if sys.argv[1] == '-o':
+    tgt  = sys.argv[2]
+    args = sys.argv[3:]
+else:
+    tgt  = None
+    args = sys.argv[1:]
+
+
+info, ret, out = rs.profile (' '.join (args))
 
 rsu.store_profile (info, mode='pro')
 
-# print out           # FIXME: make flag
-pprint.pprint (info)  # FIXME: make flag
+if tgt:
+    ru.write_json(info, tgt)
+else:
+    # print out           # FIXME: make flag
+    pprint.pprint (info)  # FIXME: make flag
 
 sys.exit (ret)
 
