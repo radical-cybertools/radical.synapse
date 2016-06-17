@@ -82,7 +82,7 @@ class AtomBase (object) :
                     return
 
                 print "emulate %-20s: %s" % (self, str(data))
-                self._emulate (*data)
+                self._emulate(*data)
                 self._result_queue.put (True)
 
 
