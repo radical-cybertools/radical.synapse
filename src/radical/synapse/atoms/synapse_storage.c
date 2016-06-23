@@ -114,11 +114,11 @@ int _atom_storage (const char* src, long rsize,
 
             if ( rret != bufsize )
             {
-                perror ("io read failed");
                 /* we ignore errors on partial reads, but if nothing was read,
                  * we bail out */
                 if ( rret <= 0 )
                 {
+                    perror ("io read failed");
                     return -4;
                 }
             }
@@ -133,11 +133,11 @@ int _atom_storage (const char* src, long rsize,
 
             if ( wret != bufsize )
             {
-                perror ("io write failed");
                 /* we ignore errors on partial writes, but if nothing was
                  * written, we bail out */
                 if ( wret <= 0 )
                 {
+                    perror ("io write failed");
                     return -4;
                 }
             }
