@@ -30,7 +30,7 @@ else:
 
 # ------------------------------------------------------------------------------
 #
-def execute (command, *args, **kwargs) :
+def execute (command, *args, **kwargs):
 
     if callable (command):
         cmd_str = "%s %s %s" % (command.__name__, str (args), str(kwargs))
@@ -46,7 +46,7 @@ def execute (command, *args, **kwargs) :
 
     # start stress, get it spinning for one min to get a confirmed load
     # measurement, then run our own load, then kill stress.
-    if  LOAD > 0 :
+    if  LOAD > 0:
         rsu.logger.info ("creating system load %s" % LOAD)
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         os.popen ('stress --cpu %s &' % LOAD)
@@ -91,7 +91,7 @@ def execute (command, *args, **kwargs) :
     info['cpu']  = dict()
     info['cpu']['load']   = max(load_1, load_2)
    
-    if  LOAD > 0 :
+    if  LOAD > 0:
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")
@@ -120,7 +120,7 @@ def profile (command, *args, **kwargs) :
 
     # start stress, get it spinning for one min to get a confirmed load
     # measurement, then run our own load, then kill stress.
-    if  LOAD > 0 :
+    if  LOAD > 0:
         rsu.logger.info ("creating system load %s" % LOAD)
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         os.popen ('stress --cpu %s &' % LOAD)
@@ -173,14 +173,14 @@ def profile (command, *args, **kwargs) :
     info['time']['start'] = rsu.time_zero()
     info['time']['real']  = stop-start
 
-    for watcher in reversed(watchers) :
+    for watcher in reversed(watchers):
         watcher.stop ()
         watcher.join ()
         ru.dict_merge (info, watcher.get_data())
 
     # allow watchers to finalize some stuff, now having data from other watchers
     # available
-    for watcher in reversed(watchers) :
+    for watcher in reversed(watchers):
         watcher.finalize(info)
 
     time_2 = rsu.timestamp()
@@ -188,7 +188,7 @@ def profile (command, *args, **kwargs) :
     info['cpu']['load'] = max(load_1, load_2)
     rsu.logger.info ("system load %s: %s" % (LOAD, info['cpu']['load']))
    
-    if  LOAD > 0 :
+    if  LOAD > 0:
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
         rsu.logger.info ("stopped  system load")
@@ -200,6 +200,7 @@ _CPU = 'cpu'
 _MEM = 'mem'
 _STO = 'sto'
 _TIM = 'time'
+_NET = 'net'
 
 _TYPE = 0
 _TIME = 1
@@ -207,7 +208,7 @@ _VALS = 2
 
 # ------------------------------------------------------------------------------
 #
-def _emulator (samples) :
+def _emulator(samples):
 
     atoms = dict()  # one atom of eeach type
     state = dict()  # there is at most one atom for each type in 'state'
@@ -217,11 +218,12 @@ def _emulator (samples) :
     atoms[_CPU] = rsa.Compute ()
     atoms[_MEM] = rsa.Memory  ()
     atoms[_STO] = rsa.Storage ()
+    atoms[_NET] = rsa.Network ()
 
     # FIXME: make sure threads and queues are up
     time.sleep (0.1)
 
-    print "\n-------------------------\n\n"
+  # print "\n-------------------------\n\n"
     print "emulating %d samples" % len(samples)
 
     # run the first set of samples until we meet a sample type which is already
@@ -234,14 +236,14 @@ def _emulator (samples) :
 
         if not t in state:
             # no such atom running - start one
-            atoms[t].emulate (v)
+            print 'pre %d : %-4s : %s' % (pre, t, v)
+            atoms[t].emulate(v)
             state[t] = atoms[t]
 
-            print 'pre %d : %s' % (pre, t)
 
         else:
-            # such an atom is running -- go into steady state to wait for # it
-            print 'brk %d : %s' % (pre, t)
+            # such an atom is running -- go into steady state to wait for it
+            print 'brk %d : %-4s : %s' % (pre, t, v)
             break
 
 
@@ -252,20 +254,20 @@ def _emulator (samples) :
         v = samples[idx][_VALS]
 
         if t in state:
-            print 'wai %d : %s' % (idx, t)
+            print 'wai %d : %-4s : %s' % (idx, t, v)
             state[t].wait()
         else:
-            print 'cre %d : %s' % (idx, t)
+            print 'new %d : %-4s : %s' % (idx, t, v)
             state[t] = atoms[t]
 
-        print 'idx %d : %s' % (idx, t)
+      # print 'idx %d : %s' % (idx, t)
         state[t].emulate(v)
 
 
     # all samples are running now (or have been running), now wait for all
     # active ones
     for t in state:
-        print 'wai   : %s' % t
+        print 'wai %s' % t
         state[t].wait()
 
 
@@ -273,7 +275,7 @@ def _emulator (samples) :
     for t in atoms:
         atoms[t].stop()
 
-    print "\n-------------------------\n\n"
+  # print "\n-------------------------\n\n"
 
 
 # ------------------------------------------------------------------------------
@@ -291,38 +293,50 @@ def emulate(command=None, samples=None, src=None):
     if command or src:
 
         if command:
-            # FIXME: average vals over all retrieved profiles
             profs = rsu.get_profiles (command, mode='pro')
+
+            # FIXME: average vals over all retrieved profiles
             prof  = profs[0]['profile']
 
         else:
             prof = ru.read_json(src)
 
-        pprint.pprint (prof)
+      # pprint.pprint (prof)
 
         # get time series to emulate (all types of operations are mixed)
         # FIXME: we should also sample walltime for _TIM.  As it is, mixing
         #        time and other samples will yield incorrect results due to
         #        mismatch in granularity.
+        # FIXME: add network sample interpretation
         samples  = list()
-      # samples += [[_TIM, x[0], [x[1].get('real',       0.0)]] for x in prof['time']]
-        samples += [[_CPU, x[0], [x[1].get('ops',        0)  ,
-                                  x[1].get('efficiency', 0)  ]] for x in prof['cpu']['sequence']]
-        samples += [[_MEM, x[0], [x[1].get('size',       0)  ]] for x in prof['mem']['sequence']]
-        samples += [[_STO, x[0], [x[1].get('read',       0)  , 
-                                  x[1].get('write',      0)  ]] for x in prof['sto']['sequence']]
+      # samples += [[_TIM, x[0], {'real'       : x[1].get('real',       0)}]
+      #                           for x in prof['time']]
 
-    # sort samples by time
+        samples += [[_CPU, x[0], {'time'       : x[1].get('time',       0),
+                                  'flops'      : x[1].get('ops',        0),
+                                  'efficiency' : x[1].get('efficiency', 0)}]
+                                  for x in prof['cpu']['sequence']]
+
+        samples += [[_MEM, x[0], {'size'       : x[1].get('size',       0)}]
+                                  for x in prof['mem']['sequence']]
+
+        samples += [[_STO, x[0], {'src'        : x[1].get('src',        None),
+                                  'rsize'      : x[1].get('read',       0),
+                                  'tgt'        : x[1].get('tgt',        None),
+                                  'wsize'      : x[1].get('write',      0)}]
+                                  for x in prof['sto']['sequence']]
+
+    # *globally* sort samples by time
     samples = sorted (samples, key=lambda x: x[1])
 
-    print "samples:\n---"
-    pprint.pprint (samples)
-    print "---"
+  # print "samples:\n---"
+  # pprint.pprint (samples)
+  # print "---"
 
     watchmode = os.environ.get ('RADICAL_SYNAPSE_WATCHMODE')
     if not watchmode or watchmode.lower in ['none', 'noop']:
         start = time.time()
-        _emulator (samples)
+        _emulator(samples)
         stop  = time.time()
 
         ret   = None
@@ -338,7 +352,7 @@ def emulate(command=None, samples=None, src=None):
         os.environ['_RADICAL_SYNAPSE_EMULATED'] = 'TRUE'
         os.environ['_RADICAL_SYNAPSE_EMULATEE'] = command
 
-        info, ret, _ = profile (_emulator, samples)
+        info, ret, _ = profile(_emulator, samples)
 
         if 'ops' in info['cpu']:
             info['cpu']['efficiency'] = info['cpu']['ops']                       \

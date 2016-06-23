@@ -4,7 +4,8 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-import radical.utils.signatures   as rus
+import radical.utils as ru
+
 
 from   _atoms    import atom_time
 from   base      import AtomBase
@@ -20,8 +21,6 @@ class Time(AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes  ('Time')
-    @rus.returns(rus.nothing)
     def __init__(self): 
 
         AtomBase.__init__(self, TIME)
@@ -29,22 +28,21 @@ class Time(AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes  ('Time', list)
-    @rus.returns(rus.nothing)
-    def emulate (self, vals): 
+    def _verify(self, vals): 
 
-        print 'time: %s' % vals
-
-        self._run(vals[0])
+        assert('real' in vals)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes  ('Time', float)
-    @rus.returns(rus.nothing)
-    def _emulate(self, ops): 
+    def _emulate(self, vals): 
 
-        atom_time(ops)
+        try:
+            atom_time(vals['real'])
+
+        except Exception as e:
+            print "time atom error: %s" % e
+            ru.cancel_main_thread()
 
 
 #-------------------------------------------------------------------------------

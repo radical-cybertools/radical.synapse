@@ -4,8 +4,6 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-import radical.utils.signatures   as rus
-
 from   _atoms    import atom_compute_asm
 from   _atoms    import atom_compute
 from   base      import AtomBase
@@ -15,7 +13,7 @@ OVERHEAD = 20   # in %
 
 # ------------------------------------------------------------------------------
 #
-class Compute (AtomBase) :
+class Compute (AtomBase):
     """
     This Compute Synapse emulates a compute workload, i.e. it consumes
     a specified number of floating point operations.
@@ -23,35 +21,33 @@ class Compute (AtomBase) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Compute')
-    @rus.returns (rus.nothing)
-    def __init__ (self) : 
+    def __init__ (self): 
 
         AtomBase.__init__ (self, COMPUTE)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Compute', list)
-    @rus.returns (rus.nothing)
-    def emulate (self, vals) : 
+    def _verify(self, vals): 
 
-        print 'cpu: %s' % vals
+        assert ('flops' in vals or 'time' in vals)
 
-        ops = int(vals[0] * 0.6)
-
-        # remove a empirical overhead
-      # ops -= int(ops/100*OVERHEAD)
-        self._run (ops)
+        # FIXME: empirical tuning factor toward 1 MFLOP
+        if 'flops' in vals:
+            vals['flops'] = int(vals['flops'] * 0.6)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Compute', int)
-    @rus.returns (rus.nothing)
-    def _emulate (self, ops) : 
+    def _emulate (self, vals): 
 
-        atom_compute_asm (ops)
+        try:
+            # TODO: switch between flops and time emulation
+          # print "atom_compute (%s)" % vals['flops']
+            atom_compute_asm (vals['flops'])
+
+        except Exception as e:
+            print "com atom error: %s" % e
 
 
 #-------------------------------------------------------------------------------

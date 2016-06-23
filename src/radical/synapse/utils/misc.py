@@ -125,7 +125,7 @@ def store_profile (profile, tags=None, url=None, mode=None) :
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if not url:
-        print "warning: need dburl to store profiles"
+      # print "warning: need dburl to store profiles"
         return None
 
     if not mode:

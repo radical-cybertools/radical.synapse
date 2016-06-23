@@ -15,21 +15,15 @@ import Queue
 
 import radical.utils              as ru
 import radical.utils.logger       as rul
-import radical.utils.signatures   as rus
 
 
 # ------------------------------------------------------------------------------
 #
-class AtomBase (object) :
+class AtomBase (object):
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('AtomBase', 
-                  basestring, 
-                  dict)
-    @rus.returns (rus.nothing)
-    def __init__  (self, atype) :
-
+    def __init__  (self, atype):
 
         self._atype = atype
         self._pid   = os.getpid ()
@@ -42,8 +36,8 @@ class AtomBase (object) :
 
         try:
             os.makedirs (self._tmpdir)
-        except OSError as exc :
-            if exc.errno == errno.EEXIST and os.path.isdir (self._tmpdir) :
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir (self._tmpdir):
                 pass
             else: raise
 
@@ -52,37 +46,35 @@ class AtomBase (object) :
         self._work_queue   = Queue.Queue ()
         self._result_queue = Queue.Queue ()
 
+        self._term  = threading.Event()
         self._proc  = threading.Thread (target=self.run)
         self._proc.start ()
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('AtomBase')
-    @rus.returns (basestring)
-    def __str__  (self) :
+    def __str__  (self):
 
         return self._uid
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('AtomBase')
-    @rus.returns (rus.nothing)
-    def run (self) :
+    def run (self):
 
         try:
 
-            while True :
+            while not self._term.is_set():
 
-                data = self._work_queue.get ()
+                data = self._work_queue.get()
 
-                if data == None:
+                if not data:
                     # signal to finish
+                    self._result_queue.put (True)
                     return
 
-                print "emulate %-20s: %s" % (self, str(data))
-                self._emulate(*data)
+              # print "emulate %-20s: %s" % (self, data)
+                self._emulate(data)
                 self._result_queue.put (True)
 
 
@@ -93,32 +85,47 @@ class AtomBase (object) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('AtomBase')
-    @rus.returns (rus.nothing)
-    def _run (self, *args) : 
+    def emulate(self, vals):
 
-        self._work_queue.put (args)
+        try:
+            self._verify(vals)
+            self._work_queue.put(vals)
+
+        except Exception as e:
+            print 'emulation error: invalid data: %s' % vals
+            ru.cancel_main_thread()
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('AtomBase')
-    @rus.returns (dict)
-    def wait (self) :
+    def wait (self):
 
         return self._result_queue.get ()
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('AtomBase')
-    @rus.returns (rus.nothing)
-    def stop (self) :
+    def stop (self):
 
+        self._term.set()
         self._work_queue.put (None) # signal finish
 
-        if  self._proc :
+        if  self._proc:
             self._proc.join ()
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _verify(self, vals):
+
+        raise NotImplementedError('%s atom misses _verify()' % self._atype)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _emulate(self, vals):
+
+        raise NotImplementedError('%s atom misses _emulate()' % self._atype)
 
 
 # ------------------------------------------------------------------------------

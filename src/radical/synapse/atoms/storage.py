@@ -4,7 +4,8 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-import radical.utils.signatures   as rus
+import radical.utils as ru
+
 
 from   _atoms    import atom_storage
 from   base      import AtomBase
@@ -12,7 +13,7 @@ from   constants import STORAGE
 
 # ------------------------------------------------------------------------------
 #
-class Storage (AtomBase) :
+class Storage (AtomBase):
     """
     This Storage Synapse emulates a storage workload, i.e. it allocates
     a specified storage size on disk.  It creates only minimal I/O to the
@@ -21,38 +22,41 @@ class Storage (AtomBase) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Storage')
-    @rus.returns (rus.nothing)
-    def __init__ (self) : 
+    def __init__ (self): 
 
         AtomBase.__init__ (self, STORAGE)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Storage', list)
-    @rus.returns (rus.nothing)
-    def emulate (self, vals) : 
+    def _verify(self, vals): 
 
-        rsize = int(vals[0])
-        wsize = int(vals[1])
+        # FIXME: get from profile, application
+        vals['src'] = "/tmp/synapse_storage.in"
+        vals['tgt'] = "/tmp/synapse_storage.%(pid)s.out"
 
-        src = "/tmp/synapse_storage.in"
-        tgt = "/tmp/synapse_storage.%(pid)s.out"
-
-        src = src % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
-        tgt = tgt % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
-
-        self._run (src, rsize, tgt, wsize)
+        assert( ('rsize' in vals and 'src' in vals) or
+                ('wsize' in vals and 'tgt' in vals)  )
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Storage', basestring, int, basestring, int)
-    @rus.returns (rus.nothing)
-    def _emulate (self, src, rsize, tgt, wsize) : 
+    def _emulate (self, vals):
 
-        atom_storage (src, rsize, tgt, wsize)
+        vals['src'] = vals['src'] % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
+        vals['tgt'] = vals['tgt'] % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
+
+        src   =     vals.get('src')
+        rsize = int(vals.get('rsize', 0))
+        tgt   =     vals.get('tgt')
+        wsize = int(vals.get('wsize', 0))
+
+        try:
+            atom_storage(src, rsize, tgt, wsize)
+
+        except Exception as e:
+            print "sto atom error: %s" % e
+            ru.cancel_main_thread()
 
 
 #-------------------------------------------------------------------------------

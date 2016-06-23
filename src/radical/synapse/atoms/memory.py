@@ -4,7 +4,8 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-import radical.utils.signatures   as rus
+import radical.utils as ru
+
 
 from   _atoms    import atom_memory
 from   base      import AtomBase
@@ -12,7 +13,7 @@ from   constants import MEMORY
 
 # ------------------------------------------------------------------------------
 #
-class Memory (AtomBase) :
+class Memory (AtomBase):
     """
     This Memory Synapse emulates a memory workload, i.e. it allocates
     a specified memory size.  It does not create nor consume any I/O to the
@@ -21,35 +22,29 @@ class Memory (AtomBase) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Memory')
-    @rus.returns (rus.nothing)
-    def __init__ (self) : 
+    def __init__ (self): 
 
         AtomBase.__init__ (self, MEMORY)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Memory', list)
-    @rus.returns (rus.nothing)
-    def emulate (self, vals) : 
+    def _verify(self, vals): 
 
-        size = int(vals[0])
-
-        return self._run (size)
+        assert ('size' in vals)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Memory', int)
-    @rus.returns (rus.nothing)
-    def _emulate (self, size) : 
+    def _emulate (self, vals): 
 
         try:
-         #  print "atom_memory (%s)" % size
-            atom_memory (size)
+         # print "atom_memorye (%s)" % vals['size']
+            atom_memory (vals['size'])
+
         except Exception as e:
             print "mem atom error: %s" % e
+            ru.cancel_main_thread()
 
 
 

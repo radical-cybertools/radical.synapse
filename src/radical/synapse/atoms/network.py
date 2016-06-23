@@ -4,7 +4,8 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-import radical.utils.signatures   as rus
+import radical.utils as ru
+
 
 from   _atoms    import atom_network
 from   base      import AtomBase
@@ -12,7 +13,7 @@ from   constants import NETWORK
 
 # ------------------------------------------------------------------------------
 #
-class Network (AtomBase) :
+class Network (AtomBase):
     """
     This Network Synapse emulates a network workload.  It operates in either one
     of two modes: receive or send.  On receive, the synapse will listen on
@@ -26,56 +27,46 @@ class Network (AtomBase) :
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Network')
-    @rus.returns (rus.nothing)
-    def __init__ (self) : 
+    def __init__ (self): 
 
         AtomBase.__init__ (self, NETWORK)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Network', dict)
-    @rus.returns (rus.nothing)
-    def emulate (self, info) : 
+    def _verify(self, vals): 
 
         self._proc = None
 
-        if  not 'type' in info :
-            print "need 'type' flags (server/client) to run network load"
-            return
+        assert('type' in vals)
+        assert('mode' in vals)
+        assert('port' in vals)
 
-        if  not 'mode' in info :
-            print "need 'mode' flags (send/recv) to run network load"
-            return
+        typ  =     vals['type']
+        mode =     vals['mode']
+        port = int(vals['port'])
+        host =     vals.get('size')
+        size = int(vals.get('size', 1))
 
-        if  not 'port' in info :
-            print "need 'port' flag to run network load"
-            return
-
-        typ  =     info['type']
-        mode =     info['mode']
-        port = int(info['port'])
-        host = "nohost"
-        size = 1
-
-        if 'host' in info : host = info['host']
-        if 'size' in info : size = info['size']
-
-        if  typ == 'client' and not host :
-            print "network server needs host and port"
-            return
-
-        self._run (typ, mode, host, port, size)
+        assert(typ == 'client' or host)
 
 
     # --------------------------------------------------------------------------
     #
-    @rus.takes   ('Network', basestring, basestring, basestring, int, int)
-    @rus.returns (rus.nothing)
-    def _emulate (self, typ, mode, host, port, size) : 
+    def _emulate (self, vals):
 
-        atom_network (typ, mode, host, port, size)
+        typ  =     vals['type']
+        mode =     vals['mode']
+        port = int(vals['port'])
+        host =     vals.get('size')
+        size = int(vals.get('size', 1))
+
+        try:
+            atom_network (typ, mode, host, port, size)
+
+        except Exception as e:
+            print "net atom error: %s" % e
+            ru.cancel_main_thread()
 
 
 #-------------------------------------------------------------------------------
