@@ -237,12 +237,12 @@ def _emulator(samples):
 
         if t in state:
             # such an atom is running -- go into steady state to wait for it
-            print ' === brk %d : %-4s : %s' % (pre, t, v)
+          # print ' === brk %d : %-4s : %s' % (pre, t, v)
             break
 
         else:
             # no such atom running - start one
-            print ' === pre %d : %-4s : %s' % (pre, t, v)
+          # print ' === pre %d : %-4s : %s' % (pre, t, v)
             atoms[t].emulate(v)
             state[t] = atoms[t]
 
@@ -255,20 +255,20 @@ def _emulator(samples):
         v = samples[idx][_VALS]
 
         if t in state:
-            print ' === wai %d : %-4s : %s' % (idx, t, v)
+          # print ' === wai %d : %-4s : %s' % (idx, t, v)
             state[t].wait()
         else:
-            print ' === new %d : %-4s : %s' % (idx, t, v)
+          # print ' === new %d : %-4s : %s' % (idx, t, v)
             state[t] = atoms[t]
 
-        print ' === idx %d : %s' % (idx, t)
+      # print ' === idx %d : %s' % (idx, t)
         state[t].emulate(v)
 
 
     # all samples are running now (or have been running), now wait for all
     # active ones
     for t in state:
-        print 'wai %s' % t
+      # print 'wai %s' % t
         state[t].wait()
 
 

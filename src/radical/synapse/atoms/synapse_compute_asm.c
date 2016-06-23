@@ -41,7 +41,7 @@ int _atom_compute_asm (long flops, long runtime)
      */
 
     for ( i = 0; 
-          i < n || now < (start+runtime); 
+          i < n || now <= (start+runtime); 
           i++ ) 
     {
         mat_mult (f, f, CHUNKSIZE);
