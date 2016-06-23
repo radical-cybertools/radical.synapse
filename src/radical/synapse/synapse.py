@@ -230,26 +230,29 @@ def _emulator(samples):
     # started.  At that point, start to wait before submission.  If all samples
     # have been run, wait for all atoms to complete, and voila
 
-    for pre in range(len(samples)):
+    idx = 0
+    while idx < len(samples):
 
-        t = samples[pre][_TYPE]
-        v = samples[pre][_VALS]
+        t = samples[idx][_TYPE]
+        v = samples[idx][_VALS]
 
         if t in state:
             # such an atom is running -- go into steady state to wait for it
-          # print ' === brk %d : %-4s : %s' % (pre, t, v)
+          # print ' === brk %d : %-4s : %s' % (idx, t, v)
             break
 
         else:
             # no such atom running - start one
-          # print ' === pre %d : %-4s : %s' % (pre, t, v)
+          # print ' === idx %d : %-4s : %s' % (idx, t, v)
             atoms[t].emulate(v)
             state[t] = atoms[t]
+
+        idx += 1
 
 
 
     # we need to wait first before running the next sample of any type
-    for idx in range(pre+1,len(samples)):
+    while idx < len(samples):
 
         t = samples[idx][_TYPE]
         v = samples[idx][_VALS]
@@ -263,7 +266,7 @@ def _emulator(samples):
 
       # print ' === idx %d : %s' % (idx, t)
         state[t].emulate(v)
-
+        idx += 1
 
     # all samples are running now (or have been running), now wait for all
     # active ones

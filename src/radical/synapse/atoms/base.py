@@ -90,7 +90,7 @@ class AtomBase (object):
 
         try:
             self._verify(vals)
-          # print " === put  %s" % vals
+            print "emulate  %s" % vals
             self._work_queue.put(vals)
 
         except Exception as e:
