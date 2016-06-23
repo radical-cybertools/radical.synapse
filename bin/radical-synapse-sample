@@ -10,7 +10,7 @@ import radical.synapse.utils as rsu
 
 # ------------------------------------------------------------------------------
 #
-def run_samples (url, time, cpu_flops, sto_in, sto_out, mem_rss, n_samples):
+def run_samples (url, time, cpu_flops, cpu_time, sto_in, sto_out, mem_rss, n_samples):
     
     samples  = list()
 
@@ -21,7 +21,8 @@ def run_samples (url, time, cpu_flops, sto_in, sto_out, mem_rss, n_samples):
         samples.append(['time', float(n+1), {'real'       : time}])
 
         # append CPU sample (set efficiency to 1)
-        samples.append(['cpu', float(n+1),  {'flops'      : cpu_flops, 
+        samples.append(['cpu', float(n+1),  {'time'       : cpu_time, 
+                                             'flops'      : cpu_flops, 
                                              'efficiency' : 1}])
 
         # append STO sample
@@ -91,6 +92,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-m', '--mode',      dest='mode')
     parser.add_argument('-t', '--time',      dest='time')
+    parser.add_argument('-c', '--cputime',   dest='cpu_time')
     parser.add_argument('-f', '--flops',     dest='cpu_flops')
     parser.add_argument('-i', '--input',     dest='sto_in')
     parser.add_argument('-o', '--output',    dest='sto_out')
@@ -104,6 +106,7 @@ if __name__ == '__main__':
     mode      = arguments.mode 
     url       = arguments.url 
     time      = arguments.time
+    cpu_time  = arguments.cpu_time
     cpu_flops = arguments.cpu_flops
     sto_in    = arguments.sto_in   
     sto_out   = arguments.sto_out
@@ -111,6 +114,7 @@ if __name__ == '__main__':
     samples   = arguments.samples
 
     if not time      : time      = 0
+    if not cpu_time  : cpu_time  = 0
     if not cpu_flops : cpu_flops = 0
     if not sto_in    : sto_in    = 0
     if not sto_out   : sto_out   = 0
@@ -118,6 +122,7 @@ if __name__ == '__main__':
     if not samples   : samples   = 1
 
     time      = float(time     )
+    cpu_time  = int  (cpu_time )
     cpu_flops = int  (cpu_flops)
     sto_in    = int  (sto_in   )
     sto_out   = int  (sto_out  )
@@ -136,7 +141,8 @@ if __name__ == '__main__':
     if not url:
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    if   mode == 'sample'  : run_samples(url, time, cpu_flops, sto_in, sto_out, mem_rss, samples)
+    if   mode == 'sample'  : run_samples(url, time, cpu_flops, cpu_time, 
+                                         sto_in, sto_out, mem_rss, samples)
     elif mode == 'help'    : usage(noexit=True)
     else                   : usage("unknown mode '%s'" % mode)
 

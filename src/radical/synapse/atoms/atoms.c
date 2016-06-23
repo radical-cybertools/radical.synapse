@@ -53,12 +53,13 @@ init_atoms (void)
 static PyObject *
 atom_compute_asm (PyObject * self, PyObject * args)
 {
-    long flops = 1;
+    long flops = 0;
+    long time  = 0;
 
-    if ( ! PyArg_ParseTuple (args, "l", &flops) )
+    if ( ! PyArg_ParseTuple (args, "ll", &flops, &time) )
         return NULL;
 
-    _atom_compute_asm (flops);
+    _atom_compute_asm (flops, time);
     Py_RETURN_NONE;
 }
 

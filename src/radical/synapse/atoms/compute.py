@@ -33,8 +33,8 @@ class Compute (AtomBase):
         assert ('flops' in vals or 'time' in vals)
 
         # FIXME: empirical tuning factor toward 1 MFLOP
-        if 'flops' in vals:
-            vals['flops'] = int(vals['flops'] * 0.6)
+        vals['flops'] = int(vals.get('flops', 0) * 0.6)
+        vals['time']  = int(vals.get('time',  0)      )
 
 
     # --------------------------------------------------------------------------
@@ -44,7 +44,7 @@ class Compute (AtomBase):
         try:
             # TODO: switch between flops and time emulation
           # print "atom_compute (%s)" % vals['flops']
-            atom_compute_asm (vals['flops'])
+            atom_compute_asm (vals['flops'], vals['time'])
 
         except Exception as e:
             print "com atom error: %s" % e

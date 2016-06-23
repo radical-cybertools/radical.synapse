@@ -1,5 +1,6 @@
 
-int _atom_compute_asm (long        flops);
+int _atom_compute_asm (long        flops, 
+                       long        time);
 int _atom_compute     (long        flops);
 int _atom_time        (double      time);
 int _atom_memory      (long        size);

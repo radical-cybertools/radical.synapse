@@ -17,10 +17,17 @@
 
 float mat_mult (float* a1, float* a2, int n);
 
-int _atom_compute_asm (long flops)
+int _atom_compute_asm (long flops, long runtime)
 {
+    /* we can either run until a certain number of flops is reached, or until
+     * a certain time has passed.  If both 'flops' and 'runtime' are given, 
+     * *both* conditions have to be met before completion.
+     */
+
     size_t  n = flops / (1024 * 1024);
     float * f = calloc (CHUNKSIZE, sizeof(float));
+    time_t  start = time(NULL);
+    time_t  now   = time(NULL);
 
     /* This is an overhead for each sample :( */
     unsigned int i = 0;
@@ -32,9 +39,13 @@ int _atom_compute_asm (long flops)
     /* *********************************
      * 1 loop gives 1 MFLOP
      */
-    for ( i = 0; i < n; i++ ) 
+
+    for ( i = 0; 
+          i < n || now < (start+runtime); 
+          i++ ) 
     {
         mat_mult (f, f, CHUNKSIZE);
+        now = time(NULL);
     }
     /* ********************************* */
 
