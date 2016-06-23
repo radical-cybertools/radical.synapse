@@ -67,7 +67,7 @@ class AtomBase (object):
             while not self._term.is_set():
 
                 vals = self._work_queue.get()
-                print " === vals: %s" % vals
+              # print " === vals: %s" % vals
 
                 if not vals:
                     # signal to finish
@@ -90,7 +90,7 @@ class AtomBase (object):
 
         try:
             self._verify(vals)
-            print " === put  %s" % vals
+          # print " === put  %s" % vals
             self._work_queue.put(vals)
 
         except Exception as e:
