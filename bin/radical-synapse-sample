@@ -10,7 +10,9 @@ import radical.synapse.utils as rsu
 
 # ------------------------------------------------------------------------------
 #
-def run_samples (url, time, cpu_flops, cpu_time, sto_in, sto_out, mem_rss, n_samples):
+def run_samples (url, time, cpu_flops, cpu_time, 
+                 sto_src, sto_in, sto_tgt, sto_out, 
+                 mem_rss, n_samples):
     
     samples  = list()
 
@@ -26,8 +28,10 @@ def run_samples (url, time, cpu_flops, cpu_time, sto_in, sto_out, mem_rss, n_sam
                                              'efficiency' : 1}])
 
         # append STO sample
-        samples.append(['sto', float(n+1),  {'wsize'      : sto_in, 
-                                             'rsize'      : sto_out}])
+        samples.append(['sto', float(n+1),  {'src'        : sto_src, 
+                                             'rsize'      : sto_in, 
+                                             'tgt'        : sto_tgt, 
+                                             'wsize'      : sto_out}])
 
         # append MEM sample
         samples.append(['mem', float(n+1),  {'size'       : mem_rss}])
@@ -47,9 +51,11 @@ def usage (msg=None, noexit=False):
         print "\n      Error: %s" % msg
 
     print """
-      usage     : %s -m <mode> [-t <seconds>] [-f <flops>]  [-i <input>]   
-                               [-o <output>]  [-r <memory>] [-s <samples>] 
-                               [-u <url>] 
+      usage     : %s -m <mode> [-t <seconds>] [-c <seconds>] [-f <flops>]  
+                               [-I <source>]  [-i <input>]   
+                               [-O <target>]  [-o <output>] 
+                               [-r <memory>]  
+                               [-s <samples>] [-u <url>] 
 
       examples  : %s -m sample -f 10000000
 
@@ -62,8 +68,11 @@ def usage (msg=None, noexit=False):
       arguments :
         
         -t      : number of seconds to spend sleeping
+        -c      : number of seconds to spend computing
         -f      : number of flops to emulate
+        -I      : name   of file  to read from
         -i      : number of bytes to read from disk
+        -O      : name   of file  to write to
         -o      : number of bytes to write to disk
         -r      : number of bytes to allocate (RSS)
         -s      : number of samples to run with the above configuration
@@ -94,7 +103,9 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--time',      dest='time')
     parser.add_argument('-c', '--cputime',   dest='cpu_time')
     parser.add_argument('-f', '--flops',     dest='cpu_flops')
+    parser.add_argument('-I', '--source',    dest='sto_src')
     parser.add_argument('-i', '--input',     dest='sto_in')
+    parser.add_argument('-O', '--target',    dest='sto_tgt')
     parser.add_argument('-o', '--output',    dest='sto_out')
     parser.add_argument('-r', '--memory',    dest='mem_rss')
     parser.add_argument('-s', '--samples',   dest='samples')
@@ -108,7 +119,9 @@ if __name__ == '__main__':
     time      = arguments.time
     cpu_time  = arguments.cpu_time
     cpu_flops = arguments.cpu_flops
+    sto_src   = arguments.sto_src  
     sto_in    = arguments.sto_in   
+    sto_tgt   = arguments.sto_tgt
     sto_out   = arguments.sto_out
     mem_rss   = arguments.mem_rss
     samples   = arguments.samples
@@ -116,7 +129,9 @@ if __name__ == '__main__':
     if not time      : time      = 0
     if not cpu_time  : cpu_time  = 0
     if not cpu_flops : cpu_flops = 0
+    if not sto_src   : sto_src   = None
     if not sto_in    : sto_in    = 0
+    if not sto_tgt   : sto_tgt   = None
     if not sto_out   : sto_out   = 0
     if not mem_rss   : mem_rss   = 0
     if not samples   : samples   = 1
@@ -142,7 +157,8 @@ if __name__ == '__main__':
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if   mode == 'sample'  : run_samples(url, time, cpu_flops, cpu_time, 
-                                         sto_in, sto_out, mem_rss, samples)
+                                         sto_src, sto_in, sto_tgt, sto_out, 
+                                         mem_rss, samples)
     elif mode == 'help'    : usage(noexit=True)
     else                   : usage("unknown mode '%s'" % mode)
 

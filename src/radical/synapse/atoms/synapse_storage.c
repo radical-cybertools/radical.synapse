@@ -14,7 +14,39 @@
 #define CHUNKSIZE 1024
 #define PROFILE   0
 
+/*
+ *******************************************************************************
+ */
+int mkpath(char* file_path) 
+{
+    /* kudos: http://stackoverflow.com/questions/2336242
+     */
+    char* p;
+    mode_t mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 
+    for ( p=strchr(file_path+1, '/'); 
+          p; 
+          p = strchr(p+1, '/')) 
+    {
+        *p = '\0';
+        if ( mkdir (file_path, mode) == -1 ) 
+        {
+            if ( errno != EEXIST ) 
+            { 
+                *p='/'; 
+                return -1; 
+            }
+        }
+        *p = '/';
+    }
+
+    return 0;
+}
+
+
+/*
+ *******************************************************************************
+ */
 size_t get_blocksize(void)
 {
 
@@ -24,6 +56,9 @@ size_t get_blocksize(void)
 }
 
 
+/*
+ *******************************************************************************
+ */
 int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
 {
     int rfd = 0;
@@ -31,6 +66,7 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
 
     if (src && rsize)
     {
+        mkpath (src);
         rfd = open (src, O_RDONLY);
         if ( rfd < 0 )
         {
@@ -42,6 +78,7 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
 
     if (tgt && wsize)
     {
+        mkpath (tgt);
         wfd = open (tgt, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
         if ( wfd < 0 )
         {
