@@ -229,38 +229,39 @@ def _emulator(samples):
     # run the first set of samples until we meet a sample type which is already
     # started.  At that point, start to wait before submission.  If all samples
     # have been run, wait for all atoms to complete, and voila
+
     for pre in range(len(samples)):
 
         t = samples[pre][_TYPE]
         v = samples[pre][_VALS]
 
-        if not t in state:
+        if t in state:
+            # such an atom is running -- go into steady state to wait for it
+            print ' === brk %d : %-4s : %s' % (pre, t, v)
+            break
+
+        else:
             # no such atom running - start one
-            print 'pre %d : %-4s : %s' % (pre, t, v)
+            print ' === pre %d : %-4s : %s' % (pre, t, v)
             atoms[t].emulate(v)
             state[t] = atoms[t]
 
 
-        else:
-            # such an atom is running -- go into steady state to wait for it
-            print 'brk %d : %-4s : %s' % (pre, t, v)
-            break
-
 
     # we need to wait first before running the next sample of any type
-    for idx in range(pre,len(samples)):
+    for idx in range(pre+1,len(samples)):
 
         t = samples[idx][_TYPE]
         v = samples[idx][_VALS]
 
         if t in state:
-            print 'wai %d : %-4s : %s' % (idx, t, v)
+            print ' === wai %d : %-4s : %s' % (idx, t, v)
             state[t].wait()
         else:
-            print 'new %d : %-4s : %s' % (idx, t, v)
+            print ' === new %d : %-4s : %s' % (idx, t, v)
             state[t] = atoms[t]
 
-      # print 'idx %d : %s' % (idx, t)
+        print ' === idx %d : %s' % (idx, t)
         state[t].emulate(v)
 
 

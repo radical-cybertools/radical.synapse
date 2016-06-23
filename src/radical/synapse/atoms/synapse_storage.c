@@ -58,7 +58,9 @@ size_t get_blocksize(void)
 /*
  *******************************************************************************
  */
-int _atom_storage (const char* src, long rsize, const char* tgt, long wsize, bufsize)
+int _atom_storage (const char* src, long rsize, 
+                   const char* tgt, long wsize, 
+                   long bufsize)
 {
     int rfd = 0;
     int wfd = 0;

@@ -66,15 +66,16 @@ class AtomBase (object):
 
             while not self._term.is_set():
 
-                data = self._work_queue.get()
+                vals = self._work_queue.get()
+                print " === vals: %s" % vals
 
-                if not data:
+                if not vals:
                     # signal to finish
                     self._result_queue.put (True)
                     return
 
-              # print "emulate %-20s: %s" % (self, data)
-                self._emulate(data)
+              # print "emulate %-20s: %s" % (self, vals)
+                self._emulate(vals)
                 self._result_queue.put (True)
 
 
@@ -89,6 +90,7 @@ class AtomBase (object):
 
         try:
             self._verify(vals)
+            print " === put  %s" % vals
             self._work_queue.put(vals)
 
         except Exception as e:

@@ -20,22 +20,26 @@ def run_samples (url, time, cpu_flops, cpu_time,
     for n in range(n_samples):
 
         # append TIME sample
-        samples.append(['time', float(n+1), {'real'       : time}])
+        if time:
+            samples.append(['time', float(n+1), {'real'       : time}])
 
         # append CPU sample (set efficiency to 1)
-        samples.append(['cpu', float(n+1),  {'time'       : cpu_time, 
-                                             'flops'      : cpu_flops, 
-                                             'efficiency' : 1}])
+        if cpu_time or cpu_flops:
+            samples.append(['cpu', float(n+1),  {'time'       : cpu_time, 
+                                                 'flops'      : cpu_flops, 
+                                                 'efficiency' : 1}])
 
         # append STO sample
-        samples.append(['sto', float(n+1),  {'src'        : sto_src, 
-                                             'rsize'      : sto_in, 
-                                             'tgt'        : sto_tgt, 
-                                             'wsize'      : sto_out, 
-                                             'buf'        : sto_buf}])
+        if sto_in or sto_out:
+            samples.append(['sto', float(n+1),  {'src'        : sto_src, 
+                                                 'rsize'      : sto_in, 
+                                                 'tgt'        : sto_tgt, 
+                                                 'wsize'      : sto_out, 
+                                                 'buf'        : sto_buf}])
 
         # append MEM sample
-        samples.append(['mem', float(n+1),  {'size'       : mem_rss}])
+        if mem_rss:
+            samples.append(['mem', float(n+1),  {'size'       : mem_rss}])
 
 
     info, ret, out = rs.emulate (samples=samples)
@@ -164,7 +168,7 @@ if __name__ == '__main__':
 
     if   mode == 'sample'  : run_samples(url, time, cpu_flops, cpu_time, 
                                          sto_src, sto_in, sto_tgt, sto_out,
-                                         stu_buf, mem_rss, samples)
+                                         sto_buf, mem_rss, samples)
     elif mode == 'help'    : usage(noexit=True)
     else                   : usage("unknown mode '%s'" % mode)
 

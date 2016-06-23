@@ -118,11 +118,12 @@ atom_storage (PyObject * self, PyObject * args)
     long   rsize =  1;
     char * tgt;
     long   wsize =  1;
+    long   buf   =  0;
 
-    if ( ! PyArg_ParseTuple (args, "slsl", &src, &rsize, &tgt, &wsize) )
+    if ( ! PyArg_ParseTuple (args, "slsll", &src, &rsize, &tgt, &wsize, &buf) )
         return NULL;
 
-    _atom_storage (src, rsize, tgt, wsize);
+    _atom_storage (src, rsize, tgt, wsize, buf);
     Py_RETURN_NONE;
 }
 
