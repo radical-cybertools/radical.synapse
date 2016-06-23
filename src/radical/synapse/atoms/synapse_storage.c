@@ -11,7 +11,6 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 
-#define CHUNKSIZE 1024
 #define PROFILE   0
 
 /*
@@ -59,7 +58,7 @@ size_t get_blocksize(void)
 /*
  *******************************************************************************
  */
-int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
+int _atom_storage (const char* src, long rsize, const char* tgt, long wsize, bufsize)
 {
     int rfd = 0;
     int wfd = 0;
@@ -95,8 +94,8 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
 
     off_t rtot = 0;
     off_t wtot = 0;
-    char* rbuf = malloc (CHUNKSIZE);
-    char* wbuf = malloc (CHUNKSIZE);
+    char* rbuf = malloc (bufsize);
+    char* wbuf = malloc (bufsize);
 
     while ( rtot < rsize || wtot < wsize )
     {
@@ -108,10 +107,10 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
 
         if ( rlen > 0 )
         { 
-            rret = read  (rfd, rbuf, CHUNKSIZE); 
-         // fprintf (stderr, "read (%d %ld %ld) = %ld\n", rfd, rbuf, CHUNKSIZE, rret);
+            rret = read  (rfd, rbuf, bufsize); 
+         // fprintf (stderr, "read (%d %ld %ld) = %ld\n", rfd, rbuf, bufsize, rret);
 
-            if ( rret != CHUNKSIZE )
+            if ( rret != bufsize )
             {
                 perror ("io read failed");
                 return -4;
@@ -122,10 +121,10 @@ int _atom_storage (const char* src, long rsize, const char* tgt, long wsize)
 
         if ( wlen > 0 )
         { 
-            wret = write  (wfd, wbuf, CHUNKSIZE); 
-         // fprintf (stderr, "write (%d %ld %ld) = %ld\n", wfd, wbuf, CHUNKSIZE, wret);
+            wret = write  (wfd, wbuf, bufsize); 
+         // fprintf (stderr, "write (%d %ld %ld) = %ld\n", wfd, wbuf, bufsize, wret);
 
-            if ( wret != CHUNKSIZE )
+            if ( wret != bufsize )
             {
                 perror ("io write failed");
                 return -4;

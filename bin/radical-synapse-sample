@@ -12,7 +12,7 @@ import radical.synapse.utils as rsu
 #
 def run_samples (url, time, cpu_flops, cpu_time, 
                  sto_src, sto_in, sto_tgt, sto_out, 
-                 mem_rss, n_samples):
+                 sto_buf, mem_rss, n_samples):
     
     samples  = list()
 
@@ -31,7 +31,8 @@ def run_samples (url, time, cpu_flops, cpu_time,
         samples.append(['sto', float(n+1),  {'src'        : sto_src, 
                                              'rsize'      : sto_in, 
                                              'tgt'        : sto_tgt, 
-                                             'wsize'      : sto_out}])
+                                             'wsize'      : sto_out, 
+                                             'buf'        : sto_buf}])
 
         # append MEM sample
         samples.append(['mem', float(n+1),  {'size'       : mem_rss}])
@@ -54,7 +55,7 @@ def usage (msg=None, noexit=False):
       usage     : %s -m <mode> [-t <seconds>] [-c <seconds>] [-f <flops>]  
                                [-I <source>]  [-i <input>]   
                                [-O <target>]  [-o <output>] 
-                               [-r <memory>]  
+                               [-b <bufsize]  [-r <memory>]  
                                [-s <samples>] [-u <url>] 
 
       examples  : %s -m sample -f 10000000
@@ -74,6 +75,7 @@ def usage (msg=None, noexit=False):
         -i      : number of bytes to read from disk
         -O      : name   of file  to write to
         -o      : number of bytes to write to disk
+        -b      : number of bytes to use for dist I/O buffering
         -r      : number of bytes to allocate (RSS)
         -s      : number of samples to run with the above configuration
         -u      : database URL (empty string to disable db access)
@@ -107,6 +109,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--input',     dest='sto_in')
     parser.add_argument('-O', '--target',    dest='sto_tgt')
     parser.add_argument('-o', '--output',    dest='sto_out')
+    parser.add_argument('-b', '--buffer',    dest='sto_buf')
     parser.add_argument('-r', '--memory',    dest='mem_rss')
     parser.add_argument('-s', '--samples',   dest='samples')
     parser.add_argument('-u', '--url',       dest='url')
@@ -123,6 +126,7 @@ if __name__ == '__main__':
     sto_in    = arguments.sto_in   
     sto_tgt   = arguments.sto_tgt
     sto_out   = arguments.sto_out
+    sto_buf   = arguments.sto_buf
     mem_rss   = arguments.mem_rss
     samples   = arguments.samples
 
@@ -133,6 +137,7 @@ if __name__ == '__main__':
     if not sto_in    : sto_in    = 0
     if not sto_tgt   : sto_tgt   = None
     if not sto_out   : sto_out   = 0
+    if not sto_buf   : sto_buf   = 0
     if not mem_rss   : mem_rss   = 0
     if not samples   : samples   = 1
 
@@ -141,6 +146,7 @@ if __name__ == '__main__':
     cpu_flops = int  (cpu_flops)
     sto_in    = int  (sto_in   )
     sto_out   = int  (sto_out  )
+    sto_buf   = int  (sto_buf  )
     mem_rss   = int  (mem_rss  )
     samples   = int  (samples  )
 
@@ -157,8 +163,8 @@ if __name__ == '__main__':
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if   mode == 'sample'  : run_samples(url, time, cpu_flops, cpu_time, 
-                                         sto_src, sto_in, sto_tgt, sto_out, 
-                                         mem_rss, samples)
+                                         sto_src, sto_in, sto_tgt, sto_out,
+                                         stu_buf, mem_rss, samples)
     elif mode == 'help'    : usage(noexit=True)
     else                   : usage("unknown mode '%s'" % mode)
 

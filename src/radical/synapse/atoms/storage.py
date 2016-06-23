@@ -37,6 +37,9 @@ class Storage (AtomBase):
         if not vals.get('tgt'):
             vals['tgt'] = "/tmp/synapse_storage.%(pid)s.out"
 
+        if not vals.get('buf'):
+            vals['buf'] = 1024  # 1 k default buf size
+
         assert( ('rsize' in vals and 'src' in vals) or
                 ('wsize' in vals and 'tgt' in vals)  )
 
@@ -49,9 +52,10 @@ class Storage (AtomBase):
         rsize = int(vals['rsize'])
         tgt   =     vals['tgt'  ] % { 'tmp' : self._tmpdir, 'pid' : self._pid   }
         wsize = int(vals['wsize'])
+        buf   = int(vals['buf'  ])
 
         try:
-            atom_storage(src, rsize, tgt, wsize)
+            atom_storage(src, rsize, tgt, wsize, buf)
 
         except Exception as e:
             print "sto atom error: %s" % e
