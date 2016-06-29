@@ -292,7 +292,8 @@ def emulate(command=None, samples=None, src=None):
         raise ValueError ("emulate needs *either* command, sample *or* src")
 
     if not command and not samples and not src:
-        raise ValueError ("emulate needs either command, sample or src")
+        print "warning: emulate needs either command, sample or src"
+        return[0, None, None]
 
     if command or src:
 
