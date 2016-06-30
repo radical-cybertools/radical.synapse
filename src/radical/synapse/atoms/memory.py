@@ -40,7 +40,7 @@ class Memory (AtomBase):
 
         try:
          # print "atom_memorye (%s)" % vals['size']
-            atom_memory (vals['size'])
+            atom_memory (int(vals['size']))
 
         except Exception as e:
             print "mem atom error: %s" % e
