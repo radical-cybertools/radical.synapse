@@ -5,6 +5,13 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.45 Release                                                          2017-05-09
+--------------------------------------------------------------------------------
+
+   - prelimiary support for openMP in compute_asm atoms
+   - prelimiary support for multiprocessing in compute_asm atoms
+
+
 0.44 Release                                                          2016-07-29
 --------------------------------------------------------------------------------
 
