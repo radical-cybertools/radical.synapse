@@ -42,6 +42,8 @@ def run_samples (url, time, cpu_flops, cpu_time,
         if mem_rss:
             samples.append(['mem', float(n+1),  {'size'       : mem_rss}])
 
+    if not samples:
+        usage('no samples defined')
 
     info, ret, out = rs.emulate (samples=samples)
     pprint.pprint (info)
