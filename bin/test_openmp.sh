@@ -1,7 +1,7 @@
 #!/bin/sh
 
 VE=./ve
-VE=/lustre/atlas2/csc230/scratch/merzky1/radical.pilot.sandbox
+VE=/lustre/atlas2/csc230/scratch/merzky1/radical.pilot.sandbox/ve_synapse
 
 . $VE/bin/activate
 
