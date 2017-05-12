@@ -230,8 +230,18 @@ def isgood(name):
 
 
 # -------------------------------------------------------------------------------
-c_ext = Extension("radical/synapse/atoms/_atoms" ,
-                  sources = glob.glob('src/radical/synapse/atoms/*.c'))
+if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
+    eca = ['-fopenmp', '-DRADICAL_SYNAPSE_USE_OPENMP=1']
+    ela = ['-lgomp']
+else:
+    eca = []
+    ela = []
+
+c_ext = Extension(name               = "radical/synapse/atoms/_atoms" ,
+                  sources            = glob.glob('src/radical/synapse/atoms/*.c'),
+                  extra_compile_args = eca, 
+                  extra_link_args    = ela)
+
 setup_args = {
     'name'               : name,
     'version'            : version,

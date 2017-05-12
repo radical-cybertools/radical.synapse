@@ -11,6 +11,10 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 
+# ifdef RADICAL_SYNAPSE_USE_OPENMP
+#   include <omp.h>
+# endif
+
 /* NOTE: tune this number to tune loop towards 1 MFlop */
 #define CHUNKSIZE  (1024 * 1024)  /* 2^20 */
 #define PROFILE     0
@@ -19,9 +23,18 @@ float mat_mult (float* a1, float* a2, int n);
 
 int _atom_compute_asm (long flops, long runtime)
 {
-    /* we can either run until a certain number of flops is reached, or until
+    /* 
+     * we can either run until a certain number of flops is reached, or until
      * a certain time has passed.  If both 'flops' and 'runtime' are given, 
      * *both* conditions have to be met before completion.
+     */
+
+    /*
+     * Depending on the define `RADICAL_SYNAPSE_USE_OPENMP`, we, unsurprisingly,
+     * turn on openmp support.  We expect this extension then to be compiled
+     * with OpenMP (`gcc -fopenmp`).  We run the given workload then distributed
+     * over the available number of OpenMP threads (as specified via the env
+     * variable `OMP_NUM_THREADS`).
      */
 
     size_t  n = flops / (1024 * 1024);
@@ -36,16 +49,26 @@ int _atom_compute_asm (long flops, long runtime)
         f[i] = i * 0.01;
     }
 
+
     /* *********************************
      * 1 loop gives 1 MFLOP
      */
-
-    for ( i = 0; 
-          i < n || now <= (start+runtime); 
-          i++ ) 
+    # ifdef RADICAL_SYNAPSE_USE_OPENMP
+    #   pragma omp parallel shared(f,i,n,start,now,runtime)
+    # endif
     {
-        mat_mult (f, f, CHUNKSIZE);
-        now = time(NULL);
+        # ifdef RADICAL_SYNAPSE_USE_OPENMP
+        #   pragma omp for schedule(dynamic)
+        # endif
+        for ( i = 0; i < n; i++ ) 
+        {
+            mat_mult (f, f, CHUNKSIZE);
+            now = time(NULL);
+            /*
+            if (now <= (start+runtime))
+              i = n;
+            */
+        }
     }
     /* ********************************* */
 

@@ -3,6 +3,7 @@
 import os
 import sys
 import pprint
+import multiprocessing       as mp
 import radical.synapse       as rs
 import radical.synapse.utils as rsu
 
@@ -41,6 +42,8 @@ def run_samples (url, time, cpu_flops, cpu_time,
         if mem_rss:
             samples.append(['mem', float(n+1),  {'size'       : mem_rss}])
 
+    if not samples:
+        usage('no samples defined')
 
     info, ret, out = rs.emulate (samples=samples)
     pprint.pprint (info)
@@ -56,11 +59,12 @@ def usage (msg=None, noexit=False):
         print "\n      Error: %s" % msg
 
     print """
-      usage     : %s -m <mode> [-t <seconds>] [-c <seconds>] [-f <flops>]  
-                               [-I <source>]  [-i <input>]   
-                               [-O <target>]  [-o <output>] 
-                               [-b <bufsize]  [-r <memory>]  
-                               [-s <samples>] [-u <url>] 
+      usage     : %s -m <mode> [-n <processes>] [-f <flops>]
+                               [-t <seconds>]   [-c <seconds>]
+                               [-I <source>]    [-i <input>]
+                               [-O <target>]    [-o <output>]
+                               [-b <bufsize]    [-r <memory>]
+                               [-s <samples>]   [-u <url>]
 
       examples  : %s -m sample -f 10000000
 
@@ -82,6 +86,7 @@ def usage (msg=None, noexit=False):
         -b      : number of bytes to use for dist I/O buffering
         -r      : number of bytes to allocate (RSS)
         -s      : number of samples to run with the above configuration
+        -n      : number of processes which each run the given samples
         -u      : database URL (empty string to disable db access)
 
 
@@ -94,8 +99,7 @@ def usage (msg=None, noexit=False):
     if  msg:
         sys.exit (1)
 
-    if  not noexit:
-        sys.exit (0)
+    sys.exit (0)
 
 
 # ------------------------------------------------------------------------------
@@ -106,6 +110,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser (add_help=False)
 
     parser.add_argument('-m', '--mode',      dest='mode')
+    parser.add_argument('-n', '--procs',     dest='procs')
     parser.add_argument('-t', '--time',      dest='time')
     parser.add_argument('-c', '--cputime',   dest='cpu_time')
     parser.add_argument('-f', '--flops',     dest='cpu_flops')
@@ -123,6 +128,7 @@ if __name__ == '__main__':
 
     mode      = arguments.mode 
     url       = arguments.url 
+    procs     = arguments.procs
     time      = arguments.time
     cpu_time  = arguments.cpu_time
     cpu_flops = arguments.cpu_flops
@@ -134,6 +140,7 @@ if __name__ == '__main__':
     mem_rss   = arguments.mem_rss
     samples   = arguments.samples
 
+    if not procs     : procs     = 1
     if not time      : time      = 0
     if not cpu_time  : cpu_time  = 0
     if not cpu_flops : cpu_flops = 0
@@ -145,6 +152,7 @@ if __name__ == '__main__':
     if not mem_rss   : mem_rss   = 0
     if not samples   : samples   = 1
 
+    procs     = int  (procs    )
     time      = float(time     )
     cpu_time  = int  (cpu_time )
     cpu_flops = int  (cpu_flops)
@@ -166,11 +174,21 @@ if __name__ == '__main__':
     if not url:
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
-    if   mode == 'sample'  : run_samples(url, time, cpu_flops, cpu_time, 
-                                         sto_src, sto_in, sto_tgt, sto_out,
-                                         sto_buf, mem_rss, samples)
     elif mode == 'help'    : usage(noexit=True)
     else                   : usage("unknown mode '%s'" % mode)
+
+    handles = list()
+    for _ in range(procs):
+        args = [url, time, cpu_flops, cpu_time, 
+                sto_src, sto_in, sto_tgt, sto_out,
+                sto_buf, mem_rss, samples]
+        p = mp.Process(target=run_samples, args=args)
+        p.start()
+        handles.append(p)
+
+    for p in handles:
+        p.join()
+
 
 # ------------------------------------------------------------------------------
 
