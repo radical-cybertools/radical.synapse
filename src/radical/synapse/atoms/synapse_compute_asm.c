@@ -55,6 +55,7 @@ int _atom_compute_asm (long flops, long runtime)
      */
     # ifdef RADICAL_SYNAPSE_USE_OPENMP
     #   pragma omp parallel shared(f,i,n,start,now,runtime)
+    printf("openmp: tid %d/%d\n", omp_get_thread_num(), omp_get_num_threads());
     # endif
     {
         # ifdef RADICAL_SYNAPSE_USE_OPENMP
