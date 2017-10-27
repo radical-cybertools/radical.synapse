@@ -24,11 +24,12 @@ from synapse   import execute
 import os
 import radical.utils as ru
 
-_root   = os.path.dirname (__file__)
-version_short, version_detail, version_base, version_branch, \
-        sdist_name, sdist_path = ru.get_version([_root])
-version = version_short
+_mod_root = os.path.dirname (__file__)
 
+version_short, version_detail, version_base, \
+               version_branch, sdist_name,   \
+               sdist_path = ru.get_version(_mod_root)
+version = version_short
 _logger = ru.get_logger('radical.synapse')
 
 
