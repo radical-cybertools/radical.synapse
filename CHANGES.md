@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.46.3 Release                                                        2017-10-27
+--------------------------------------------------------------------------------
+
+   - hotfix release to resolve a titan deployment issue
+
+
 0.46.2 Release                                                        2017-05-12
 --------------------------------------------------------------------------------
 
