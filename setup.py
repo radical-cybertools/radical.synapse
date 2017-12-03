@@ -294,6 +294,7 @@ setup_args = {
         'test'           : our_test,
                            },
     'install_requires'   : ['psutil',
+                            'setproctitle',
                             'radical.utils',
                             'pymongo==2.8',
                            ],
