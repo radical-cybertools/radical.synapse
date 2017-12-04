@@ -21,9 +21,10 @@ class Compute (AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    def __init__ (self): 
+    def __init__ (self, kernel_name=None): 
 
         AtomBase.__init__ (self, COMPUTE)
+        self.kernel_name = kernel_name
 
 
     # --------------------------------------------------------------------------
@@ -44,7 +45,15 @@ class Compute (AtomBase):
         try:
             # TODO: switch between flops and time emulation
           # print "atom_compute (%s)" % vals['flops']
-            atom_compute_asm (vals['flops'], vals['time'])
+
+            if not self.kernel_name:
+                atom_compute_asm (vals['flops'], vals['time'])
+            
+            elif self.kernel_name == "adder":
+                atom_simple_adder(vals['flops'])
+                
+            elif self.kernel_name == "matmult":
+                atom_mat_mult(vals['flops'], matrix_size)
 
         except Exception as e:
             print "com atom error: %s" % e

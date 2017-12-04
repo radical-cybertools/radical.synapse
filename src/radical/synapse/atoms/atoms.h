@@ -15,3 +15,12 @@ int _atom_network     (const char* type,
                        int         port, 
                        long        size);
 
+
+//-----------------------------------------------
+
+int _simple_adder     (long         iter);
+int _mat_mult         (long         iter,
+                       volatile int *A,
+                       volatile int *B,
+                       volatile int *C,
+                       long         len) __attribute((optimize("O0")));
