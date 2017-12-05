@@ -215,10 +215,14 @@ def _emulator(samples):
 
     # create atoms for all sample types
     atoms[_TIM] = rsa.Time    ()
-    atoms[_CPU] = rsa.Compute ()
+    #atoms[_CPU] = rsa.Compute ()
     atoms[_MEM] = rsa.Memory  ()
     atoms[_STO] = rsa.Storage ()
     atoms[_NET] = rsa.Network ()
+
+    # Read environment variable to decide which compute kernel to use
+    compute_kernel = os.environ.get('RADICAL_SYNAPSE_COMPUTE_KERNEL', None)
+    atoms[_CPU] = rsa.Compute (kernel_name=compute_kernel)
 
     # FIXME: make sure threads and queues are up
     time.sleep (0.1)

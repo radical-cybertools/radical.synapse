@@ -175,7 +175,8 @@ atom_simple_adder(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "l", &cycles)) { return NULL; }
 
-    iter = flops / cycles_per_iter;
+    printf("Stepped into C func for simple adder\n");
+    iter = cycles / cycles_per_iter;
     _simple_adder(iter);
 
     Py_RETURN_NONE;
@@ -186,22 +187,30 @@ static PyObject*
 atom_mat_mult(PyObject *self, PyObject *args)
 {
 
-    long cycles;
-    volatile int len;
+    //long cycles;
+    volatile int flops;
+    volatile long len;
+    long iter;
 
 	const long cycles_per_iter = 1;
 
-    if (!PyArg_ParseTuple(args, "li", &flops, &len)) { return NULL; }
+    if (!PyArg_ParseTuple(args, "ll", &flops, &len)) { return NULL; }
 
-    int iter = flops / cycles_per_iter; // And some other stuff
+    iter = flops / cycles_per_iter; // And some other stuff
 
-    int size = len*len;
-    //printf("size %d\n", len);
-    volatile int *A = (int*) malloc(size * sizeof(int));
-    volatile int *B = (int*) malloc(size * sizeof(int));
-    volatile int *C = (int*) malloc(size * sizeof(int));
+    //printf("Stepped into C func for mat mult\n");
 
-    _mat_mult(iter, A, B, C, len);
+    long size = len*len;
+    printf("size %d\n", size);
+    volatile float *A = (float*) malloc(size * sizeof(float));
+    volatile float *B = (float*) malloc(size * sizeof(float));
+    volatile float *C = (float*) malloc(size * sizeof(float));
+
+    //printf("Allocated matrices for mat mult\n");
+   
+   _mat_mult(iter, A, B, C, len);
+   
+   //printf("Performed mat mult\n");
 
     free((void*) A);
     free((void*) B);
@@ -244,15 +253,15 @@ static void _simple_adder(long iter)
 
 /* -----------------------------------------------------------------------------
  */
-static void _mat_mult(long iter, volatile int *A, volatile int *B, volatile int *C, volatile int len)
+static void _mat_mult(long iter, volatile float *A, volatile float *B, volatile float *C, volatile long len)
 {
 
-    //clock_t start, end;
-    //double cpu_time_used;
+    clock_t start, end;
+    double cpu_time_used;
 
-    //start = clock();
+    start = clock();
 
-    volatile int i, j, k;
+    volatile long i, j, k;
 
     for (i = 0; i < len; i++)
     {
@@ -260,15 +269,14 @@ static void _mat_mult(long iter, volatile int *A, volatile int *B, volatile int 
         {
             for (k = 0; k < len; k++)
             {
-                //printf("%d %d %d\n", i, j, k);
-                C[i*len + j] += (A[i*len + k] * B[k*len + j]);
+                C[i*len + j] += A[i*len + k] * B[k*len + j];
             }
         }
     }
 
-    //end = clock();
-    //cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    //printf("time for _mat_mult atom to execute: %f (s)\n", cpu_time_used);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("time for _mat_mult atom to execute: %f (s)\n", cpu_time_used);
 }
 
 

@@ -4,10 +4,10 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-from   _atoms    import atom_compute_asm
+from   _atoms    import atom_compute_asm, atom_simple_adder, atom_mat_mult
 from   _atoms    import atom_compute
 from   base      import AtomBase
-from   constants import COMPUTE
+from   constants import COMPUTE, MATRIX_SIZE
 
 OVERHEAD = 20   # in %
 
@@ -34,29 +34,36 @@ class Compute (AtomBase):
         assert ('flops' in vals or 'time' in vals)
 
         # FIXME: empirical tuning factor toward 1 MFLOP
-        vals['flops'] = int(vals.get('flops', 0) * 0.6)
-        vals['time']  = int(vals.get('time',  0)      )
+
+        #vals['flops'] = int(vals.get('flops', 0) * 0.6)
+        #vals['time']  = int(vals.get('time',  0)      )
+        
+        vals['flops'] = int(vals.get('flops', 0))
+        vals['time']  = int(vals.get('time', 0))
 
 
     # --------------------------------------------------------------------------
     #
     def _emulate (self, vals): 
 
-        try:
+        #try:
             # TODO: switch between flops and time emulation
           # print "atom_compute (%s)" % vals['flops']
 
-            if not self.kernel_name:
-                atom_compute_asm (vals['flops'], vals['time'])
+        if not self.kernel_name:
+            print "Calling regular atom"
+            atom_compute_asm (vals['flops'], vals['time'])
+        
+        elif self.kernel_name == "adder":
+            print "Calling atom simple_adder"
+            atom_simple_adder(vals['flops'])
             
-            elif self.kernel_name == "adder":
-                atom_simple_adder(vals['flops'])
-                
-            elif self.kernel_name == "matmult":
-                atom_mat_mult(vals['flops'], matrix_size)
+        elif self.kernel_name == "matmult":
+            print "Calling atom mat_mult"
+            atom_mat_mult(vals['flops'], MATRIX_SIZE)
 
-        except Exception as e:
-            print "com atom error: %s" % e
+        #except Exception as e:
+        #    print "com atom error: %s" % e
 
 
 #-------------------------------------------------------------------------------

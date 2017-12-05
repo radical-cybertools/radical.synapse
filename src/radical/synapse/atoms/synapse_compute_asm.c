@@ -37,6 +37,7 @@ int _atom_compute_asm (long flops, long runtime)
      * variable `OMP_NUM_THREADS`).
      */
 
+    printf("Stepped into C function for regular atom\n");
     size_t  n = flops / (1024 * 1024);
     float * f = calloc (CHUNKSIZE, sizeof(float));
     time_t  start = time(NULL);

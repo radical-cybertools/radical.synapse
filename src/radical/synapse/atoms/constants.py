@@ -18,3 +18,5 @@ MEMORY  = 'memory'
 STORAGE = 'storage'
 NETWORK = 'network'
 
+# Compute Kernel Constants
+MATRIX_SIZE = 1000

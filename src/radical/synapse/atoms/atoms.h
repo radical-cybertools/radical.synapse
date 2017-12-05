@@ -18,9 +18,9 @@ int _atom_network     (const char* type,
 
 //-----------------------------------------------
 
-int _simple_adder     (long         iter);
-int _mat_mult         (long         iter,
-                       volatile int *A,
-                       volatile int *B,
-                       volatile int *C,
-                       long         len) __attribute((optimize("O0")));
+static void _simple_adder     (long           iter);
+static void _mat_mult         (long           iter,
+                               volatile float *A,
+                               volatile float *B,
+                               volatile float *C,
+                               volatile long  len) __attribute((optimize("O0")));

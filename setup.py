@@ -237,6 +237,11 @@ else:
     eca = []
     ela = []
 
+eca.append('-g')
+eca.append('-O0')
+eca.append('-Wall')
+eca.append('-pedantic')
+
 c_ext = Extension(name               = "radical/synapse/atoms/_atoms" ,
                   sources            = glob.glob('src/radical/synapse/atoms/*.c'),
                   extra_compile_args = eca, 
