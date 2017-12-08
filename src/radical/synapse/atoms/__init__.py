@@ -1,6 +1,7 @@
 
 
 from ._atoms    import atom_compute_asm 
+from ._atoms    import atom_compute_test
 from ._atoms    import atom_compute
 from ._atoms    import atom_time
 from ._atoms    import atom_memory
