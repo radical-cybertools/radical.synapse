@@ -23,4 +23,4 @@ static void _mat_mult         (long           iter,
                                volatile float *A,
                                volatile float *B,
                                volatile float *C,
-                               volatile long  len) __attribute((optimize("O0")));
+                               volatile long  len) __attribute__((optimize("O0")));

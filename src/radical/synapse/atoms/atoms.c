@@ -25,7 +25,7 @@ static PyObject *atom_storage     (PyObject * self, PyObject * args);
 static PyObject *atom_network     (PyObject * self, PyObject * args);
 
 static PyObject* atom_simple_adder  (PyObject *self, PyObject *args);
-static PyObject* atom_mat_mult      (PyObject *self, PyObject *args) __attribute((optimize("-O0")));
+static PyObject* atom_mat_mult      (PyObject *self, PyObject *args) __attribute__((optimize("-O0")));
 
 
 /* -----------------------------------------------------------------------------
