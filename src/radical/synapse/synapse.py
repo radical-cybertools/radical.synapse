@@ -208,7 +208,7 @@ _VALS = 2
 
 # ------------------------------------------------------------------------------
 #
-def _emulator(samples):
+def _emulator(samples, compute_kernel=None):
 
     atoms = dict()  # one atom of eeach type
     state = dict()  # there is at most one atom for each type in 'state'
@@ -221,7 +221,6 @@ def _emulator(samples):
     atoms[_NET] = rsa.Network ()
 
     # Read environment variable to decide which compute kernel to use
-    compute_kernel = os.environ.get('RADICAL_SYNAPSE_COMPUTE_KERNEL', None)
     atoms[_CPU] = rsa.Compute (kernel_name=compute_kernel)
 
     # FIXME: make sure threads and queues are up
@@ -288,7 +287,7 @@ def _emulator(samples):
 
 # ------------------------------------------------------------------------------
 #
-def emulate(command=None, samples=None, src=None):
+def emulate(command=None, samples=None, src=None, compute_kernel=None):
 
     if (command and samples) or \
        (command and src    ) or \
@@ -345,7 +344,7 @@ def emulate(command=None, samples=None, src=None):
     watchmode = os.environ.get ('RADICAL_SYNAPSE_WATCHMODE')
     if not watchmode or watchmode.lower in ['none', 'noop']:
         start = time.time()
-        _emulator(samples)
+        _emulator(samples, compute_kernel=compute_kernel)
         stop  = time.time()
 
         ret   = None

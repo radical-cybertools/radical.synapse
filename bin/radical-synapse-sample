@@ -19,7 +19,8 @@ import radical.synapse.utils as rsu
 #
 def run_samples (url, time, cpu_flops, cpu_time,
                  sto_src, sto_in, sto_tgt, sto_out,
-                 sto_buf, mem_rss, n_samples):
+                 sto_buf, mem_rss, n_samples,
+                 compute_kernel):
 
     samples  = list()
 
@@ -51,7 +52,8 @@ def run_samples (url, time, cpu_flops, cpu_time,
     if not samples:
         usage('no samples defined')
 
-    info, ret, out = rs.emulate (samples=samples)
+    info, ret, out = rs.emulate (samples=samples, 
+                                 compute_kernel=compute_kernel)
     pprint.pprint (info)
 
     rsu.store_profile (info, mode='emu', url=url)
@@ -128,6 +130,9 @@ def main():
     parser.add_argument('-u', '--url',       dest='url')
     parser.add_argument('-h', '--help',      dest='help', action="store_true")
 
+    # Compute Atom Type - cat
+    parser.add_argument('-cat', '--compute_atom_type',       dest='c_atom')
+
     arguments, args = parser.parse_known_args ()
 
     mode      = arguments.mode
@@ -143,6 +148,7 @@ def main():
     sto_buf   = arguments.sto_buf
     mem_rss   = arguments.mem_rss
     samples   = arguments.samples
+    c_atom    = arguments.c_atom
 
     if not procs     : procs     = 1
     if not time      : time      = 0
@@ -155,6 +161,7 @@ def main():
     if not sto_buf   : sto_buf   = 0
     if not mem_rss   : mem_rss   = 0
     if not samples   : samples   = 1
+    if not c_atom    : c_atom = None
 
     procs     = int  (procs    )
     time      = float(time     )
@@ -185,7 +192,8 @@ def main():
     for _ in range(procs):
         args = [url, time, cpu_flops, cpu_time,
                 sto_src, sto_in, sto_tgt, sto_out,
-                sto_buf, mem_rss, samples]
+                sto_buf, mem_rss, samples,
+                c_atom]
         p = mp.Process(target=run_samples, args=args)
         p.start()
         handles.append(p)

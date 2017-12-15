@@ -38,8 +38,12 @@ class Compute (AtomBase):
         #vals['flops'] = int(vals.get('flops', 0) * 0.6)
         #vals['time']  = int(vals.get('time',  0)      )
         
-        vals['flops'] = int(vals.get('flops', 0))
-        vals['time']  = int(vals.get('time', 0))
+        if not self.kernel_name:
+            vals['flops'] = int(vals.get('flops', 0) * 0.6)
+            vals['time']  = int(vals.get('time',  0)      )
+        else:
+            vals['flops'] = int(vals.get('flops', 0))
+            vals['time']  = int(vals.get('time', 0))
 
 
     # --------------------------------------------------------------------------
