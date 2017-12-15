@@ -7,7 +7,9 @@ __license__   = "LGPL.v3"
 from   _atoms    import atom_compute_asm, atom_simple_adder, atom_mat_mult
 from   _atoms    import atom_compute
 from   base      import AtomBase
-from   constants import COMPUTE, MATRIX_SIZE
+from   constants import COMPUTE, MATRIX_SIZE, CYCLES_PER_ITER_MATMULT
+
+from   math      import ceil
 
 OVERHEAD = 20   # in %
 
@@ -63,8 +65,9 @@ class Compute (AtomBase):
             atom_simple_adder(vals['flops'])
             
         elif self.kernel_name == "matmult":
-            print "Calling atom mat_mult"
-            atom_mat_mult(vals['flops'], MATRIX_SIZE)
+            iters = int(ceil(float(vals['flops']) / CYCLES_PER_ITER_MATMULT))
+            print "cycles per iter: {0}\niters: {1}".format(CYCLES_PER_ITER_MATMULT, iters)
+            atom_mat_mult(iters, MATRIX_SIZE)
 
         #except Exception as e:
         #    print "com atom error: %s" % e

@@ -20,3 +20,4 @@ NETWORK = 'network'
 
 # Compute Kernel Constants
 MATRIX_SIZE = 1000
+CYCLES_PER_ITER_MATMULT = 15167070515.4
