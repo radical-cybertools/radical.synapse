@@ -210,9 +210,6 @@ if __name__ == '__main__':
             prof_handle = open(prof, 'a')
             prof_handle.write("%.4f,%s,%s,%s,%s,%s,\n"
                              % (time.time(), 'app_start', comp, tid, uid, state))
-        else:
-            for key in sorted(os.environ.keys()):
-                print '%30s : %s' % (key, os.environ.get(key, ''))
 
         main()
 
