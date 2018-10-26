@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.50.0 Release                                                        2018-10-26
+--------------------------------------------------------------------------------
+
+   - fix OpenMP configuration during setup
+
+
 0.46.2 Release                                                        2017-05-12
 --------------------------------------------------------------------------------
 
