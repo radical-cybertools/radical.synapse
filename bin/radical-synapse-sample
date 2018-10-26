@@ -2,19 +2,25 @@
 
 import os
 import sys
+import time
 import pprint
+import argparse
+
 import multiprocessing       as mp
+import radical.utils         as ru
 import radical.synapse       as rs
 import radical.synapse.utils as rsu
 
+
 # FIXME: support tags as flags
+
 
 # ------------------------------------------------------------------------------
 #
-def run_samples (url, time, cpu_flops, cpu_time, 
-                 sto_src, sto_in, sto_tgt, sto_out, 
+def run_samples (url, time, cpu_flops, cpu_time,
+                 sto_src, sto_in, sto_tgt, sto_out,
                  sto_buf, mem_rss, n_samples):
-    
+
     samples  = list()
 
     # assume 1 sample per second -- but that is not interpreted anyway...
@@ -26,16 +32,16 @@ def run_samples (url, time, cpu_flops, cpu_time,
 
         # append CPU sample (set efficiency to 1)
         if cpu_time or cpu_flops:
-            samples.append(['cpu', float(n+1),  {'time'       : cpu_time, 
-                                                 'flops'      : cpu_flops, 
+            samples.append(['cpu', float(n+1),  {'time'       : cpu_time,
+                                                 'flops'      : cpu_flops,
                                                  'efficiency' : 1}])
 
         # append STO sample
         if sto_in or sto_out:
-            samples.append(['sto', float(n+1),  {'src'        : sto_src, 
-                                                 'rsize'      : sto_in, 
-                                                 'tgt'        : sto_tgt, 
-                                                 'wsize'      : sto_out, 
+            samples.append(['sto', float(n+1),  {'src'        : sto_src,
+                                                 'rsize'      : sto_in,
+                                                 'tgt'        : sto_tgt,
+                                                 'wsize'      : sto_out,
                                                  'buf'        : sto_buf}])
 
         # append MEM sample
@@ -75,7 +81,7 @@ def usage (msg=None, noexit=False):
 
 
       arguments :
-        
+
         -t      : number of seconds to spend sleeping
         -c      : number of seconds to spend computing
         -f      : number of flops to emulate
@@ -104,9 +110,7 @@ def usage (msg=None, noexit=False):
 
 # ------------------------------------------------------------------------------
 #
-if __name__ == '__main__':
-
-    import argparse
+def main():
     parser = argparse.ArgumentParser (add_help=False)
 
     parser.add_argument('-m', '--mode',      dest='mode')
@@ -126,14 +130,14 @@ if __name__ == '__main__':
 
     arguments, args = parser.parse_known_args ()
 
-    mode      = arguments.mode 
-    url       = arguments.url 
+    mode      = arguments.mode
+    url       = arguments.url
     procs     = arguments.procs
     time      = arguments.time
     cpu_time  = arguments.cpu_time
     cpu_flops = arguments.cpu_flops
-    sto_src   = arguments.sto_src  
-    sto_in    = arguments.sto_in   
+    sto_src   = arguments.sto_src
+    sto_in    = arguments.sto_in
     sto_tgt   = arguments.sto_tgt
     sto_out   = arguments.sto_out
     sto_buf   = arguments.sto_buf
@@ -168,18 +172,18 @@ if __name__ == '__main__':
     if  not mode:
         mode = 'sample'
 
-    if  mode in ['help']: 
+    if  mode in ['help']:
         usage ()
 
     if not url:
-        url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
+        url = os.environ.get('RADICAL_SYNAPSE_DBURL')
 
-    elif mode == 'help'    : usage(noexit=True)
-    else                   : usage("unknown mode '%s'" % mode)
+    elif mode == 'help': usage(noexit=True)
+    else               : usage("unknown mode '%s'" % mode)
 
     handles = list()
     for _ in range(procs):
-        args = [url, time, cpu_flops, cpu_time, 
+        args = [url, time, cpu_flops, cpu_time,
                 sto_src, sto_in, sto_tgt, sto_out,
                 sto_buf, mem_rss, samples]
         p = mp.Process(target=run_samples, args=args)
@@ -188,6 +192,33 @@ if __name__ == '__main__':
 
     for p in handles:
         p.join()
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    prof        = os.environ.get('RP_PROF', False)
+    prof_handle = None
+
+    try:
+        if prof:
+            comp  = 'radical.synapse'
+            tid   = ru.get_thread_name()
+            uid   = os.environ.get('RP_UNIT_ID', os.getpid())
+            state = 'AGENT_EXECUTING'
+            prof_handle = open(prof, 'a')
+            prof_handle.write("%.4f,%s,%s,%s,%s,%s,\n"
+                             % (time.time(), 'app_start', comp, tid, uid, state))
+
+        main()
+
+    finally:
+        if prof and prof_handle:
+            prof_handle.write("%.4f,%s,%s,%s,%s,%s,\n"
+                             % (time.time(), 'app_stop', comp, tid, uid, state))
+            prof_handle.flush()
+            prof_handle.close()
 
 
 # ------------------------------------------------------------------------------
