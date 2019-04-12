@@ -249,6 +249,8 @@ if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
 else:
     eca = []
     ela = []
+    eca = ['-fopenmp', '-DRADICAL_SYNAPSE_USE_OPENMP=1']
+    ela = ['-lgomp']
 
 
 c_ext = Extension(name               = "radical/synapse/atoms/_atoms" ,
