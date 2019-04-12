@@ -24,6 +24,7 @@ except ImportError as e:
     print("%s needs setuptools to install" % name)
     sys.exit(1)
 
+
 # ------------------------------------------------------------------------------
 #
 # versioning mechanism:
@@ -66,9 +67,9 @@ def get_version (mod_root):
         # and the pip version used uses an install tmp dir in the ve space
         # instead of /tmp (which seems to happen with some pip/setuptools 
         # versions).
-        p   = sp.Popen ('cd %s ; '\
-                        'test -z `git rev-parse --show-prefix` || exit -1; '\
-                        'tag=`git describe --tags --always` 2>/dev/null ; '\
+        p   = sp.Popen ('cd %s ; '
+                        'test -z `git rev-parse --show-prefix` || exit -1; '
+                        'tag=`git describe --tags --always` 2>/dev/null ; '
                         'branch=`git branch | grep -e "^*" | cut -f 2- -d " "` 2>/dev/null ; '\
                         'echo $tag@$branch'  % src_root,
                         stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
@@ -93,24 +94,28 @@ def get_version (mod_root):
         # make sure the version files exist for the runtime version inspection
         path = '%s/%s' % (src_root, mod_root)
         print('creating %s/VERSION' % path)
-        with open (path + "/VERSION", "w") as f : f.write (version_detail + "\n")
+        with open (path + "/VERSION", "w") as f:
+            f.write (version_detail + "\n")
 
         sdist_name = "%s-%s.tar.gz" % (name, version_detail)
         sdist_name = sdist_name.replace ('/', '-')
         sdist_name = sdist_name.replace ('@', '-')
         sdist_name = sdist_name.replace ('#', '-')
         sdist_name = sdist_name.replace ('_', '-')
-        if '--record'  in sys.argv or 'bdist_egg' in sys.argv or 'bdist_wheel' in sys.argv:
+
+        if ' --record'    in sys.argv or \
+            'bdist_egg'   in sys.argv or \
+            'bdist_wheel' in sys.argv    :
            # pip install stage 2      easy_install stage 1
            # NOTE: pip install will untar the sdist in a tmp tree.  In that tmp
            # tree, we won't be able to derive git version tags -- so we pack the
            # formerly derived version as ./VERSION
-            shutil.move ("VERSION", "VERSION.bak")           # backup version
-            shutil.copy ("%s/VERSION" % path, "VERSION")     # use full version instead
-            os.system   ("python setup.py sdist")            # build sdist
+            shutil.move ("VERSION", "VERSION.bak")            # backup version
+            shutil.copy ("%s/VERSION" % path, "VERSION")      # use full version
+            os.system   ("python setup.py sdist")             # build sdist
             shutil.copy ('dist/%s' % sdist_name,
-                         '%s/%s'   % (mod_root, sdist_name)) # copy into tree
-            shutil.move ("VERSION.bak", "VERSION")           # restore version
+                         '%s/%s'   % (mod_root, sdist_name))  # copy into tree
+            shutil.move ("VERSION.bak", "VERSION")            # restore version
 
         print('creating %s/SDIST' % path)
         with open (path + "/SDIST", "w") as f : f.write (sdist_name + "\n")
@@ -178,9 +183,14 @@ def makeDataFiles(prefix, dir):
                 subdir
                     file
 
-    makeDataFiles('prefix', 'root')  will create this distutil data_files structure:
-        [('prefix', ['file1', 'file2']),
-         ('prefix/dir', ['file']),
+    a call like this:
+
+      makeDataFiles('prefix', 'root') 
+
+    will create this distutil data_files structure:
+
+        [('prefix',            ['file1', 'file2']),
+         ('prefix/dir',        ['file']),
          ('prefix/dir/subdir', ['file'])]
 
     """
@@ -190,6 +200,7 @@ def makeDataFiles(prefix, dir):
     found = []
     os.path.walk(dir, visit, (prefix, strip, found))
     return found
+
 
 def visit((prefix, strip, found), dirname, names):
     """ Visit directory, create distutil tuple
@@ -214,12 +225,14 @@ def visit((prefix, strip, found), dirname, names):
     destination = os.path.join(prefix, dirname[strip:])
     found.append((destination, files))
 
+
 def isbad(name):
     """ Whether name should not be installed """
     return (name.startswith('.') or
             name.startswith('#') or
             name.endswith('.pickle') or
             name == 'CVS')
+
 
 def isgood(name):
     """ Whether name should be installed """
@@ -237,6 +250,7 @@ if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
     eca.extent(['-fopenmp', '-DRADICAL_SYNAPSE_USE_OPENMP=1'])
     ela.extent(['-lgomp'])
 
+
 c_ext = Extension(name               = "radical/synapse/atoms/_atoms" ,
                   sources            = glob.glob('src/radical/synapse/atoms/*.c'),
                   extra_compile_args = eca, 
@@ -245,14 +259,14 @@ c_ext = Extension(name               = "radical/synapse/atoms/_atoms" ,
 setup_args = {
     'name'               : name,
     'version'            : version,
-    'description'        : 'SYNthetic APplicationS Emulator -- A RADICAL Project '
+    'description'        : 'SYNthetic APplicationS Emulator - A RADICAL Project'
                            '(http://radical.rutgers.edu/)',
     'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'             : 'RADICAL Group at Rutgers University',
     'author_email'       : 'radical@rutgers.edu',
     'maintainer'         : 'The RADICAL Group',
     'maintainer_email'   : 'radical@rutgers.edu',
-    'url'                : 'https://www.github.com/radical-cybertools/radical.utils/',
+    'url'                : 'https://github.com/radical-cybertools/radical.utils/',
     'license'            : "LGPLv3+",
     'keywords'           : "radical emulate workload",
     'classifiers'        : [
@@ -289,7 +303,8 @@ setup_args = {
                             'bin/radical-synapse-mandelbrot-emulate.py',
                             'bin/radical-synapse-iotrace.sh'
                            ],
-    'package_data'       : {'': ['*.sh', '*.json', '*.gz', 'VERSION', 'SDIST', sdist_name, '*.c', '*.h']},
+    'package_data'       : {'': ['*.sh', '*.json', '*.gz', 'VERSION',
+                                 'SDIST', sdist_name, '*.c', '*.h']},
     'cmdclass'           : {
         'test'           : our_test,
                            },
@@ -300,19 +315,21 @@ setup_args = {
     'tests_require'      : [],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
-#   'build_sphinx'       : {
-#       'source-dir'     : 'docs/',
-#       'build-dir'      : 'docs/build',
-#       'all_files'      : 1,
-#   },
-#   'upload_sphinx'      : {
-#       'upload-dir'     : 'docs/build/html',
-#   }
+  # 'build_sphinx'       : {
+  #     'source-dir'     : 'docs/',
+  #     'build-dir'      : 'docs/build',
+  #     'all_files'      : 1,
+  # },
+  # 'upload_sphinx'      : {
+  #     'upload-dir'     : 'docs/build/html',
+  # }
     # This copies the contents of the examples/ dir under
     # sys.prefix/share/$name
     # It needs the MANIFEST.in entries to work.
-    'data_files'         : makeDataFiles('share/%s/examples/' % name, 'examples'),
+    'data_files'         : makeDataFiles('share/%s/examples/' % name,
+                                         'examples'),
 }
+
 
 # ------------------------------------------------------------------------------
 
