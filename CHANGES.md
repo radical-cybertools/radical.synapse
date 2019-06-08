@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.62.0 Release                                                        2019-06-08
+--------------------------------------------------------------------------------
+
+   - use OpenMP by default
+
+
 0.50.0 Release                                                        2018-10-26
 --------------------------------------------------------------------------------
 
