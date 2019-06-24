@@ -30,7 +30,7 @@ version_short, version_detail, version_base, \
                version_branch, sdist_name,   \
                sdist_path = ru.get_version(_mod_root)
 version = version_short
-_logger = ru.get_logger('radical.synapse')
+_logger = ru.Logger('radical.synapse')
 
 
 # ------------------------------------------------------------------------------
