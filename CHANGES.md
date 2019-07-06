@@ -1,8 +1,20 @@
 
-  - For a list of bug fixes, see 
+  - For a list of bug fixes, see
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc
   - For a list of open issues and known problems, see
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
+
+
+0.70.0 Release                                                        2019-07-07
+--------------------------------------------------------------------------------
+
+   - setup fix
+
+
+0.60.0 Release                                                        2019-06-08
+--------------------------------------------------------------------------------
+
+   - OpenMP fix
 
 
 0.50.0 Release                                                        2018-10-26
@@ -27,14 +39,14 @@
 0.44 Release                                                          2016-07-29
 --------------------------------------------------------------------------------
 
-   - add hackish setup script to be used in RP CU pre-execs 
-   - fix a couple of bugs 
-   - implement busy timer 
-   - implement named file I/O 
-   - make bufsize for disk I/O tunable 
-   - more resilience on partial I/O 
-   - print warning on empty emulation load 
-   - revert to dict based samples, stability, cleanup 
+   - add hackish setup script to be used in RP CU pre-execs
+   - fix a couple of bugs
+   - implement busy timer
+   - implement named file I/O
+   - make bufsize for disk I/O tunable
+   - more resilience on partial I/O
+   - print warning on empty emulation load
+   - revert to dict based samples, stability, cleanup
 
 
 0.43 Release                                                          2016-05-13
