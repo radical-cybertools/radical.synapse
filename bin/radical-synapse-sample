@@ -198,27 +198,32 @@ def main():
 #
 if __name__ == '__main__':
 
-    prof        = os.environ.get('RP_PROF', False)
-    prof_handle = None
+    base  = os.path.basename(os.getcwd())
+    prof  = os.environ.get('RP_PROF', './%s.prof' % base)
+    pfd   = None
+    comp  = 'radical.synapse'
+    tid   = ru.get_thread_name()
+    uid   = os.environ.get('RP_UNIT_ID', base)
+    state = 'AGENT_EXECUTING'
+
 
     try:
         if prof:
-            comp  = 'radical.synapse'
-            tid   = ru.get_thread_name()
-            uid   = os.environ.get('RP_UNIT_ID', os.getpid())
-            state = 'AGENT_EXECUTING'
-            prof_handle = open(prof, 'a')
-            prof_handle.write("%.4f,%s,%s,%s,%s,%s,\n"
-                             % (time.time(), 'app_start', comp, tid, uid, state))
+            pfd = open(prof, 'a')
+            pfd.write("%.4f,%s,%s,%s,%s,%s,\n"
+                     % (time.time(), 'app_start', comp, tid, uid, state))
+            pfd.flush()
+            pfd.close()
 
         main()
 
     finally:
-        if prof and prof_handle:
-            prof_handle.write("%.4f,%s,%s,%s,%s,%s,\n"
-                             % (time.time(), 'app_stop', comp, tid, uid, state))
-            prof_handle.flush()
-            prof_handle.close()
+        if prof:
+            pfd = open(prof, 'a')
+            pfd.write("%.4f,%s,%s,%s,%s,%s,\n"
+                     % (time.time(), 'app_stop', comp, tid, uid, state))
+            pfd.flush()
+            pfd.close()
 
 
 # ------------------------------------------------------------------------------

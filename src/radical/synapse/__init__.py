@@ -4,7 +4,6 @@ __copyright__ = "Copyright 2013, RADICAL@Rutgers"
 __license__   = "MIT"
 
 
-
 # ------------------------------------------------------------------------------
 
 from synapsify import synapsify
@@ -29,8 +28,9 @@ version_short, version_detail, version_base, \
         version_branch, sdist_name, sdist_path = ru.get_version(paths=[root])
 version = version_short
 
-logger = ru.Logger('radical.synapse')
-logger.info('radical.synapse      version: %s' % version_detail)
+_logger = ru.Logger('radical.synapse')
+_logger.info('radical.synapse      version: %s' % version_detail)
+
 
 # ------------------------------------------------------------------------------
 
