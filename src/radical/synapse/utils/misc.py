@@ -25,7 +25,7 @@ else:
 
 # ------------------------------------------------------------------------------
 #
-logger = ru.get_logger('radical.synapse')
+logger = ru.Logger('radical.synapse')
 
 
 # ------------------------------------------------------------------------------
@@ -406,7 +406,7 @@ def make_frames (docs):
 
         frame_dicts.append(frame_dict)
 
-    import pandas 
+    import pandas
     frames = pandas.DataFrame (frame_dicts)
 
     return frames
