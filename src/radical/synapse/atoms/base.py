@@ -1,20 +1,15 @@
 
-
 __author__    = "Andre Merzky"
 __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
 import os
-import time
 import errno
-import psutil
 import threading
-import subprocess
 import Queue
 
-import radical.utils              as ru
-import radical.utils.logger       as rul
+import radical.utils as ru
 
 
 # ------------------------------------------------------------------------------
@@ -28,7 +23,7 @@ class AtomBase (object):
         self._atype = atype
         self._pid   = os.getpid ()
         self._uid   = ru.generate_id ("%s" % self._atype)
-        self.logger = ru.Logger('radical.synapse.self._uid')
+        self.logger = ru.Logger('radical.synapse.%s' % self._uid)
 
         # storage for temporary data and statistics
      #  self._tmpdir = "/scratch/synapse/" # FIXME
@@ -110,7 +105,7 @@ class AtomBase (object):
     def stop (self):
 
         self._term.set()
-        self._work_queue.put (None) # signal finish
+        self._work_queue.put (None)  # signal finish
 
         if  self._proc:
             self._proc.join ()
