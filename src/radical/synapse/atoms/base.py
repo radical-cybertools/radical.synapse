@@ -1,20 +1,15 @@
 
-
 __author__    = "Andre Merzky"
 __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
 import os
-import time
 import errno
-import psutil
 import threading
-import subprocess
 import Queue
 
-import radical.utils              as ru
-import radical.utils.logger       as rul
+import radical.utils as ru
 
 
 # ------------------------------------------------------------------------------
@@ -110,7 +105,7 @@ class AtomBase (object):
     def stop (self):
 
         self._term.set()
-        self._work_queue.put (None) # signal finish
+        self._work_queue.put (None)  # signal finish
 
         if  self._proc:
             self._proc.join ()
