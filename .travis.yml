@@ -60,6 +60,7 @@ after_success:
       coverage report; \
       curl -s https://codecov.io/bash | bash
     fi
+
 notifications:
   email:
     recipients: andre@merzky.net
