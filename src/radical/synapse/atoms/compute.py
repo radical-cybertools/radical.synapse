@@ -22,14 +22,14 @@ class Compute (AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    def __init__ (self): 
+    def __init__ (self):
 
         AtomBase.__init__ (self, COMPUTE)
 
 
     # --------------------------------------------------------------------------
     #
-    def _verify(self, vals): 
+    def _verify(self, vals):
 
         assert ('flops' in vals or 'time' in vals)
 
@@ -40,7 +40,7 @@ class Compute (AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    def _emulate (self, vals): 
+    def _emulate (self, vals):
 
         try:
             # TODO: switch between flops and time emulation
