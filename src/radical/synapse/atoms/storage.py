@@ -8,8 +8,8 @@ import radical.utils as ru
 
 
 from   _atoms    import atom_storage
-from   base      import AtomBase
-from   constants import STORAGE
+from   .base      import AtomBase
+from   .constants import STORAGE
 
 # ------------------------------------------------------------------------------
 #
@@ -58,7 +58,7 @@ class Storage (AtomBase):
             atom_storage(src, rsize, tgt, wsize, buf)
 
         except Exception as e:
-            print "sto atom error: %s" % e
+            print("sto atom error: %s" % e)
             ru.cancel_main_thread()
 
 

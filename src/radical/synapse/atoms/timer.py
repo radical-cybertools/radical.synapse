@@ -8,8 +8,8 @@ import radical.utils as ru
 
 
 from   _atoms    import atom_time
-from   base      import AtomBase
-from   constants import TIME
+from   .base      import AtomBase
+from   .constants import TIME
 
 # ------------------------------------------------------------------------------
 #
@@ -41,7 +41,7 @@ class Time(AtomBase):
             atom_time(vals['real'])
 
         except Exception as e:
-            print "time atom error: %s" % e
+            print("time atom error: %s" % e)
             ru.cancel_main_thread()
 
 

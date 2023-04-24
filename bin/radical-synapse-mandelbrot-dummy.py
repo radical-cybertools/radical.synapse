@@ -118,7 +118,7 @@ n2h = rs.number_to_human
 # host        load_id     t_real --------- --------- ---------     ?      load util  eff    load load_memory load_storage     x     y     z
 header   = '%-10s %15s %5s %5s %5s stress   t_real     t_cpu     t_mem      t_io %9s %4s %4s %5s %9s %9s' % \
            ('# host', 'id', 'x', 'y', 'z', 'cpu', 'util', 'eff', 'load', 'mem', 'io')
-print header
+print(header)
 
 for stress in range(12,13) :
   # repeat first experiment, for warmup
@@ -151,7 +151,7 @@ for stress in range(12,13) :
                 load_id  = 'EXE.%04d' % x
                 stat_exe   = '%-10s %15s %5s %5s %5s %5d %9.2f' % \
                                (host, load_id, x, y, z, stress, stop-start)
-                print stat_exe
+                print(stat_exe)
     
             iter_0_mean_time = numpy.mean (numpy.array (iter_0_time))
             iter_0_std_time  = numpy.std  (numpy.array (iter_0_time))
@@ -160,7 +160,7 @@ for stress in range(12,13) :
             stat_0   = '%-10s %15s %5s %5s %5s %5d %9.2f %9.2f' % \
                            (host, load_id, x, y, z, stress, 
                             iter_0_mean_time, iter_0_std_time)
-            print stat_0
+            print(stat_0)
 
           # sp.call ("killall    stress", shell=True)
           # sp.call ("killall -9 stress", shell=True)
@@ -196,7 +196,7 @@ for stress in range(12,13) :
                             load_memory, 
                             load_storage
                            )
-                print output
+                print(output)
                              
                 iter_1_time .append(float(info_pro['time']['real']))
                 iter_1_cpu  .append(float(load_compute))
@@ -233,7 +233,7 @@ for stress in range(12,13) :
                         iter_1_mean_mem, 
                         iter_1_mean_io
                        )
-            print mean  
+            print(mean)  
     
             load_id  = 'STD_PRO.%04d' % x
             std      = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
@@ -246,7 +246,7 @@ for stress in range(12,13) :
                         iter_1_std_mem, 
                         iter_1_std_io
                        )
-            print std
+            print(std)
     
             load_id  = 'STAT_PRO.%04d' % x
             stat     = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f --------- --------- --------- --------- --------- --------- %9.2f %9.2f %.2f %.2f %.2f %.2f %5.2f %5.2f %9.2f %9.2f %9.2f %9.2f' % \
@@ -266,7 +266,7 @@ for stress in range(12,13) :
                         iter_1_mean_io,
                         iter_1_std_io
                        )
-            print stat  
+            print(stat)  
     
             # --------------------------------------------------------------------------------------------
            
@@ -312,7 +312,7 @@ for stress in range(12,13) :
                             load_memory, 
                             load_storage
                             )
-                print output
+                print(output)
     
                 iter_2_time .append(float(info_s['time']['real']))
                 iter_2_tcpu .append(float(ret['c']['timer']))
@@ -361,7 +361,7 @@ for stress in range(12,13) :
                         iter_2_mean_mem, 
                         iter_2_mean_io
                        )
-            print mean  
+            print(mean)  
     
             load_id  = 'STD_EMU.%04d' % x
             std      = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f %9.2f %9.2f %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
@@ -377,7 +377,7 @@ for stress in range(12,13) :
                         iter_2_std_mem, 
                         iter_2_std_io
                        )
-            print std
+            print(std)
     
             load_id  = 'STAT_EMU.%04d' % x
             stat     = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f %9.2f %9.2f %9.2f %9.2f %9.2f %9.2f %9.2f %9.2f %.2f %.2f %.2f %.2f %5.2f %5.2f %9.2f %9.2f %9.2f %9.2f' % \
@@ -403,7 +403,7 @@ for stress in range(12,13) :
                         iter_2_mean_io,
                         iter_2_std_io
                        )
-            print stat  
+            print(stat)  
     
     
           # print ' ---------------------------------------------------------------'
@@ -432,7 +432,7 @@ for stress in range(12,13) :
           # pp.pprint (ret)                                  
           # print ' ---------------------------------------------------------------'
     
-            print
+            print()
 
             # --------------------------------------------------------------------------------------------
 

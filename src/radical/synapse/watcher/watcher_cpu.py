@@ -11,7 +11,7 @@ import threading
 
 import subprocess    as sp
 import radical.utils as ru
-import watcher_base  as wb
+from . import watcher_base  as wb
 
 
 # ------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ class WatcherCPU (wb.WatcherBase) :
     # 
     def _parse_perf_total (self, perf_out) :
     
-        if  isinstance (perf_out, basestring) :
+        if  isinstance (perf_out, str) :
             perf_out = perf_out.split ('\n')
     
         # prepare to dig data from perf output lines
@@ -207,7 +207,7 @@ class WatcherCPU (wb.WatcherBase) :
                         "frontend cycles idle"    : "cycles_idle_front",
                         "backend  cycles idle"    : "cycles_idle_back",
                         "insns per cycle"         : "ops_per_cycle"}
-        ored_keys   = '|'.join(perf_keys.keys()).replace (' ', '\s')
+        ored_keys   = '|'.join(list(perf_keys.keys())).replace (' ', '\s')
         perf_patstr = r"""
             ^(?P<lead>.*?\s+)            # lead-in
             (?P<val>[\d\.,]+)%%?         # value
@@ -269,7 +269,7 @@ class WatcherCPU (wb.WatcherBase) :
     # 
     def _parse_perf_sample (self, perf_out) :
     
-        if  isinstance (perf_out, basestring) :
+        if  isinstance (perf_out, str) :
             perf_out = perf_out.split ('\n')
     
         # prepare to dig data from perf output lines
@@ -283,7 +283,7 @@ class WatcherCPU (wb.WatcherBase) :
                         "cycles"                  : "cycles",
                         "stalled-cycles-frontend" : "cycles_stalled_front",
                         "stalled-cycles-backend"  : "cycles_stalled_back"}
-        ored_keys   = '|'.join(perf_keys.keys()).replace (' ', '\s')
+        ored_keys   = '|'.join(list(perf_keys.keys())).replace (' ', '\s')
         perf_patstr = r"""
            ^(?P<lead>\s+)                # lead-in
             (?P<time>[\d\.,]+)           # timestamp

@@ -8,9 +8,9 @@ import radical.utils   as ru
 import subprocess      as sp
 import multiprocessing as mp
 
-import watcher as rsw
-import utils   as rsu
-import atoms   as rsa
+from . import watcher as rsw
+from . import utils   as rsu
+from . import atoms   as rsa
 
 # import pudb
 # pudb.set_interrupt_handler ()
@@ -39,7 +39,7 @@ def execute (command, *args, **kwargs):
         cmd_str = command
 
 
-    print "execute: %s" % cmd_str
+    print("execute: %s" % cmd_str)
 
     info = {'cmd' : cmd_str}
 
@@ -110,11 +110,11 @@ def profile (command, *args, **kwargs) :
         cmd_str = command
 
 
-    print "profile: %s" % cmd_str
+    print("profile: %s" % cmd_str)
 
     if '_RADICAL_SYNAPSE_EMULATED' in os.environ:
         cmd_str = os.environ.get ('_RADICAL_SYNAPSE_EMULATEE', cmd_str)
-        print 'using emulated command name: %s' % cmd_str
+        print('using emulated command name: %s' % cmd_str)
 
     info = {'cmd' : cmd_str}
 
@@ -224,7 +224,7 @@ def _emulator(samples):
     time.sleep (0.1)
 
   # print "\n-------------------------\n\n"
-    print "emulating %d samples" % len(samples)
+    print("emulating %d samples" % len(samples))
 
     # run the first set of samples until we meet a sample type which is already
     # started.  At that point, start to wait before submission.  If all samples
@@ -292,7 +292,7 @@ def emulate(command=None, samples=None, src=None):
         raise ValueError ("emulate needs *either* command, sample *or* src")
 
     if not command and not samples and not src:
-        print "warning: emulate needs either command, sample or src"
+        print("warning: emulate needs either command, sample or src")
         return[0, None, None]
 
     if command or src:

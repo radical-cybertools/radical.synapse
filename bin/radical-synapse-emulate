@@ -36,15 +36,15 @@ def emu_source (src):
 def usage (msg=None, noexit=False):
 
     if  msg:
-        print "\n      Error: %s" % msg
+        print("\n      Error: %s" % msg)
 
-    print """
+    print("""
       usage     : %s <command>
                   %s -i <profile>
       example   : %s sleep 10
                   %s -i sleep_10.json
 
-"""
+""")
 
     if  msg:
         sys.exit (1)

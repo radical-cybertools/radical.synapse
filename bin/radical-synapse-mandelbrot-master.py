@@ -21,7 +21,7 @@ def usage (msg=None) :
     if  msg :
         sys.stderr.write ('\n    Error: %s' % msg)
 
-    print """
+    print("""
 
     usage :
 
@@ -40,7 +40,7 @@ def usage (msg=None) :
                -d=1024
 
         ID is mandatory.
-    """
+    """)
 
     if  msg :
         sys.exit (1)
@@ -116,7 +116,7 @@ def main (master_id, num_workers, mb_size, mb_depth) :
 
     while len(done) != len(workers) :
 
-        print "waiting (%s/%s)" % (len(done), len(workers))
+        print("waiting (%s/%s)" % (len(done), len(workers)))
 
         results = collection.find ({'type' : 'result'})
         active  = False
@@ -145,7 +145,7 @@ def main (master_id, num_workers, mb_size, mb_depth) :
         if  not active:
             time.sleep (1)
 
-    print "done    (%s/%s)" % (len(done), len(workers))
+    print("done    (%s/%s)" % (len(done), len(workers)))
 
     db_client.disconnect ()
 

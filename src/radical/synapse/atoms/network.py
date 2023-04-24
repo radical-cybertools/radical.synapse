@@ -8,8 +8,8 @@ import radical.utils as ru
 
 
 from   _atoms    import atom_network
-from   base      import AtomBase
-from   constants import NETWORK
+from   .base      import AtomBase
+from   .constants import NETWORK
 
 # ------------------------------------------------------------------------------
 #
@@ -65,7 +65,7 @@ class Network (AtomBase):
             atom_network (typ, mode, host, port, size)
 
         except Exception as e:
-            print "net atom error: %s" % e
+            print("net atom error: %s" % e)
             ru.cancel_main_thread()
 
 

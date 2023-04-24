@@ -4,7 +4,7 @@ __copyright__ = "Copyright 2015, RADICAL@Rutgers"
 __license__   = "MIT"
 
 
-import watcher_base as wb
+from . import watcher_base as wb
 
 from ..utils import human_to_number
 
@@ -39,7 +39,7 @@ class WatcherSto (wb.WatcherBase) :
         self._f.close()
 
         # use the values from tot_sample as global total
-        for key,val in self._tot_sample.iteritems():
+        for key,val in self._tot_sample.items():
             self._data['sto'][key] = val
 
 
@@ -69,7 +69,7 @@ class WatcherSto (wb.WatcherBase) :
 
 
         # keep the max vals in tot_sample
-        for key,val in sample.iteritems():
+        for key,val in sample.items():
             self._tot_sample[key] = max(self._tot_sample.get(key, 0), val)
 
 

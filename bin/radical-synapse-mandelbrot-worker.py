@@ -25,7 +25,7 @@ def work (master_id, worker_id) :
     [host, port, dbname, cname, _, _, _] = ru.split_dburl (master_id)
     [host, port, dbname, cname, _, _, _] = ru.split_dburl (master_id)
 
-    print "  %s:%d" % (host, port)
+    print("  %s:%d" % (host, port))
     db_client  = pymongo.MongoClient (host=host, port=port)
     database   = db_client[dbname]
     collection = database[cname]
@@ -35,14 +35,14 @@ def work (master_id, worker_id) :
   # for i in database.collection_names () : print "     %s" % i
   # print "      %d docs" % docs.count()
 
-    print 'master id : %s' % master_id
-    print 'worker id : %s' % worker_id
-    print 'host      : %s' % host
-    print 'port      : %s' % port
-    print 'dbname    : %s' % dbname
-    print 'cname     : %s' % cname
-    print 'worker_id : %s' % worker_id 
-    print 'works     : %s' % collection.find ().count()
+    print('master id : %s' % master_id)
+    print('worker id : %s' % worker_id)
+    print('host      : %s' % host)
+    print('port      : %s' % port)
+    print('dbname    : %s' % dbname)
+    print('cname     : %s' % cname)
+    print('worker_id : %s' % worker_id) 
+    print('works     : %s' % collection.find ().count())
 
     attempts = 0
 
@@ -52,19 +52,19 @@ def work (master_id, worker_id) :
         if  work :
             break
         else :
-            print 'waiting for work'
+            print('waiting for work')
             time.sleep (1)
 
     if  not work :
-        print "cannot find work for %s : %s" % (master_id, worker_id)
+        print("cannot find work for %s : %s" % (master_id, worker_id))
         sys.exit (0) # silent exit
 
 
-    print 'work      : %s' % str(work)
+    print('work      : %s' % str(work))
 
     result = mandelbrot_calc (work)
 
-    print 'publish result'
+    print('publish result')
     collection.insert (result)
 
     db_client.disconnect ()
@@ -165,7 +165,7 @@ def usage (msg=None) :
     if  msg :
         sys.stderr.write ('\n    Error: %s' % msg)
 
-    print """
+    print("""
 
     usage :
 
@@ -173,7 +173,7 @@ def usage (msg=None) :
                --master_id=mongodb://host.net:port/path
                --worker_id=3
 
-    """
+    """)
 
     if  msg :
         sys.exit (1)

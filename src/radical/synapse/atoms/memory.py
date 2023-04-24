@@ -8,8 +8,8 @@ import radical.utils as ru
 
 
 from   _atoms    import atom_memory
-from   base      import AtomBase
-from   constants import MEMORY
+from   .base      import AtomBase
+from   .constants import MEMORY
 
 # ------------------------------------------------------------------------------
 #
@@ -43,7 +43,7 @@ class Memory (AtomBase):
             atom_memory (int(vals['size']))
 
         except Exception as e:
-            print "mem atom error: %s" % e
+            print("mem atom error: %s" % e)
             ru.cancel_main_thread()
 
 

@@ -125,7 +125,7 @@ def main (cfg_list) :
                         load_memory, 
                         load_storage
                        )
-            print output
+            print(output)
 
             iter_1_time .append(float(ret))
             iter_1_cpu  .append(float(load_compute))
@@ -162,7 +162,7 @@ def main (cfg_list) :
                     iter_1_mean_mem, 
                     iter_1_mean_io
                    )
-        print mean  
+        print(mean)  
     
         load_id  = 'STD_RUN.%04d' % x
         std      = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
@@ -175,7 +175,7 @@ def main (cfg_list) :
                     iter_1_std_mem, 
                     iter_1_std_io
                    )
-        print std
+        print(std)
     
         load_id  = 'STAT_RUN.%04d' % x
         stat     = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f --------- --------- --------- --------- --------- --------- %9.2f %9.2f %.2f %.2f %.2f %.2f %5.2f %5.2f %9.2f %9.2f %9.2f %9.2f' % \
@@ -195,7 +195,7 @@ def main (cfg_list) :
                     iter_1_mean_io,
                     iter_1_std_io
                    )
-        print stat  
+        print(stat)  
     
 # ------------------------------------------------------------------------------
 #
@@ -203,7 +203,7 @@ def main (cfg_list) :
 cfg_list = list ()
 
 if  not len(sys.argv) > 1 :
-    print "\n\tusage: %s <cfg_file> \n\n" % sys.argv[0]
+    print("\n\tusage: %s <cfg_file> \n\n" % sys.argv[0])
     sys.exit (-1)
 
 with open (sys.argv[1]) as fin :
@@ -213,7 +213,7 @@ for line in lines :
     line = line.replace ('\n', '')
     re = ru.ReString (line)
     if  re // r'(MEAN_PRO)' :
-        print line
+        print(line)
         cfg_list.append (line.split())
 
 main (cfg_list)
