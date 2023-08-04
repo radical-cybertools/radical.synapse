@@ -7,7 +7,7 @@ __license__   = "LGPL.v3"
 import radical.utils as ru
 
 
-from   _atoms    import atom_time
+from   ._atoms    import atom_time
 from   .base      import AtomBase
 from   .constants import TIME
 
@@ -21,21 +21,21 @@ class Time(AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self): 
+    def __init__(self):
 
         AtomBase.__init__(self, TIME)
 
 
     # --------------------------------------------------------------------------
     #
-    def _verify(self, vals): 
+    def _verify(self, vals):
 
         assert('real' in vals)
 
 
     # --------------------------------------------------------------------------
     #
-    def _emulate(self, vals): 
+    def _emulate(self, vals):
 
         try:
             atom_time(vals['real'])

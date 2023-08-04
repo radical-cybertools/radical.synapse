@@ -228,6 +228,7 @@ setup_args = {
     'url'                : 'https://github.com/radical-cybertools/radical.synapse/',
     'license'            : "LGPLv3+",
     'keywords'           : "radical emulate workload",
+    'python_requires'    : '>=3.6',
     'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',

@@ -2,7 +2,7 @@
 
 import os
 
-import radical.synapse       as rs
+import radical.synapse as rs
 
 
 # ------------------------------------------------------------------------------

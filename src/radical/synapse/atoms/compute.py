@@ -4,8 +4,8 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-from   _atoms    import atom_compute_asm
-from   _atoms    import atom_compute
+from   ._atoms    import atom_compute_asm
+from   ._atoms    import atom_compute
 from   .base      import AtomBase
 from   .constants import COMPUTE
 
@@ -21,14 +21,14 @@ class Compute (AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    def __init__ (self): 
+    def __init__ (self):
 
         AtomBase.__init__ (self, COMPUTE)
 
 
     # --------------------------------------------------------------------------
     #
-    def _verify(self, vals): 
+    def _verify(self, vals):
 
         assert ('flops' in vals or 'time' in vals)
 
@@ -39,7 +39,7 @@ class Compute (AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    def _emulate (self, vals): 
+    def _emulate (self, vals):
 
         try:
             # TODO: switch between flops and time emulation
