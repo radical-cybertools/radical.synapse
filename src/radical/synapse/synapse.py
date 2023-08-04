@@ -90,7 +90,7 @@ def execute (command, *args, **kwargs):
 
     info['cpu']  = dict()
     info['cpu']['load']   = max(load_1, load_2)
-   
+
     if  LOAD > 0:
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
@@ -187,7 +187,7 @@ def profile (command, *args, **kwargs) :
     load_2 = float(os.popen (LOAD_CMD).read())
     info['cpu']['load'] = max(load_1, load_2)
     rsu.logger.info ("system load %s: %s" % (LOAD, info['cpu']['load']))
-   
+
     if  LOAD > 0:
         rsu.logger.info ("stopping system load")
         os.popen ("killall -9 stress 2>&1 > /dev/null")
@@ -304,7 +304,7 @@ def emulate(command=None, samples=None, src=None):
             prof  = profs[0]['profile']
 
         else:
-            prof = ru.read_json(src)
+            prof = ru.read_json(src)['profile']
 
       # pprint.pprint (prof)
 

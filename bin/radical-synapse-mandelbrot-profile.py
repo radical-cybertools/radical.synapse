@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 import os
@@ -10,7 +10,7 @@ import radical.utils as ru
 
 import synapse as rs
 
-# import pudb 
+# import pudb
 # pudb.set_interrupt_handler ()
 
 iters = 10
@@ -50,11 +50,11 @@ def mandel (x, y, z) :
             z = 0
 
             for i in range (iter_max) :
-                
-                if abs (z) > threshold: 
-                    break 
 
-                z = z * z + c 
+                if abs (z) > threshold:
+                    break
+
+                z = z * z + c
 
             rgb_row.append (["%3d" % i, "%3d" % i, "%3d" % i])
 
@@ -105,24 +105,24 @@ def main (cfg_list) :
             if not 'ops'         in info_run['cpu'] : info_run['cpu']['ops'         ] = 0
             if not 'max'         in info_run['mem'] : info_run['mem']['max'         ] = 0
             if not 'write'       in info_run['io']  : info_run['io']['write'        ] = 0
-        
+
             load_compute = int(float(info_run['cpu']['ops' ]) / (1024*1024) / 8)
             load_memory  = int(float(info_run['mem']['max' ]) / (1024*1024))
             load_storage = int(float(info_run['io']['write']) / (1024*1024))
-            
+
             load_compute = int(float(info_run['cpu']['ops' ]) / (1024*1024) / 8)
             load_memory  = int(float(info_run['mem']['max' ]) / (1024*1024))
             load_storage = int(float(info_run['io']['write']) / (1024*1024))
-            
+
             load_id  = 'RUN.%04d' % x
             output   = '%-10s %15s %5d %5d %5d %6d %8.2f --------- --------- --------- %9.2f %0.2f %0.2f %5.2f %9.2f %9.2f' % \
                        (host, load_id, x, y, z, stress,
-                        ret, 
-                        load_compute, 
-                        info_run['cpu']['utilization'], 
-                        info_run['cpu']['efficiency'], 
+                        ret,
+                        load_compute,
+                        info_run['cpu']['utilization'],
+                        info_run['cpu']['efficiency'],
                         info_run['sys']['load'],
-                        load_memory, 
+                        load_memory,
                         load_storage
                        )
             print(output)
@@ -142,7 +142,7 @@ def main (cfg_list) :
         iter_1_mean_util = numpy.mean (numpy.array (iter_1_util))
         iter_1_mean_eff  = numpy.mean (numpy.array (iter_1_eff ))
         iter_1_mean_sys  = numpy.mean (numpy.array (iter_1_sys ))
-    
+
         iter_1_std_time  = numpy.std  (numpy.array (iter_1_time))
         iter_1_std_cpu   = numpy.std  (numpy.array (iter_1_cpu ))
         iter_1_std_mem   = numpy.std  (numpy.array (iter_1_mem ))
@@ -150,53 +150,53 @@ def main (cfg_list) :
         iter_1_std_util  = numpy.std  (numpy.array (iter_1_util))
         iter_1_std_eff   = numpy.std  (numpy.array (iter_1_eff ))
         iter_1_std_sys   = numpy.std  (numpy.array (iter_1_sys ))
-        
+
         load_id  = 'MEAN_RUN.%04d' % x
         mean     = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
                    (host, load_id, x, y, z, stress,
-                    iter_1_mean_time, 
+                    iter_1_mean_time,
                     iter_1_mean_cpu,
-                    iter_1_mean_util, 
-                    iter_1_mean_eff, 
+                    iter_1_mean_util,
+                    iter_1_mean_eff,
                     iter_1_mean_sys,
-                    iter_1_mean_mem, 
+                    iter_1_mean_mem,
                     iter_1_mean_io
                    )
-        print(mean)  
-    
+        print(mean)
+
         load_id  = 'STD_RUN.%04d' % x
         std      = '%-10s %15s %5d %5d %5d %5d %9.2f --------- --------- --------- %9.2f %.2f %.2f %5.2f %9.2f %9.2f' % \
-                   (host, load_id, x, y, z, stress, 
-                    iter_1_std_time, 
+                   (host, load_id, x, y, z, stress,
+                    iter_1_std_time,
                     iter_1_std_cpu,
-                    iter_1_std_util, 
-                    iter_1_std_eff, 
+                    iter_1_std_util,
+                    iter_1_std_eff,
                     iter_1_std_sys,
-                    iter_1_std_mem, 
+                    iter_1_std_mem,
                     iter_1_std_io
                    )
         print(std)
-    
+
         load_id  = 'STAT_RUN.%04d' % x
         stat     = '%-10s %15s %5d %5d %5d %5d %9.2f %9.2f --------- --------- --------- --------- --------- --------- %9.2f %9.2f %.2f %.2f %.2f %.2f %5.2f %5.2f %9.2f %9.2f %9.2f %9.2f' % \
-                   (host, load_id, x, y, z, stress, 
-                    iter_1_mean_time, 
-                    iter_1_std_time, 
+                   (host, load_id, x, y, z, stress,
+                    iter_1_mean_time,
+                    iter_1_std_time,
                     iter_1_mean_cpu,
                     iter_1_std_cpu,
-                    iter_1_mean_util, 
-                    iter_1_std_util, 
-                    iter_1_mean_eff, 
-                    iter_1_std_eff, 
+                    iter_1_mean_util,
+                    iter_1_std_util,
+                    iter_1_mean_eff,
+                    iter_1_std_eff,
                     iter_1_mean_sys,
                     iter_1_std_sys,
-                    iter_1_mean_mem, 
-                    iter_1_std_mem, 
+                    iter_1_mean_mem,
+                    iter_1_std_mem,
                     iter_1_mean_io,
                     iter_1_std_io
                    )
-        print(stat)  
-    
+        print(stat)
+
 # ------------------------------------------------------------------------------
 #
 #
@@ -218,4 +218,4 @@ for line in lines :
 
 main (cfg_list)
 
-  
+

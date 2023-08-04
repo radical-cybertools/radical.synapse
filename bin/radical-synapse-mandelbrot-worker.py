@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 import os
 import sys
-import time   
+import time
 import pymongo
 
 import radical.utils as ru
@@ -41,7 +41,7 @@ def work (master_id, worker_id) :
     print('port      : %s' % port)
     print('dbname    : %s' % dbname)
     print('cname     : %s' % cname)
-    print('worker_id : %s' % worker_id) 
+    print('worker_id : %s' % worker_id)
     print('works     : %s' % collection.find ().count())
 
     attempts = 0
@@ -73,13 +73,13 @@ def work (master_id, worker_id) :
 # ------------------------------------------------------------------------------
 #
 def mandelbrot_calc (work) :
-    """    
+    """
     compute the mandelbrot (sub)set with the given parameters.
     `work` is considered to be a dict with the following keys::
 
         xmin, ymin :  lower left corner in complex plane
         xmax, ymax :  upper right corner in complex plane
-        xpix, ypix :  sub-picture resolution 
+        xpix, ypix :  sub-picture resolution
         iters      :  max iterations
 
     """
@@ -119,21 +119,21 @@ def mandelbrot_calc (work) :
     data = list()
 
     for y in range (0, pixy) :
-    
+
         zy = y * (maxy - miny) / (pixy - 1) + miny
 
         line = list()
-    
+
         for x in range (0, pixx) :
-    
+
             zx = x * (maxx - minx) / (pixx - 1)  + minx
             z  = zx + zy * 1j
             c  = z
-    
+
             for i in range (0, iters) :
                 if  abs(z) > 2.0 :
-                    break 
-    
+                    break
+
                 z = z * z + c
 
             line.append (i)
@@ -141,13 +141,13 @@ def mandelbrot_calc (work) :
         data.append (line)
 
 
-    result = {'worker_id' : int(worker_id), 
+    result = {'worker_id' : int(worker_id),
               'type'      : 'result' ,
-              'pixx'      : pixx, 
-              'pixy'      : pixy, 
-              'subx'      : subx, 
-              'suby'      : suby, 
-              'data'      : data, 
+              'pixx'      : pixx,
+              'pixy'      : pixy,
+              'subx'      : subx,
+              'suby'      : suby,
+              'data'      : data,
               'time'      : time.time()-start,
               'host'      : os.popen('hostname -f').read().strip()}
 
@@ -223,7 +223,7 @@ if __name__ == '__main__' :
     if  not master_id or not worker_id :
         usage ("need master_id and worker_id to operate (%s)" % sys.argv)
 
-    
+
     work (master_id, worker_id)
 
     sys.exit (0)

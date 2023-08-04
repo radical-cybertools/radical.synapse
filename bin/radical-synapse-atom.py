@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 import os
@@ -10,7 +10,7 @@ import radical.utils as ru
 import radical.synapse       as rs
 import radical.synapse.atoms as rsa
 
-# import pudb 
+# import pudb
 # pudb.set_interrupt_handler ()
 
 iters = 10
@@ -87,4 +87,4 @@ print(load_memory)
 print(load_input)
 print(load_output)
 
-  
+

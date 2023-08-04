@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -31,7 +31,7 @@ def bson2json (bson_data) :
                 return str (o)
             if  isinstance (o, datetime.datetime) :
                 seconds  = time.mktime (o.timetuple ())
-                seconds += (o.microsecond / 1000000.0) 
+                seconds += (o.microsecond / 1000000.0)
                 return seconds
             return json.JSONEncoder.default (self, o)
 
@@ -65,7 +65,7 @@ def get_json (db, dbname, cachedir) :
 #
 def my_round (x, base=5) :
 
-    # thanks to 
+    # thanks to
     # http://stackoverflow.com/questions/2272149/round-to-5-or-other-number-in-python
 
     return int(base * round(float(x) / base))
@@ -93,19 +93,19 @@ def usage (msg=None, noexit=False) :
         plot    : plot record entries
 
       arguments :
-        
+
         -u      : database URL
         -d      : database name
         -c      : cachedir where <sid>.json caches are kept (also needs -s)
         -t      : terminal type for plotting (pdf and/or png, default is both)
         -x      : command which synapse executed/profiled/emulated
-        -s      : synapse mode ( exe[cuted] | pro[filed] | emu[lated] | any) 
+        -s      : synapse mode ( exe[cuted] | pro[filed] | emu[lated] | any)
                   (can be or-ed via '|')
 
 
-      The default command is 'list'.  
+      The default command is 'list'.
       The default MongoDB is '%s'.
-      
+
 """ % (sys.argv[0], sys.argv[0], _DEFAULT_DBURL)
 
     if  msg :
@@ -155,11 +155,11 @@ def sort_database (mongo, db, dbname, cachedir) :
 
     docs = rpu.get_database_docs (mongo, db, dbname, cachedir=cachedir)
 
-    print "pilot managers :" 
+    print "pilot managers :"
     for doc in docs['pmgr'] :
         print "  %s" %  doc['_id']
 
-    print "pilots :" 
+    print "pilots :"
     for doc in docs['pilot'] :
         print "  %s" %  doc['_id']
 
@@ -233,7 +233,7 @@ def get_stats (docs, events, slothist) :
         for t in doc['statehistory'][1:] :
             ts = t['timestamp']
             s  = t['state']
-            pilot_info['pilot_states'].append ({'state'    : state, 
+            pilot_info['pilot_states'].append ({'state'    : state,
                                                 'duration' : ru.time_diff(start, ts)})
             state = s
             start = ts
@@ -290,7 +290,7 @@ def get_stats (docs, events, slothist) :
 
     return pilot_stats
 
-    
+
 # ------------------------------------------------------------------------------
 def stat_database (db_json) :
 
@@ -311,7 +311,7 @@ def stat_database (db_json) :
             print "  mem: %s" % mem['peak']
             print "# %15s  %15s  %15s" % ('time', 'size', 'rss')
             for s in mem['sequence']:
-                if not s[1]: 
+                if not s[1]:
                     continue
                 print '  %15s  %15s  %15s' % (s[0], s[1]['size'], s[1]['rss'])
 
@@ -325,11 +325,11 @@ def plot_database (db_json, dbname, filters, term, modes) :
     dat_tot_mem = open("/tmp/rs_%s.mem.tot.dat" % dbname, 'w')
     dat_tot_io  = open("/tmp/rs_%s.io.tot.dat"  % dbname, 'w')
     dat_tot_cpu = open("/tmp/rs_%s.cpu.tot.dat" % dbname, 'w')
-                                       
+
     dat_inc_mem = open("/tmp/rs_%s.mem.inc.dat" % dbname, 'w')
     dat_inc_io  = open("/tmp/rs_%s.io.inc.dat"  % dbname, 'w')
     dat_inc_cpu = open("/tmp/rs_%s.cpu.inc.dat" % dbname, 'w')
-                                       
+
     dat_acc_mem = open("/tmp/rs_%s.mem.acc.dat" % dbname, 'w')
     dat_acc_io  = open("/tmp/rs_%s.io.acc.dat"  % dbname, 'w')
     dat_acc_cpu = open("/tmp/rs_%s.cpu.acc.dat" % dbname, 'w')
@@ -541,7 +541,7 @@ def plot_database (db_json, dbname, filters, term, modes) :
 
                 dat_inc_cpu.write("\n")
                 dat_acc_cpu.write("\n")
-         
+
     dat_tot_mem.close()
     dat_tot_io .close()
     dat_tot_cpu.close()
@@ -642,7 +642,7 @@ def handle_coll (mongo, db, mode, cname, pname) :
 
         if  mode == 'list' and not pname :
             print " | | +-- doc  %s  [%3s] [%s] " \
-                    % (name, len(doc['profiles'][0]['mem']['sequence']), 
+                    % (name, len(doc['profiles'][0]['mem']['sequence']),
                        doc['command_idx'])
 
         elif  mode == 'remove' :
@@ -675,7 +675,7 @@ def handle_doc (collection, mode, doc) :
         print " | | +-- doc  %s" % (name)
         pprint.pprint (doc)
         print " | | +-- doc  %s  [%3s] [%s] " \
-                % (name, len(doc['profiles'][0]['mem']['sequences']), 
+                % (name, len(doc['profiles'][0]['mem']['sequences']),
                    doc['command_idx'])
         for key in doc :
             print " | | | +-- %s" % (key)
@@ -721,18 +721,18 @@ if __name__ == '__main__' :
     if  options.help :
         usage ()
 
-    if  options.mode in ['help'] : 
+    if  options.mode in ['help'] :
         usage ()
 
     if  not options.mode :
         usage ("No mode specified")
 
-    if  not options.url : 
+    if  not options.url :
         options.url = _DEFAULT_DBURL
 
 
-    mode     = options.mode 
-    cmd      = options.cmd 
+    mode     = options.mode
+    cmd      = options.cmd
     url      = options.url
     dbname   = options.dbname
     term     = options.term
@@ -776,7 +776,7 @@ if __name__ == '__main__' :
 
     for m in mode.split (',') :
 
-        if  m not in ['list', 'dump', 'tree', 'hist', 'sort', 'stat', 'plot', 'help'] : 
+        if  m not in ['list', 'dump', 'tree', 'hist', 'sort', 'stat', 'plot', 'help'] :
             usage ("Unsupported mode '%s'" % m)
 
         if  m in ['list']:
@@ -796,7 +796,7 @@ if __name__ == '__main__' :
                 import json
                 db_json = get_json (db, dbname, cachedir)
 
-            if   m == 'tree' : tree_database  (db_json, dbname, filters, cachedir) 
+            if   m == 'tree' : tree_database  (db_json, dbname, filters, cachedir)
             elif m == 'dump' : dump_database  (db_json, dbname, filters, cachedir)
             elif m == 'sort' : sort_database  (db_json, dbname, filters, cachedir)
             elif m == 'hist' : hist_database  (db_json, dbname, filters, cachedir)
