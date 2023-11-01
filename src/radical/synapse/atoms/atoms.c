@@ -13,23 +13,25 @@
 /* -----------------------------------------------------------------------------
  */
 /* Available functions */
-static PyObject *atom_compute_asm (PyObject * self, PyObject * args);
-static PyObject *atom_compute     (PyObject * self, PyObject * args);
-static PyObject *atom_time        (PyObject * self, PyObject * args);
-static PyObject *atom_memory      (PyObject * self, PyObject * args);
-static PyObject *atom_storage     (PyObject * self, PyObject * args);
-static PyObject *atom_network     (PyObject * self, PyObject * args);
+static PyObject *atom_compute_asm  (PyObject * self, PyObject * args);
+static PyObject *atom_compute_test (PyObject * self, PyObject * args);
+static PyObject *atom_compute      (PyObject * self, PyObject * args);
+static PyObject *atom_time         (PyObject * self, PyObject * args);
+static PyObject *atom_memory       (PyObject * self, PyObject * args);
+static PyObject *atom_storage      (PyObject * self, PyObject * args);
+static PyObject *atom_network      (PyObject * self, PyObject * args);
 
 
 /* -----------------------------------------------------------------------------
  */
 static PyMethodDef module_methods[] = {
-    {"atom_compute_asm",  atom_compute_asm, METH_VARARGS, NULL},
-    {"atom_compute",      atom_compute    , METH_VARARGS, NULL},
-    {"atom_time",         atom_time       , METH_VARARGS, NULL},
-    {"atom_memory",       atom_memory     , METH_VARARGS, NULL},
-    {"atom_storage",      atom_storage    , METH_VARARGS, NULL},
-    {"atom_network",      atom_network    , METH_VARARGS, NULL},
+    {"atom_compute_asm",  atom_compute_asm , METH_VARARGS, NULL},
+    {"atom_compute_test", atom_compute_test, METH_VARARGS, NULL},
+    {"atom_compute",      atom_compute     , METH_VARARGS, NULL},
+    {"atom_time",         atom_time        , METH_VARARGS, NULL},
+    {"atom_memory",       atom_memory      , METH_VARARGS, NULL},
+    {"atom_storage",      atom_storage     , METH_VARARGS, NULL},
+    {"atom_network",      atom_network     , METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
 };
 
@@ -75,6 +77,22 @@ atom_compute_asm (PyObject * self, PyObject * args)
         return NULL;
 
     _atom_compute_asm (flops, time);
+    Py_RETURN_NONE;
+}
+
+
+/* -----------------------------------------------------------------------------
+ */
+static PyObject *
+atom_compute_test (PyObject * self, PyObject * args)
+{
+    long flops = 0;
+    long time  = 0;
+
+    if ( ! PyArg_ParseTuple (args, "ll", &flops, &time) )
+        return NULL;
+
+    _atom_compute_test (flops, time);
     Py_RETURN_NONE;
 }
 
