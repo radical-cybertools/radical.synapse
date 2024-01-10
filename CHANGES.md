@@ -5,6 +5,13 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+1.43.0 Release                                                        2024-01-10
+--------------------------------------------------------------------------------
+
+  - Fix/ru logger (#21)
+  - add external lib example
+
+
 0.70.0 Release                                                        2019-07-07
 --------------------------------------------------------------------------------
 
