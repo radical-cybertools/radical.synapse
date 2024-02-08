@@ -197,6 +197,7 @@ with open('%s/requirements.txt' % root, encoding='utf-8') as freq:
     requirements = freq.readlines()
 
 
+
 # -------------------------------------------------------------------------------
 #
 eca = ['-Iexamples/ext_lib', '-fPIC']
@@ -223,9 +224,14 @@ setup_args = {
     'author_email'       : 'radical@rutgers.edu',
     'maintainer'         : 'The RADICAL Group',
     'maintainer_email'   : 'radical@rutgers.edu',
-    'url'                : 'https://github.com/radical-cybertools/radical.synapse/',
+    'url'                : 'http://radical-cybertools.github.io/%s/'   % name,
+    'project_urls'       : {
+        'Documentation': 'https://radical%s.readthedocs.io/en/latest/' % base,
+        'Source'       : 'https://github.com/radical-cybertools/%s/'   % name,
+        'Issues' : 'https://github.com/radical-cybertools/%s/issues'   % name,
+    },
     'license'            : "LGPLv3+",
-    'keywords'           : "radical emulate workload",
+    'keywords'           : 'radical emulate workload',
     'python_requires'    : '>=3.6',
     'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
