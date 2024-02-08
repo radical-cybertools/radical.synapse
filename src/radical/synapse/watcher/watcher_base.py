@@ -52,7 +52,7 @@ class WatcherBase (threading.Thread) :
             import traceback
             traceback.print_exc()
 
-            print "Exception in finalize: %s" % e
+            print("Exception in finalize: %s" % e)
 
 
     # --------------------------------------------------------------------------
@@ -92,7 +92,7 @@ class WatcherBase (threading.Thread) :
             import traceback
             traceback.print_exc()
 
-            print "Exception in watcher: %s" % e
+            print("Exception in watcher: %s" % e)
 
 
     # --------------------------------------------------------------------------

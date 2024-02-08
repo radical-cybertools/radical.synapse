@@ -7,7 +7,7 @@ __license__   = "LGPL.v3"
 import os
 import errno
 import threading
-import Queue
+import queue
 
 import radical.utils as ru
 
@@ -38,8 +38,8 @@ class AtomBase (object):
 
 
         # start worker process
-        self._work_queue   = Queue.Queue ()
-        self._result_queue = Queue.Queue ()
+        self._work_queue   = queue.Queue ()
+        self._result_queue = queue.Queue ()
 
         self._term  = threading.Event()
         self._proc  = threading.Thread (target=self.run)
@@ -75,7 +75,7 @@ class AtomBase (object):
 
 
         except Exception as e:
-            print "main loop error in atom driver: %s" % e
+            print("main loop error in atom driver: %s" % e)
             raise
 
 
@@ -85,11 +85,11 @@ class AtomBase (object):
 
         try:
             self._verify(vals)
-            print "emulate  %s" % vals
+            print("emulate  %s" % vals)
             self._work_queue.put(vals)
 
         except Exception as e:
-            print 'emulation error: invalid data: %s' % vals
+            print('emulation error: invalid data: %s' % vals)
             ru.cancel_main_thread()
 
 

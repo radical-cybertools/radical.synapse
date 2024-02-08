@@ -6,14 +6,14 @@ __license__   = "MIT"
 
 # ------------------------------------------------------------------------------
 
-from synapsify import synapsify
-from synapsify import NOTHING
-from synapsify import PROFILE
-from synapsify import EMULATE
+from .synapsify import synapsify
+from .synapsify import NOTHING
+from .synapsify import PROFILE
+from .synapsify import EMULATE
 
-from synapse   import profile
-from synapse   import emulate
-from synapse   import execute
+from .synapse   import profile
+from .synapse   import emulate
+from .synapse   import execute
 
 
 

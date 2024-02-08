@@ -4,13 +4,14 @@ __copyright__ = "Copyright 2013, The SAGA Project"
 __license__   = "LGPL.v3"
 
 
-from   _atoms    import atom_compute_test
-from   _atoms    import atom_compute_asm
-from   _atoms    import atom_compute
-from   base      import AtomBase
-from   constants import COMPUTE
+from   ._atoms    import atom_compute_test
+from   ._atoms    import atom_compute_asm
+from   ._atoms    import atom_compute
+from   .base      import AtomBase
+from   .constants import COMPUTE
 
 OVERHEAD = 20   # in %
+
 
 # ------------------------------------------------------------------------------
 #
@@ -49,7 +50,7 @@ class Compute (AtomBase):
             atom_compute_test (vals['flops'], vals['time'])
 
         except Exception as e:
-            print "com atom error: %s" % e
+            print("com atom error: %s" % e)
 
 
 #-------------------------------------------------------------------------------

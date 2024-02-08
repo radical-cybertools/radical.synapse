@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import radical.utils as ru
 
@@ -12,7 +12,7 @@ DEFAULT_HOST = 'thinkie'
 fnames = glob.glob ('*.json*')
 
 for fname in fnames:
-    
+
     idx  = 0
     base = fname[:-5]
 

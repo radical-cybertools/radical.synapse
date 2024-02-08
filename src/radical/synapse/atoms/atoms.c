@@ -1,15 +1,13 @@
 
 /* -----------------------------------------------------------------------------
  */
-#include <Python.h>
-#include "unistd.h"
-#include "atoms.h"
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
-
-/* -----------------------------------------------------------------------------
- */
-static char module_docstring[] =
-"Provide C-Atoms for radical.synapse";
+#include "Python.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <stdbool.h>
+#include <limits.h>
 
 
 /* -----------------------------------------------------------------------------
@@ -37,16 +35,33 @@ static PyMethodDef module_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+static struct PyModuleDef moduledef = {
+       PyModuleDef_HEAD_INIT,
+       "_atoms",
+       "Provide C-Atoms for radical.synapse",
+       -1,
+       module_methods,
+       NULL,
+       NULL,
+       NULL,
+       NULL
+};
+
 
 /* -----------------------------------------------------------------------------
  */
-PyMODINIT_FUNC
-init_atoms (void)
-{
-    PyObject *m = Py_InitModule3 ("_atoms", module_methods, module_docstring);
-    if (m == NULL)
-        fprintf (stderr, "Py_InitModule3 failed\n");
-    return;
+PyObject *
+PyInit__atoms(void){
+
+    PyObject *module = PyModule_Create(&moduledef);
+
+    if (module == NULL)
+        return NULL;
+
+    PyModule_AddStringConstant(module, "__author__", "Andre Merzky <andre@merzky.net>");
+    PyModule_AddStringConstant(module, "__version__", "1.0.0");
+
+    return module;
 }
 
 

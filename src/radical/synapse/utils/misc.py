@@ -90,7 +90,7 @@ def human_to_number (h, prefix=PREFIX_BIN) :
 #
 def number_to_human (n, prefix=PREFIX_BIN, unit='', template="%(val)f %(unit)s") :
 
-    for key in prefix.keys () :
+    for key in list(prefix.keys ()) :
 
         hn = n / float(prefix[key])
         if  hn > 1 and hn < 1000 :
@@ -135,7 +135,7 @@ def store_profile (profile, tags=None, url=None, mode=None) :
 
     if not tags:
         tags  = dict()
-        elems = filter (None, os.environ.get('RADICAL_SYNAPSE_TAGS', '').split(','))
+        elems = [_f for _f in os.environ.get('RADICAL_SYNAPSE_TAGS', '').split(',') if _f]
         for elem in elems:
             if ':' in elem:
                 key, val  = elem.split(':', 1)
@@ -145,7 +145,7 @@ def store_profile (profile, tags=None, url=None, mode=None) :
 
 
     command_idx = index_command (profile['cmd'], tags)
-    print "index %s (%s) to %s" % (profile['cmd'], tags, command_idx)
+    print("index %s (%s) to %s" % (profile['cmd'], tags, command_idx))
 
     host = profile['sys'].get ('hostname')
     if not host:
@@ -163,7 +163,7 @@ def store_profile (profile, tags=None, url=None, mode=None) :
 
     if url.schema == 'mongodb':
 
-        print 'store profile in db %s' % url
+        print('store profile in db %s' % url)
 
         [dbhost, port, dbname, _, _, _, _] = ru.split_dburl (url)
 
@@ -196,7 +196,7 @@ def store_profile (profile, tags=None, url=None, mode=None) :
                 break
             idx += 1
 
-        print 'store profile in file %s' % fname
+        print('store profile in file %s' % fname)
         os.system ('mkdir -p "%s/"' % path)
         ru.write_json (doc, fname)
 
@@ -205,13 +205,13 @@ def store_profile (profile, tags=None, url=None, mode=None) :
 # ------------------------------------------------------------------------------
 def get_profiles (command, tags=None, url=None, mode=None) :
 
-    print command
+    print(command)
 
     if not url:
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if not url:
-        print "warning: need dburl to retrieve profiles"
+        print("warning: need dburl to retrieve profiles")
         return None
 
     url = ru.Url(url)
@@ -221,7 +221,7 @@ def get_profiles (command, tags=None, url=None, mode=None) :
 
     if not tags:
         tags  = dict()
-        elems = filter (None, os.environ.get('RADICAL_SYNAPSE_TAGS', '').split(','))
+        elems = [_f for _f in os.environ.get('RADICAL_SYNAPSE_TAGS', '').split(',') if _f]
         for elem in elems:
             if ':' in elem:
                 key, val  = elem.split(':', 1)
@@ -294,10 +294,10 @@ def get_profiles (command, tags=None, url=None, mode=None) :
                 elif docmode in mode:
                     use = True
                 else:
-                    print "skip: mode %s not in %s" % (docmode, mode)
+                    print("skip: mode %s not in %s" % (docmode, mode))
             else:
-                print "skip command %s" % command
-                print "   ! command %s" % doc['command']
+                print("skip command %s" % command)
+                print("   ! command %s" % doc['command'])
 
             if use:
                 ret.append (doc)
@@ -318,7 +318,7 @@ def get_all_frames (command, tags=None, url=None, mode=None) :
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if not url:
-        print "warning: need dburl to retrieve profiles"
+        print("warning: need dburl to retrieve profiles")
         return None
 
     docs = list()
@@ -347,7 +347,7 @@ def get_frames (command, tags=None, url=None, mode=None) :
         url = os.environ.get ('RADICAL_SYNAPSE_DBURL')
 
     if not url:
-        print "warning: need dburl to retrieve profiles"
+        print("warning: need dburl to retrieve profiles")
         return None
 
     docs = get_profiles (command, tags, url, mode)

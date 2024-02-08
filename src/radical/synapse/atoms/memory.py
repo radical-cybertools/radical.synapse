@@ -7,9 +7,9 @@ __license__   = "LGPL.v3"
 import radical.utils as ru
 
 
-from   _atoms    import atom_memory
-from   base      import AtomBase
-from   constants import MEMORY
+from   ._atoms    import atom_memory
+from   .base      import AtomBase
+from   .constants import MEMORY
 
 # ------------------------------------------------------------------------------
 #
@@ -22,28 +22,28 @@ class Memory (AtomBase):
 
     # --------------------------------------------------------------------------
     #
-    def __init__ (self): 
+    def __init__ (self):
 
         AtomBase.__init__ (self, MEMORY)
 
 
     # --------------------------------------------------------------------------
     #
-    def _verify(self, vals): 
+    def _verify(self, vals):
 
         assert ('size' in vals)
 
 
     # --------------------------------------------------------------------------
     #
-    def _emulate (self, vals): 
+    def _emulate (self, vals):
 
         try:
          # print "atom_memorye (%s)" % vals['size']
             atom_memory (int(vals['size']))
 
         except Exception as e:
-            print "mem atom error: %s" % e
+            print("mem atom error: %s" % e)
             ru.cancel_main_thread()
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 import os
@@ -21,7 +21,7 @@ def usage (msg=None) :
     if  msg :
         sys.stderr.write ('\n    Error: %s' % msg)
 
-    print """
+    print("""
 
     usage :
 
@@ -40,7 +40,7 @@ def usage (msg=None) :
                -d=1024
 
         ID is mandatory.
-    """
+    """)
 
     if  msg :
         sys.exit (1)
@@ -60,10 +60,10 @@ def main (master_id, num_workers, mb_size, mb_depth) :
     collection = database[cname]
 
   # collection.remove ()
-  
+
     subsx   = int(math.sqrt(num_workers))
     subsy   = int(math.sqrt(num_workers))
-    
+
     minx    = -2.0
     maxx    =  1.0
     miny    = -1.5
@@ -72,10 +72,10 @@ def main (master_id, num_workers, mb_size, mb_depth) :
     pixy    =  mb_size  # divisible by subsy
     iters   =  mb_depth
     image   =  Image.new ("RGB", (pixx, pixy))
-    
+
     stepx   = (maxx-minx) / subsx
     stepy   = (maxy-miny) / subsy
-    
+
     spixx   =  pixx / subsx
     spixy   =  pixy / subsy
 
@@ -87,13 +87,13 @@ def main (master_id, num_workers, mb_size, mb_depth) :
 
 
     workers = dict()
-    
+
     # subdivide and publish work items
     for   subx in range (0, subsx) :
       for suby in range (0, subsy) :
-    
+
           worker_idx = subx * subsx + suby
-          worker_doc = {'worker_id' : int(worker_idx), 
+          worker_doc = {'worker_id' : int(worker_idx),
                         'type'      : 'work',
                         'minx'      : float(minx + subx * stepx),
                         'miny'      : float(miny + suby * stepy),
@@ -105,9 +105,9 @@ def main (master_id, num_workers, mb_size, mb_depth) :
                         'suby'      : suby,
                         'iters'     : int(iters)
                         }
-  
+
           workers[worker_idx] = worker_doc
-  
+
           collection.insert (workers[worker_idx])
 
 
@@ -116,7 +116,7 @@ def main (master_id, num_workers, mb_size, mb_depth) :
 
     while len(done) != len(workers) :
 
-        print "waiting (%s/%s)" % (len(done), len(workers))
+        print("waiting (%s/%s)" % (len(done), len(workers)))
 
         results = collection.find ({'type' : 'result'})
         active  = False
@@ -145,7 +145,7 @@ def main (master_id, num_workers, mb_size, mb_depth) :
         if  not active:
             time.sleep (1)
 
-    print "done    (%s/%s)" % (len(done), len(workers))
+    print("done    (%s/%s)" % (len(done), len(workers)))
 
     db_client.disconnect ()
 
@@ -199,5 +199,5 @@ if __name__ == '__main__' :
         usage ("need master_id to operate (%s)" % sys.argv)
 
     main (master_id, num_workers, mb_size, mb_depth)
-    
+
 

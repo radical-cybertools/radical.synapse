@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 import os
@@ -10,7 +10,7 @@ import radical.utils as ru
 import radical.synapse       as rs
 import radical.synapse.atoms as rsa
 
-# import pudb 
+# import pudb
 # pudb.set_interrupt_handler ()
 
 iters = 10
@@ -50,11 +50,11 @@ def synaptic (load_compute, load_memory, load_input, load_output) :
             if  l // '^(ru.\S+)\s+:\s+(\S+)$' :
                 info[l.get()[0]] = l.get()[1]
 
-    print "------------------------------"
+    print("------------------------------")
     pprint.pprint (info_i)
-    print "------------------------------"
+    print("------------------------------")
     pprint.pprint (info_o)
-    print "------------------------------"
+    print("------------------------------")
 
 
 
@@ -64,7 +64,7 @@ def synaptic (load_compute, load_memory, load_input, load_output) :
 cfg_list = list ()
 
 if  not len(sys.argv) > 1 :
-    print "\n\tusage: %s [-c n] [-m n] [-i n] [-o n] \n\n" % sys.argv[0]
+    print("\n\tusage: %s [-c n] [-m n] [-i n] [-o n] \n\n" % sys.argv[0])
     sys.exit (-1)
 
 load_compute = 0
@@ -82,9 +82,9 @@ for i in range(len(sys.argv)) :
 
 synaptic (load_compute, load_memory, load_input, load_output)
 
-print load_compute
-print load_memory
-print load_input
-print load_output
+print(load_compute)
+print(load_memory)
+print(load_input)
+print(load_output)
 
-  
+

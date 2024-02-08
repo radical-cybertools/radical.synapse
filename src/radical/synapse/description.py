@@ -2,7 +2,7 @@
 
 import radical.utils as ru
 
-import atoms as rsa
+from . import atoms as rsa
 
 # 
 # 

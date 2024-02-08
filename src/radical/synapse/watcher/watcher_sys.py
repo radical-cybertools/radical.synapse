@@ -7,7 +7,7 @@ __license__   = "MIT"
 import os
 import socket
 
-import watcher_base as wb
+from . import watcher_base as wb
 
 from ..utils import human_to_number, PREFIX_ISO
 
