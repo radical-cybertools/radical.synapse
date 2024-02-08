@@ -161,7 +161,7 @@ atom_network (PyObject * self, PyObject * args)
         return NULL;
 
     // FIXME
-    return NULL; 
+    return NULL;
     _atom_network (type, mode, host, port, size);
     Py_RETURN_NONE;
 }

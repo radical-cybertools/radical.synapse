@@ -1,12 +1,12 @@
 
 
-from ._atoms    import atom_compute_asm 
+from ._atoms    import atom_compute_asm
 from ._atoms    import atom_compute_test
 from ._atoms    import atom_compute
 from ._atoms    import atom_time
 from ._atoms    import atom_memory
-from ._atoms    import atom_storage 
-from ._atoms    import atom_network 
+from ._atoms    import atom_storage
+from ._atoms    import atom_network
 
 from .constants import UNKNOWN, TIME, COMPUTE, MEMORY, STORAGE, NETWORK
 

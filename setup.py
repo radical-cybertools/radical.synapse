@@ -43,7 +43,7 @@ def get_version (mod_root):
     mod_root
         a VERSION file containes the version strings is created in mod_root,
         during installation.  That file is used at runtime to get the version
-        information.  
+        information.
         """
 
     try:
@@ -61,11 +61,11 @@ def get_version (mod_root):
 
 
         # attempt to get version detail information from git
-        # We only do that though if we are in a repo root dir, 
+        # We only do that though if we are in a repo root dir,
         # ie. if 'git rev-parse --show-prefix' returns an empty string --
         # otherwise we get confused if the ve lives beneath another repository,
         # and the pip version used uses an install tmp dir in the ve space
-        # instead of /tmp (which seems to happen with some pip/setuptools 
+        # instead of /tmp (which seems to happen with some pip/setuptools
         # versions).
         p   = sp.Popen ('cd %s ; '
                         'test -z `git rev-parse --show-prefix` || exit -1; '
@@ -185,7 +185,7 @@ def makeDataFiles(prefix, dir):
 
     a call like this:
 
-      makeDataFiles('prefix', 'root') 
+      makeDataFiles('prefix', 'root')
 
     will create this distutil data_files structure:
 
@@ -253,7 +253,7 @@ if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
 
 c_ext = Extension(name               = "radical/synapse/atoms/_atoms" ,
                   sources            = glob.glob('src/radical/synapse/atoms/*.c'),
-                  extra_compile_args = eca, 
+                  extra_compile_args = eca,
                   extra_link_args    = ela)
 
 setup_args = {
