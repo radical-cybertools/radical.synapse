@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
+1.48.0 Release                                                        2024-03-24
+--------------------------------------------------------------------------------
+
+  - convert to py3, update deployment etc.
+
+
 1.47.0 Release                                                        2024-02-08
 --------------------------------------------------------------------------------
 
