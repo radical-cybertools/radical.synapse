@@ -13,12 +13,12 @@ import os
 import subprocess as sp
 
 from glob       import glob
-from setuptools import setup, Command, find_namespace_packages
+from setuptools import setup, Command, find_namespace_packages, Extension
 
 
 # ------------------------------------------------------------------------------
 #
-base     = 'utils'
+base     = 'synapse'
 name     = 'radical.%s'      % base
 mod_root = 'src/radical/%s/' % base
 
@@ -153,7 +153,7 @@ if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
 
 
 c_ext = Extension(name               = "radical/synapse/atoms/_atoms" ,
-                  sources            = glob.glob('src/radical/synapse/atoms/*.c'),
+                  sources            = glob('src/radical/synapse/atoms/*.c'),
                   extra_compile_args = eca,
                   extra_link_args    = ela)
 
