@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import time
 import radical.synapse as rs
@@ -19,8 +20,8 @@ info_s = rsa_s.wait ()
 stop   = time.time ()
 
 # info now contains self-profiled information for the atoms
-print "t_c: %.2f" % info_c['timer']
-print "t_m: %.2f" % info_m['timer']
-print "t_s: %.2f" % info_s['timer']
-print "ttc: %.2f" % (stop - start)
+print("t_c: %.2f" % info_c['timer'])
+print("t_m: %.2f" % info_m['timer'])
+print("t_s: %.2f" % info_s['timer'])
+print("ttc: %.2f" % (stop - start))
 
