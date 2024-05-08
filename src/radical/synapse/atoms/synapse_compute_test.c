@@ -1,5 +1,5 @@
 
-#include <atom_compute_extlib.h>
+#include "ext_lib/atom_compute_extlib.h"
 
 
 int _atom_compute_test (long flops, long runtime)
