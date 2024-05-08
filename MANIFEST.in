@@ -1,13 +1,10 @@
 
-include MANIFEST.in 
-include README.md 
-include LICENSE.md 
-include CHANGES.md 
 include VERSION
+include MANIFEST.in
+include *.md *.txt
 
 include synapse/*.py
 include synapse/atoms/*.py
 include synapse/atoms/*.c
 include synapse/utils/*.py
-
 
