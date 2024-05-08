@@ -145,6 +145,9 @@ with open('%s/requirements.txt' % root, encoding='utf-8') as freq:
 #
 eca = ['-Iexamples/ext_lib', '-fPIC']
 ela = ['-Lexamples/ext_lib', '-lext', '-fPIC']
+
+eca = list()
+ela = list()
 if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
     eca.extent(['-fopenmp', '-DRADICAL_SYNAPSE_USE_OPENMP=1'])
     ela.extent(['-lgomp'])
