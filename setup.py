@@ -143,11 +143,8 @@ with open('%s/requirements.txt' % root, encoding='utf-8') as freq:
 
 # -------------------------------------------------------------------------------
 #
-eca = ['-Iexamples/ext_lib', '-fPIC']
-ela = ['-Lexamples/ext_lib', '-lext', '-fPIC']
-
-eca = list()
-ela = list()
+eca = ['-Isrc/radical/synapse/atoms/ext_lib', '-fPIC']
+ela = ['-Lsrc/radical/synapse/atoms/ext_lib', '-lext', '-fPIC']
 if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
     eca.extent(['-fopenmp', '-DRADICAL_SYNAPSE_USE_OPENMP=1'])
     ela.extent(['-lgomp'])
