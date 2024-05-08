@@ -7,4 +7,5 @@ include synapse/*.py
 include synapse/atoms/*.py
 include synapse/atoms/*.c
 include synapse/utils/*.py
+include synapse/utils/*.py
 

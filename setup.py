@@ -29,9 +29,7 @@ descr    = 'SYNthetic APplicationS Emulator'
 keywords = ['radical', 'cybertools', 'utilities']
 
 share    = 'share/%s' % name
-data     = [('%s/examples'      % share, glob('examples/*.{py,cfg,json,sh}')),
-            ('%s/examples/lib'  % share, glob('examples/ext_lib/*'         )),
-]
+data     = []
 
 
 # ------------------------------------------------------------------------------
