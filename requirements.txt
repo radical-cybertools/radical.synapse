@@ -1,5 +1,5 @@
 
-radical.utils>=1.60
+radical.utils~=1.80.0
 
 pymongo
 psutil
