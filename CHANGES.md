@@ -5,11 +5,10 @@
     https://github.com/radical-cybertools/radical.synapse/issues?q=is%3Aissue+is%3Aopen+
 
 
-1.80.0 Release                                                        2024-09-03
+1.81.0 Release                                                        2024-09-03
 --------------------------------------------------------------------------------
 
   - maintenance release
-
 
 
 1.60.0 Release                                                        2024-05-10
