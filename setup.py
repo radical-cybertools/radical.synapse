@@ -144,7 +144,7 @@ with open('%s/requirements.txt' % root, encoding='utf-8') as freq:
 # -------------------------------------------------------------------------------
 #
 eca = ['-Isrc/radical/synapse/atoms/ext_lib', '-fPIC']
-ela = ['-Lsrc/radical/synapse/atoms/ext_lib', '-lext', '-fPIC']
+ela = ['-Lsrc/radical/synapse/atoms/ext_lib', '-fPIC']
 if 'RADICAL_SYNAPSE_USE_OPENMP' in os.environ:
     eca.extent(['-fopenmp', '-DRADICAL_SYNAPSE_USE_OPENMP=1'])
     ela.extent(['-lgomp'])

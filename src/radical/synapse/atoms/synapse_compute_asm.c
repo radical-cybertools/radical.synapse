@@ -1,4 +1,5 @@
 
+#include <time.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -23,9 +24,9 @@ float mat_mult (float* a1, float* a2, int n);
 
 int _atom_compute_asm (long flops, long runtime)
 {
-    /* 
+    /*
      * we can either run until a certain number of flops is reached, or until
-     * a certain time has passed.  If both 'flops' and 'runtime' are given, 
+     * a certain time has passed.  If both 'flops' and 'runtime' are given,
      * *both* conditions have to be met before completion.
      */
 
@@ -37,15 +38,17 @@ int _atom_compute_asm (long flops, long runtime)
      * variable `OMP_NUM_THREADS`).
      */
 
-    size_t  n = flops / (1024 * 1024);
-    float * f = calloc (CHUNKSIZE, sizeof(float));
+    size_t  n   = flops / (1024 * 1024);
+    float * f   = calloc (CHUNKSIZE, sizeof(float));
+
+    # ifdef RADICAL_SYNAPSE_USE_OPENMP
     time_t  start = time(NULL);
-    time_t  now   = time(NULL);
+    # endif
 
     /* This is an overhead for each sample :( */
     unsigned int i = 0;
-    for ( i = 0; i < CHUNKSIZE; i++ ) 
-    { 
+    for ( i = 0; i < CHUNKSIZE; i++ )
+    {
         f[i] = i * 0.01;
     }
 
@@ -61,11 +64,11 @@ int _atom_compute_asm (long flops, long runtime)
         printf("openmp: tid %d/%d\n", omp_get_thread_num(), omp_get_num_threads());
         #   pragma omp for schedule(dynamic)
         # endif
-        for ( i = 0; i < n; i++ ) 
+        for ( i = 0; i < n; i++ )
         {
             mat_mult (f, f, CHUNKSIZE);
-            now = time(NULL);
             /*
+            time_t now = time(NULL);
             if (now <= (start+runtime))
               i = n;
             */
@@ -87,7 +90,7 @@ int _atom_compute_asm (long flops, long runtime)
 
         fprintf (stdout, "ru.utime         : %ld.%ld\n", ru.ru_utime.tv_sec,
                                                          ru.ru_utime.tv_usec ); /* user CPU time used */
-        fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime,
+        fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime.tv_sec,
                                                          ru.ru_stime.tv_usec ); /* system CPU time used */
         fprintf (stdout, "ru.maxrss        : %ld\n",     ru.ru_maxrss*1024   ); /* maximum resident set size */
         fprintf (stdout, "ru.ixrss         : %ld\n",     ru.ru_ixrss         ); /* integral shared memory size */
@@ -111,12 +114,12 @@ int _atom_compute_asm (long flops, long runtime)
 
 float mat_mult (float* a1, float* a2, int n)
 {
-    /* 
-     * kudos: 
-     * http://www.drdobbs.com/optimizing-cc-with-inline-assembly-progr 
+    /*
+     * kudos:
+     * http://www.drdobbs.com/optimizing-cc-with-inline-assembly-progr
      */
 
-    float ans[4] __attribute__ ((aligned(16)));
+    float ans[4] __attribute__ ((aligned(16))) = {0, 0, 0, 0};
     register int i;
 
     if (n >= 8)

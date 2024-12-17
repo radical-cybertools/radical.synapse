@@ -16,24 +16,24 @@
 /*
  *******************************************************************************
  */
-int mkpath(char* file_path) 
+int mkpath(char* file_path)
 {
     /* kudos: http://stackoverflow.com/questions/2336242
      */
     char* p;
     mode_t mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 
-    for ( p=strchr(file_path+1, '/'); 
-          p; 
-          p = strchr(p+1, '/')) 
+    for ( p=strchr(file_path+1, '/');
+          p;
+          p = strchr(p+1, '/'))
     {
         *p = '\0';
-        if ( mkdir (file_path, mode) == -1 ) 
+        if ( mkdir (file_path, mode) == -1 )
         {
-            if ( errno != EEXIST ) 
-            { 
-                *p='/'; 
-                return -1; 
+            if ( errno != EEXIST )
+            {
+                *p='/';
+                return -1;
             }
         }
         *p = '/';
@@ -58,8 +58,8 @@ size_t get_blocksize(void)
 /*
  *******************************************************************************
  */
-int _atom_storage (const char* src, long rsize, 
-                   const char* tgt, long wsize, 
+int _atom_storage (const char* src, long rsize,
+                   const char* tgt, long wsize,
                    long bufsize)
 {
     int rfd = 0;
@@ -67,7 +67,7 @@ int _atom_storage (const char* src, long rsize,
 
     if (src && rsize)
     {
-        mkpath (src);
+        mkpath ((char *) src);
         rfd = open (src, O_RDONLY);
         if ( rfd < 0 )
         {
@@ -79,7 +79,7 @@ int _atom_storage (const char* src, long rsize,
 
     if (tgt && wsize)
     {
-        mkpath (tgt);
+        mkpath ((char *) tgt);
         wfd = open (tgt, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
         if ( wfd < 0 )
         {
@@ -91,7 +91,7 @@ int _atom_storage (const char* src, long rsize,
 
 
     /* clear disk cache */
- // (void) syncfs (rfd); 
+ // (void) syncfs (rfd);
     (void) sync ();
 
     off_t rtot = 0;
@@ -108,11 +108,11 @@ int _atom_storage (const char* src, long rsize,
         size_t wlen = wsize - wtot;
 
         if ( rlen > 0 )
-        { 
-            rret = read  (rfd, rbuf, bufsize); 
+        {
+            rret = read  (rfd, rbuf, bufsize);
          // fprintf (stderr, "read (%d %ld %ld) = %ld\n", rfd, rbuf, bufsize, rret);
 
-            if ( rret != bufsize )
+            if ( rret != (long unsigned int) bufsize )
             {
                 /* we ignore errors on partial reads, but if nothing was read,
                  * we bail out */
@@ -127,11 +127,11 @@ int _atom_storage (const char* src, long rsize,
         }
 
         if ( wlen > 0 )
-        { 
-            wret = write  (wfd, wbuf, bufsize); 
+        {
+            wret = write  (wfd, wbuf, bufsize);
          // fprintf (stderr, "write (%d %ld %ld) = %ld\n", wfd, wbuf, bufsize, wret);
 
-            if ( wret != bufsize )
+            if ( wret != (long unsigned int) bufsize )
             {
                 /* we ignore errors on partial writes, but if nothing was
                  * written, we bail out */
@@ -145,17 +145,17 @@ int _atom_storage (const char* src, long rsize,
             wtot += wret;
         }
     }
-  
+
     /* clear disk cache */
- // (void) syncfs (rfd); 
- // (void) syncfs (wfd); 
+ // (void) syncfs (rfd);
+ // (void) syncfs (wfd);
     (void) sync ();
 
     free  (rbuf);
     free  (wbuf);
     close (rfd);
     close (wfd);
-  
+
  // (void) unlink (tgt);
 
     if ( PROFILE )
@@ -172,7 +172,7 @@ int _atom_storage (const char* src, long rsize,
 
         fprintf (stdout, "ru.utime         : %ld.%ld\n", ru.ru_utime.tv_sec,
                                                          ru.ru_utime.tv_usec ); /* user CPU time used */
-        fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime,
+        fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime.tv_sec,
                                                          ru.ru_stime.tv_usec ); /* system CPU time used */
         fprintf (stdout, "ru.maxrss        : %ld\n",     ru.ru_maxrss*1024   ); /* maximum resident set size */
         fprintf (stdout, "ru.ixrss         : %ld\n",     ru.ru_ixrss         ); /* integral shared memory size */
@@ -182,11 +182,11 @@ int _atom_storage (const char* src, long rsize,
         fprintf (stdout, "ru.majflt        : %ld\n",     ru.ru_majflt        ); /* page faults (hard page faults) */
         fprintf (stdout, "ru.nswap         : %ld\n",     ru.ru_nswap         ); /* swaps */
         fprintf (stdout, "ru.inblock       : %ld\n",     ru.ru_inblock       ); /* block input operations */
-        fprintf (stdout, "ru.inbytes       : %ld\n",     ru.ru_inblock*bs    ); 
-        fprintf (stdout, "ru.inbytes_app   : %ld\n",     rtot                ); 
+        fprintf (stdout, "ru.inbytes       : %ld\n",     ru.ru_inblock*bs    );
+        fprintf (stdout, "ru.inbytes_app   : %ld\n",     rtot                );
         fprintf (stdout, "ru.outblock      : %ld\n",     ru.ru_oublock       ); /* block output operations */
-        fprintf (stdout, "ru.outbytes      : %ld\n",     ru.ru_oublock*bs    ); 
-        fprintf (stdout, "ru.outbytes_app  : %ld\n",     wtot                ); 
+        fprintf (stdout, "ru.outbytes      : %ld\n",     ru.ru_oublock*bs    );
+        fprintf (stdout, "ru.outbytes_app  : %ld\n",     wtot                );
         fprintf (stdout, "ru.msgsnd        : %ld\n",     ru.ru_msgsnd        ); /* IPC messages sent */
         fprintf (stdout, "ru.msgrcv        : %ld\n",     ru.ru_msgrcv        ); /* IPC messages received */
         fprintf (stdout, "ru.nsignals      : %ld\n",     ru.ru_nsignals      ); /* signals received */

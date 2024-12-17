@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #define CHUNKSIZE  (1024 * 1024)  /* 2^20 */
- 
+
 int server        (int   port );
 int server_accept (int   ssock);
 int client        (char* host, int port);
@@ -33,7 +33,7 @@ int _atom_network (const char* type, const char* mode, const char* host, int por
   if ( ! strcmp ("server", type) ) {
     sock = server (port);
   } else {
-    sock = client (host, port);
+    sock = client ((char*)host, port);
   }
 
 
@@ -58,7 +58,7 @@ int _atom_network (const char* type, const char* mode, const char* host, int por
           {
             perror ("recv failed");
             exit (-1);
-          }  
+          }
         }
       }
       total += ret;
@@ -70,14 +70,14 @@ int _atom_network (const char* type, const char* mode, const char* host, int por
       {
      // fprintf (stdout, ":");
      // fflush  (stdout);
-        
+
         ret = send (sock, c, CHUNKSIZE, 0);
 
-        if ( ret != CHUNKSIZE ) 
+        if ( ret != CHUNKSIZE )
         {
           perror ("send failed");
           exit (-1);
-        }  
+        }
       }
       total += ret;
     }
@@ -86,14 +86,15 @@ int _atom_network (const char* type, const char* mode, const char* host, int por
   /* client closes the connection, and server waits until that is done.  This
    * way, the socket will not end up in TIME_WAIT, so we'll avoid the dreaded
    * 'Address already in use' error... */
-  if ( strcmp ("server", type) ) 
+  if ( strcmp ("server", type) )
   {
     close (sock);
-  } 
-  else 
+  }
+  else
   {
-    ssize_t ret = recv (sock, c, CHUNKSIZE, MSG_WAITALL);
     /* ignore error */
+    /* ssize_t ret = */
+    recv (sock, c, CHUNKSIZE, MSG_WAITALL);
   }
 
   return 0;
@@ -105,7 +106,6 @@ int server (int port)
 {
   // printf ("creating server: %d\n", port);
   /* see http://en.wikibooks.org/wiki/C_Programming/Networking_in_UNIX */
-  struct sockaddr_in dest;
   struct sockaddr_in serv;
   int    ssock;
   int    ret;
@@ -117,35 +117,35 @@ int server (int port)
   serv.sin_port        = htons (port);
 
   ssock = socket (AF_INET, SOCK_STREAM, 0);
-  if ( ssock < 0 ) 
+  if ( ssock < 0 )
   {
     perror ("socket failed");
     exit (-1);
-  }  
+  }
 
   /* bind serv information to ssock */
   ret = bind (ssock, (struct sockaddr *)&serv, sizeof (struct sockaddr));
-  if ( ret < 0 ) 
+  if ( ret < 0 )
   {
     perror ("bind failed");
     exit (-1);
-  }  
+  }
 
   /* make sure socket closes quickly on failure */
   ret = setsockopt (ssock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof (int));
-  if ( ret < 0 ) 
+  if ( ret < 0 )
   {
     perror ("setsockopt failed");
     exit (-1);
-  }  
+  }
 
   /* start listening, allowing a queue of up to 1 pending connection */
   ret = listen (ssock, 100);
-  if ( ret < 0 ) 
+  if ( ret < 0 )
   {
     perror ("listen failed");
     exit (-1);
-  }  
+  }
 
   signal(SIGPIPE, SIG_IGN);
 
@@ -159,11 +159,11 @@ int server_accept (int ssock)
   socklen_t socksize = sizeof (struct sockaddr_in);
 
   int sock = accept (ssock, (struct sockaddr *)&dest, &socksize);
-  if ( sock < 0 ) 
+  if ( sock < 0 )
   {
     perror ("accept failed");
     exit (-1);
-  }  
+  }
 
   // printf ("Incoming connection from %s\n", inet_ntoa (dest.sin_addr));
 
@@ -181,21 +181,21 @@ int client (char* host, int port)
   int                  ret;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  if ( sock < 0 ) 
+  if ( sock < 0 )
   {
     perror ("cannot open socket");
     exit (-1);
   }
 
   he_server = gethostbyname (host);
-  if ( he_server == NULL ) 
+  if ( he_server == NULL )
   {
     perror ("no such host");
     exit (-1);
   }
 
   bzero ((char *) &addr_server, sizeof(addr_server));
-  bcopy ((char *) he_server->h_addr, 
+  bcopy ((char *) he_server->h_addr,
          (char *) &addr_server.sin_addr.s_addr,
                   he_server->h_length);
   addr_server.sin_family = AF_INET;

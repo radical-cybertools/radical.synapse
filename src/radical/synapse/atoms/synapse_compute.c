@@ -38,7 +38,7 @@ int _atom_compute (long flops)
 
         fprintf (stdout, "ru.utime         : %ld.%ld\n", ru.ru_utime.tv_sec,
                                                          ru.ru_utime.tv_usec ); /* user CPU time used */
-        fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime,
+        fprintf (stdout, "ru.stime         : %ld.%ld\n", ru.ru_stime.tv_sec,
                                                          ru.ru_stime.tv_usec ); /* system CPU time used */
         fprintf (stdout, "ru.maxrss        : %ld\n",     ru.ru_maxrss*1024   ); /* maximum resident set size */
         fprintf (stdout, "ru.ixrss         : %ld\n",     ru.ru_ixrss         ); /* integral shared memory size */
