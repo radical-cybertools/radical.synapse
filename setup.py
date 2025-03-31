@@ -176,7 +176,7 @@ setup_args = {
     },
     'license'            : "LGPLv3+",
     'keywords'           : 'radical emulate workload',
-    'python_requires'    : '>=3.6',
+    'python_requires'    : '>=3.8',
     'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -184,7 +184,7 @@ setup_args = {
         'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
         'Topic :: Scientific/Engineering',
